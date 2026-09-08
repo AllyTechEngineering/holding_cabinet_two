@@ -399,8 +399,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : UpArrowSwitch_Pin DownArrowSwitch_Pin PC8 OnOffSwitch_Pin */
-  GPIO_InitStruct.Pin = UpArrowSwitch_Pin|DownArrowSwitch_Pin|GPIO_PIN_8|OnOffSwitch_Pin;
+  /*Configure GPIO pins : UpArrowSwitch_Pin DownArrowSwitch_Pin ModeSwitch_Pin OnOffSwitch_Pin */
+  GPIO_InitStruct.Pin = UpArrowSwitch_Pin|DownArrowSwitch_Pin|ModeSwitch_Pin|OnOffSwitch_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);

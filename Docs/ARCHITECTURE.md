@@ -24,32 +24,36 @@ USART.
 
 ## 2. Peripheral / Bus Summary
 
-
+See holding_cabinet_two.txt
+See holding_cabinet_two.pdf for more details.
+Note: these files are automatically updated when the Generate Code and 
+Generate Reports are used in STM32Cube MX
 ---
 
 ## 3. Interfaces
+See holding_cabinet_two.txt
+See holding_cabinet_two.pdf for more details.
+Note: these files are automatically updated when the Generate Code and 
+Generate Reports are used in STM32Cube MX
 
 ### 3.1 I2C2 Bus (Shared)
-STM32 as master. See docs/reference/LCD1602_I2C_Reference.md for PCF8574
-bit mapping and HD44780U init sequence.
+See holding_cabinet_two.txt
+See holding_cabinet_two.pdf for more details.
+Note: these files are automatically updated when the Generate Code and 
+Generate Reports are used in STM32Cube MX
 
 ### 3.2 STM32 ↔ Wi-Fi/BLE Module (UART)
 Module selected (ESP32-C6-MINI-1-N4 on a breakout board). 
 
 
 ### 3.3 BLE ↔ Companion App
-
+TODO: future
 
 ---
 
 ## 4. Setup Menu Entry
 
-Entered by holding SW1 (Up) + SW2 (Down) for 3–5 seconds at power-on.
-Button state sampled early in boot, before normal UI task starts.
-
-First defined action: **Reprovision Wi-Fi** — clears stored network
-credentials via `wifi_prov_mgr_reset_provisioning()`, device re-enters
-BLE advertising for a new provisioning session. 
+TODO: future
 
 ---
 

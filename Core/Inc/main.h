@@ -73,6 +73,8 @@ void Error_Handler(void);
 #define UpArrowSwitch_GPIO_Port GPIOC
 #define DownArrowSwitch_Pin GPIO_PIN_7
 #define DownArrowSwitch_GPIO_Port GPIOC
+#define ModeSwitch_Pin GPIO_PIN_8
+#define ModeSwitch_GPIO_Port GPIOC
 #define OnOffSwitch_Pin GPIO_PIN_9
 #define OnOffSwitch_GPIO_Port GPIOC
 #define OnOffLed_Pin GPIO_PIN_8

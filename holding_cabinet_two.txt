@@ -28,7 +28,7 @@ Pin Nb	PINs	FUNCTIONs	LABELs
 20	PA4	GPIO_Output	HumidRelay
 37	PC6	GPIO_Input	UpArrowSwitch
 38	PC7	GPIO_Input	DownArrowSwitch
-39	PC8	GPIO_Input	
+39	PC8	GPIO_Input	ModeSwitch
 40	PC9	GPIO_Input	OnOffSwitch
 41	PA8	GPIO_Output	OnOffLed
 42	PA9	GPIO_Output	OnOffHeatLed
@@ -61,7 +61,7 @@ Pin Nb	PINs	FUNCTIONs	LABELs
 20	PA4	GPIO_Output	HumidRelay
 37	PC6	GPIO_Input	UpArrowSwitch
 38	PC7	GPIO_Input	DownArrowSwitch
-39	PC8	GPIO_Input	
+39	PC8	GPIO_Input	ModeSwitch
 40	PC9	GPIO_Input	OnOffSwitch
 41	PA8	GPIO_Output	OnOffLed
 42	PA9	GPIO_Output	OnOffHeatLed
