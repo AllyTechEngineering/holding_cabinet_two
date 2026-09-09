@@ -47,6 +47,8 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
+UART_HandleTypeDef huart2;
+
 /* Definitions for SenseTask */
 osThreadId_t SenseTaskHandle;
 const osThreadAttr_t SenseTask_attributes = {
@@ -75,6 +77,13 @@ const osThreadAttr_t HeatTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh3,
 };
+/* Definitions for InputTask */
+osThreadId_t InputTaskHandle;
+const osThreadAttr_t InputTask_attributes = {
+  .name = "InputTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -84,10 +93,12 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_USART2_UART_Init(void);
 void StartSenseTask(void *argument);
 void StartDisplayTask(void *argument);
 void StartConnectTask(void *argument);
 void StartHeatTask(void *argument);
+void StartInputTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -129,6 +140,7 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -164,6 +176,9 @@ int main(void)
 
   /* creation of HeatTask */
   HeatTaskHandle = osThreadNew(StartHeatTask, NULL, &HeatTask_attributes);
+
+  /* creation of InputTask */
+  InputTaskHandle = osThreadNew(StartInputTask, NULL, &InputTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -361,6 +376,41 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -389,14 +439,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : USART_TX_Pin USART_RX_Pin */
-  GPIO_InitStruct.Pin = USART_TX_Pin|USART_RX_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : UpArrowSwitch_Pin DownArrowSwitch_Pin ModeSwitch_Pin OnOffSwitch_Pin */
@@ -484,6 +526,24 @@ void StartHeatTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END StartHeatTask */
+}
+
+/* USER CODE BEGIN Header_StartInputTask */
+/**
+* @brief Function implementing the InputTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartInputTask */
+void StartInputTask(void *argument)
+{
+  /* USER CODE BEGIN StartInputTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartInputTask */
 }
 
 /**

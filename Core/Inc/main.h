@@ -63,10 +63,10 @@ void Error_Handler(void);
 #define HeatRelay_GPIO_Port GPIOA
 #define FanRelay_Pin GPIO_PIN_1
 #define FanRelay_GPIO_Port GPIOA
-#define USART_TX_Pin GPIO_PIN_2
-#define USART_TX_GPIO_Port GPIOA
-#define USART_RX_Pin GPIO_PIN_3
-#define USART_RX_GPIO_Port GPIOA
+#define USART2_TX_Pin GPIO_PIN_2
+#define USART2_TX_GPIO_Port GPIOA
+#define USART2_RX_Pin GPIO_PIN_3
+#define USART2_RX_GPIO_Port GPIOA
 #define HumidRelay_Pin GPIO_PIN_4
 #define HumidRelay_GPIO_Port GPIOA
 #define UpArrowSwitch_Pin GPIO_PIN_6
