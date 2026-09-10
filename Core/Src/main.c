@@ -432,6 +432,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, HeatRelay_Pin|FanRelay_Pin|HumidRelay_Pin|OnOffLed_Pin
                           |OnOffHeatLed_Pin|OnOffHumidLed_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pins : HeatRelay_Pin FanRelay_Pin HumidRelay_Pin OnOffLed_Pin
                            OnOffHeatLed_Pin OnOffHumidLed_Pin */
   GPIO_InitStruct.Pin = HeatRelay_Pin|FanRelay_Pin|HumidRelay_Pin|OnOffLed_Pin
@@ -441,8 +444,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : UpArrowSwitch_Pin DownArrowSwitch_Pin ModeSwitch_Pin OnOffSwitch_Pin */
-  GPIO_InitStruct.Pin = UpArrowSwitch_Pin|DownArrowSwitch_Pin|ModeSwitch_Pin|OnOffSwitch_Pin;
+  /*Configure GPIO pin : Buzzer_Pin */
+  GPIO_InitStruct.Pin = Buzzer_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(Buzzer_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : UpArrowSwitch_Pin DownArrowSwitch_Pin ModeSwitch_Pin EnterSwitch_Pin */
+  GPIO_InitStruct.Pin = UpArrowSwitch_Pin|DownArrowSwitch_Pin|ModeSwitch_Pin|EnterSwitch_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
