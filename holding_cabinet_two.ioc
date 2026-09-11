@@ -1,11 +1,11 @@
 #MicroXplorer Configuration settings - do not modify
-ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_1
+ADC1.Channel-1\#ChannelRegularConversion=ADC_CHANNEL_1
 ADC1.CommonPathInternal=null|null|null|null
-ADC1.IPParameters=Rank-0\#ChannelRegularConversion,master,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,NbrOfConversionFlag,CommonPathInternal
+ADC1.IPParameters=Rank-1\#ChannelRegularConversion,Channel-1\#ChannelRegularConversion,SamplingTime-1\#ChannelRegularConversion,OffsetNumber-1\#ChannelRegularConversion,NbrOfConversionFlag,master,CommonPathInternal
 ADC1.NbrOfConversionFlag=1
-ADC1.OffsetNumber-0\#ChannelRegularConversion=ADC_OFFSET_NONE
-ADC1.Rank-0\#ChannelRegularConversion=1
-ADC1.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_2CYCLES_5
+ADC1.OffsetNumber-1\#ChannelRegularConversion=ADC_OFFSET_NONE
+ADC1.Rank-1\#ChannelRegularConversion=1
+ADC1.SamplingTime-1\#ChannelRegularConversion=ADC_SAMPLETIME_2CYCLES_5
 ADC1.master=1
 BSP_IP_NAME=NUCLEO-L476RG
 CAD.formats=
@@ -149,6 +149,8 @@ PB8.Mode=I2C
 PB8.Signal=I2C1_SCL
 PB9.Mode=I2C
 PB9.Signal=I2C1_SDA
+PC0.GPIOParameters=GPIO_Label
+PC0.GPIO_Label=NTC_AD1
 PC0.Signal=ADCx_IN1
 PC13.Locked=true
 PC13.Signal=GPXTI13

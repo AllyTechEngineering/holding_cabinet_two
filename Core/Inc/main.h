@@ -59,6 +59,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define NTC_AD1_Pin GPIO_PIN_0
+#define NTC_AD1_GPIO_Port GPIOC
 #define HeatRelay_Pin GPIO_PIN_0
 #define HeatRelay_GPIO_Port GPIOA
 #define FanRelay_Pin GPIO_PIN_1

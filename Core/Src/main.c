@@ -32,7 +32,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+/* Only run one test at a time*/
+#define HW_BRINGUP_TEST_LED       0   /* 1 = isolated LED blink test only */
+#define HW_BRINGUP_TEST_SWITCHES  1   /* 1 = run switch test, bypass RTOS. Set to 0 to resume normal startup. */
+#define HW_BRINGUP_TEST_I2C_SCAN  0   /* 1 = run I2C scan test, bypass RTOS. Set to 0 to resume normal startup. */
+#define HW_BRINGUP_TEST_LCD_MESSAGE 0 /* 1 = run LCD message test, bypass RTOS. Set to 0 to resume normal startup. */
+#define HW_BRINGUP_TEST_RELAYS      0 /* 1 = run relay test, bypass RTOS. Set to 0 to resume normal startup. */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -85,6 +90,21 @@ const osThreadAttr_t InputTask_attributes = {
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* USER CODE BEGIN PV */
+#if HW_BRINGUP_TEST_SWITCHES
+volatile uint8_t g_upPressed    = 0;
+volatile uint8_t g_downPressed  = 0;
+volatile uint8_t g_modePressed  = 0;
+volatile uint8_t g_enterPressed = 0;
+#endif
+#if HW_BRINGUP_TEST_I2C_SCAN
+volatile uint8_t g_i2cFoundAddresses[16] = {0};
+volatile uint8_t g_i2cFoundCount = 0;
+#endif
+#if HW_BRINGUP_TEST_RELAYS
+volatile uint8_t g_heatRelayOn  = 0;
+volatile uint8_t g_fanRelayOn   = 0;
+volatile uint8_t g_humidRelayOn = 0;
+#endif
 
 /* USER CODE END PV */
 
@@ -101,7 +121,19 @@ void StartHeatTask(void *argument);
 void StartInputTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+#if HW_BRINGUP_TEST_LCD_MESSAGE
+static void lcd_i2c_write(uint8_t data);
+static void lcd_pulse_enable(uint8_t data);
+static void lcd_write4(uint8_t nibble, uint8_t rs);
+static void lcd_send(uint8_t value, uint8_t rs);
+static void lcd_command(uint8_t cmd);
+static void lcd_data(uint8_t data);
+static void lcd_init(void);
+static void lcd_set_cursor(uint8_t col, uint8_t row);
+static void lcd_print(const char *str);
+static void lcd_backlight_on(void);
+static void lcd_backlight_off(void);
+#endif
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -142,6 +174,95 @@ int main(void)
   MX_I2C1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  #if HW_BRINGUP_TEST_LED
+  while (1)
+  {
+    HAL_GPIO_WritePin(OnOffLed_GPIO_Port, OnOffLed_Pin, GPIO_PIN_SET);
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(OnOffLed_GPIO_Port, OnOffLed_Pin, GPIO_PIN_RESET);
+    HAL_Delay(1000);
+  }
+#endif
+
+  #if HW_BRINGUP_TEST_SWITCHES
+  while (1)
+  {
+    g_upPressed    = (HAL_GPIO_ReadPin(UpArrowSwitch_GPIO_Port,   UpArrowSwitch_Pin)   == GPIO_PIN_RESET);
+    g_downPressed  = (HAL_GPIO_ReadPin(DownArrowSwitch_GPIO_Port, DownArrowSwitch_Pin) == GPIO_PIN_RESET);
+    g_modePressed  = (HAL_GPIO_ReadPin(ModeSwitch_GPIO_Port,      ModeSwitch_Pin)      == GPIO_PIN_RESET);
+    g_enterPressed = (HAL_GPIO_ReadPin(EnterSwitch_GPIO_Port,     EnterSwitch_Pin)     == GPIO_PIN_RESET);
+
+    if (g_upPressed || g_downPressed || g_modePressed || g_enterPressed)
+    {
+      HAL_GPIO_WritePin(OnOffLed_GPIO_Port, OnOffLed_Pin, GPIO_PIN_SET);   /* any press -> LED on */
+    }
+    else
+    {
+      HAL_GPIO_WritePin(OnOffLed_GPIO_Port, OnOffLed_Pin, GPIO_PIN_RESET); /* nothing pressed -> LED off */
+    }
+  }
+#endif
+
+#if HW_BRINGUP_TEST_I2C_SCAN
+  for (uint8_t addr = 0x08; addr <= 0x77; addr++)
+  {
+    if (HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(addr << 1), 2, 5) == HAL_OK)
+    {
+      if (g_i2cFoundCount < 16)
+      {
+        g_i2cFoundAddresses[g_i2cFoundCount] = addr;
+        g_i2cFoundCount++;
+      }
+    }
+  }
+
+  while (1)
+  {
+    /* Halt here — inspect g_i2cFoundAddresses / g_i2cFoundCount in Live Watch. */
+  }
+#endif
+
+#if HW_BRINGUP_TEST_LCD_MESSAGE
+  lcd_init();
+  lcd_set_cursor(0, 0);
+  lcd_print("Proofing Oven");
+  lcd_set_cursor(0, 1);
+  lcd_print("LCD Test OK");
+
+  while (1)
+  {
+    lcd_backlight_on();
+    HAL_Delay(1000);
+    lcd_backlight_off();
+    HAL_Delay(1000);
+  }
+#endif
+
+#if HW_BRINGUP_TEST_RELAYS
+  while (1)
+  {
+    uint8_t upPressed    = (HAL_GPIO_ReadPin(UpArrowSwitch_GPIO_Port,   UpArrowSwitch_Pin)   == GPIO_PIN_RESET);
+    uint8_t downPressed  = (HAL_GPIO_ReadPin(DownArrowSwitch_GPIO_Port, DownArrowSwitch_Pin) == GPIO_PIN_RESET);
+    uint8_t modePressed  = (HAL_GPIO_ReadPin(ModeSwitch_GPIO_Port,      ModeSwitch_Pin)      == GPIO_PIN_RESET);
+    uint8_t enterPressed = (HAL_GPIO_ReadPin(EnterSwitch_GPIO_Port,     EnterSwitch_Pin)      == GPIO_PIN_RESET);
+
+    if (enterPressed)
+    {
+      /* Panic override: force everything off, ignore other switches this pass. */
+      upPressed   = 0;
+      downPressed = 0;
+      modePressed = 0;
+    }
+
+    g_heatRelayOn  = upPressed;
+    g_fanRelayOn   = downPressed;
+    g_humidRelayOn = modePressed;
+
+    HAL_GPIO_WritePin(HeatRelay_GPIO_Port,  HeatRelay_Pin,  g_heatRelayOn  ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(FanRelay_GPIO_Port,   FanRelay_Pin,   g_fanRelayOn   ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(HumidRelay_GPIO_Port, HumidRelay_Pin, g_humidRelayOn ? GPIO_PIN_RESET : GPIO_PIN_SET);
+  }
+#endif
 
   /* USER CODE END 2 */
 
@@ -458,11 +579,102 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  /* Relay PCBA is active-low (opto-isolated, IN=LOW energizes the coil).
+     CubeMX's auto-generated Output Level default for these pins is
+     GPIO_PIN_RESET (LOW), which energizes all three relays at boot.
+     Force them HIGH (de-energized) here, immediately after HAL_GPIO_Init
+     configures them as outputs, until this is fixed at the source by
+     setting each pin's individual GPIO output level in the CubeMX
+     Pinout view. */
+  HAL_GPIO_WritePin(GPIOA, HeatRelay_Pin|FanRelay_Pin|HumidRelay_Pin, GPIO_PIN_SET);
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+#if HW_BRINGUP_TEST_LCD_MESSAGE
+
+#define LCD_I2C_ADDR   (0x27 << 1)
+#define LCD_BACKLIGHT  0x08
+#define LCD_ENABLE_BIT 0x04
+#define LCD_RS_BIT     0x01
+
+static void lcd_i2c_write(uint8_t data)
+{
+  HAL_I2C_Master_Transmit(&hi2c1, LCD_I2C_ADDR, &data, 1, 10);
+}
+
+static void lcd_pulse_enable(uint8_t data)
+{
+  lcd_i2c_write(data | LCD_ENABLE_BIT);
+  HAL_Delay(1);
+  lcd_i2c_write(data & (uint8_t)~LCD_ENABLE_BIT);
+  HAL_Delay(1);
+}
+static uint8_t lcd_backlight_state = LCD_BACKLIGHT;   /* current backlight bit, ORed into every write */
+static void lcd_write4(uint8_t nibble, uint8_t rs)
+{
+  uint8_t data = (uint8_t)((nibble << 4) | lcd_backlight_state | rs);
+  lcd_i2c_write(data);
+  lcd_pulse_enable(data);
+}
+
+static void lcd_send(uint8_t value, uint8_t rs)
+{
+  lcd_write4((uint8_t)(value >> 4), rs);
+  lcd_write4((uint8_t)(value & 0x0F), rs);
+}
+
+static void lcd_command(uint8_t cmd) { lcd_send(cmd, 0); }
+static void lcd_data(uint8_t data)   { lcd_send(data, LCD_RS_BIT); }
+
+static void lcd_init(void)
+{
+  HAL_Delay(50);           /* power-on settle */
+
+  lcd_write4(0x03, 0);     /* force 8-bit mode, unknown-state reset sequence */
+  HAL_Delay(5);
+  lcd_write4(0x03, 0);
+  HAL_Delay(1);
+  lcd_write4(0x03, 0);
+  HAL_Delay(1);
+
+  lcd_write4(0x02, 0);     /* switch to 4-bit mode */
+  HAL_Delay(1);
+
+  lcd_command(0x28);       /* function set: 4-bit, 2 line, 5x8 font */
+  lcd_command(0x0C);       /* display ON, cursor off, blink off */
+  lcd_command(0x06);       /* entry mode: increment, no shift */
+  lcd_command(0x01);       /* clear display */
+  HAL_Delay(2);            /* clear needs >1.6ms, generously covered */
+}
+
+static void lcd_set_cursor(uint8_t col, uint8_t row)
+{
+  uint8_t rowOffset = (row == 0) ? 0x00 : 0x40;
+  lcd_command((uint8_t)(0x80 | (col + rowOffset)));
+}
+
+static void lcd_print(const char *str)
+{
+  while (*str) { lcd_data((uint8_t)(*str)); str++; }
+}
+
+static void lcd_backlight_on(void)
+{
+  lcd_backlight_state = LCD_BACKLIGHT;
+  lcd_i2c_write(lcd_backlight_state);   /* backlight is just a static output pin — no Enable pulse needed */
+}
+
+static void lcd_backlight_off(void)
+{
+  lcd_backlight_state = 0x00;
+  lcd_i2c_write(lcd_backlight_state);
+}
+
+#endif /* HW_BRINGUP_TEST_LCD_MESSAGE */
 
 /* USER CODE END 4 */
 
