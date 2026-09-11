@@ -40,6 +40,8 @@
 #define HW_BRINGUP_TEST_LCD_MESSAGE 0 /* 1 = run LCD message test, bypass RTOS. Set to 0 to resume normal startup. */
 #define HW_BRINGUP_TEST_RELAYS      0 /* 1 = run relay test, bypass RTOS. Set to 0 to resume normal startup. */
 #define HW_BRINGUP_TEST_NTC         0 /* 1 = run NTC sensor test, bypass RTOS. Set to 0 to resume normal startup. */
+#define HW_BRINGUP_TEST_UART_LOOPBACK 1  /* 1 = run UART loopback test, bypass RTOS. Set to 0 to resume normal startup. */
+
 #if HW_BRINGUP_TEST_LED + HW_BRINGUP_TEST_SWITCHES + HW_BRINGUP_TEST_I2C_SCAN + HW_BRINGUP_TEST_LCD_MESSAGE + HW_BRINGUP_TEST_RELAYS + HW_BRINGUP_TEST_NTC > 1
 #error "Only one HW_BRINGUP_TEST_* flag may be enabled at a time."
 #endif
@@ -118,6 +120,13 @@ volatile uint32_t g_ntcResistanceOhms = 0;
 volatile float    g_ntcTempC          = 0.0f;
 volatile float    g_ntcTempF          = 0.0f;
 volatile uint8_t  g_ntcSensorFault    = 0;   /* 1 = open circuit / disconnected */
+#endif
+
+#if HW_BRINGUP_TEST_UART_LOOPBACK
+volatile uint8_t g_uartTxByte    = 0;
+volatile uint8_t g_uartRxByte    = 0;
+volatile uint8_t g_uartLoopbackOk = 0;
+volatile uint32_t g_uartRxErrorCount = 0;
 #endif
 
 /* USER CODE END PV */
@@ -303,6 +312,27 @@ int main(void)
 
       g_ntcTempC = ntc_resistance_to_celsius((float)g_ntcResistanceOhms);
       g_ntcTempF = (g_ntcTempC * 9.0f / 5.0f) + 32.0f;
+    }
+
+    HAL_Delay(500);
+  }
+#endif
+
+#if HW_BRINGUP_TEST_UART_LOOPBACK
+  while (1)
+  {
+    g_uartTxByte = 0x55;   /* 0101 0101 -- alternating bit pattern, easy to spot on a scope too */
+
+    HAL_UART_Transmit(&huart2, (uint8_t *)&g_uartTxByte, 1, 100);
+
+    if (HAL_UART_Receive(&huart2, (uint8_t *)&g_uartRxByte, 1, 100) == HAL_OK)
+    {
+      g_uartLoopbackOk = (g_uartRxByte == g_uartTxByte);
+    }
+    else
+    {
+      g_uartLoopbackOk = 0;
+      g_uartRxErrorCount++;
     }
 
     HAL_Delay(500);
