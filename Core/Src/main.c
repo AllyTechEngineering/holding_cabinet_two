@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -34,10 +35,15 @@
 /* USER CODE BEGIN PD */
 /* Only run one test at a time*/
 #define HW_BRINGUP_TEST_LED       0   /* 1 = isolated LED blink test only */
-#define HW_BRINGUP_TEST_SWITCHES  1   /* 1 = run switch test, bypass RTOS. Set to 0 to resume normal startup. */
+#define HW_BRINGUP_TEST_SWITCHES  0   /* 1 = run switch test, bypass RTOS. Set to 0 to resume normal startup. */
 #define HW_BRINGUP_TEST_I2C_SCAN  0   /* 1 = run I2C scan test, bypass RTOS. Set to 0 to resume normal startup. */
 #define HW_BRINGUP_TEST_LCD_MESSAGE 0 /* 1 = run LCD message test, bypass RTOS. Set to 0 to resume normal startup. */
 #define HW_BRINGUP_TEST_RELAYS      0 /* 1 = run relay test, bypass RTOS. Set to 0 to resume normal startup. */
+#define HW_BRINGUP_TEST_NTC         0 /* 1 = run NTC sensor test, bypass RTOS. Set to 0 to resume normal startup. */
+#if HW_BRINGUP_TEST_LED + HW_BRINGUP_TEST_SWITCHES + HW_BRINGUP_TEST_I2C_SCAN + HW_BRINGUP_TEST_LCD_MESSAGE + HW_BRINGUP_TEST_RELAYS + HW_BRINGUP_TEST_NTC > 1
+#error "Only one HW_BRINGUP_TEST_* flag may be enabled at a time."
+#endif
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -106,6 +112,14 @@ volatile uint8_t g_fanRelayOn   = 0;
 volatile uint8_t g_humidRelayOn = 0;
 #endif
 
+#if HW_BRINGUP_TEST_NTC
+volatile uint32_t g_ntcRawAdc         = 0;
+volatile uint32_t g_ntcResistanceOhms = 0;
+volatile float    g_ntcTempC          = 0.0f;
+volatile float    g_ntcTempF          = 0.0f;
+volatile uint8_t  g_ntcSensorFault    = 0;   /* 1 = open circuit / disconnected */
+#endif
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -133,6 +147,10 @@ static void lcd_set_cursor(uint8_t col, uint8_t row);
 static void lcd_print(const char *str);
 static void lcd_backlight_on(void);
 static void lcd_backlight_off(void);
+#endif
+
+#if HW_BRINGUP_TEST_NTC
+static float ntc_resistance_to_celsius(float r_ohms);
 #endif
 /* USER CODE END PFP */
 
@@ -261,6 +279,33 @@ int main(void)
     HAL_GPIO_WritePin(HeatRelay_GPIO_Port,  HeatRelay_Pin,  g_heatRelayOn  ? GPIO_PIN_RESET : GPIO_PIN_SET);
     HAL_GPIO_WritePin(FanRelay_GPIO_Port,   FanRelay_Pin,   g_fanRelayOn   ? GPIO_PIN_RESET : GPIO_PIN_SET);
     HAL_GPIO_WritePin(HumidRelay_GPIO_Port, HumidRelay_Pin, g_humidRelayOn ? GPIO_PIN_RESET : GPIO_PIN_SET);
+  }
+#endif
+
+#if HW_BRINGUP_TEST_NTC
+  while (1)
+  {
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, 10);
+    g_ntcRawAdc = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    if (g_ntcRawAdc >= 4090)   /* near ADC_MAX -> open circuit / disconnected sensor */
+    {
+      g_ntcSensorFault = 1;
+    }
+    else
+    {
+      g_ntcSensorFault = 0;
+
+      /* R_ntc = R1 * ADC / (ADC_MAX - ADC), R1 = 10K, ADC_MAX = 4095 for 12-bit */
+      g_ntcResistanceOhms = (uint32_t)(10000.0f * (float)g_ntcRawAdc / (float)(4095 - g_ntcRawAdc));
+
+      g_ntcTempC = ntc_resistance_to_celsius((float)g_ntcResistanceOhms);
+      g_ntcTempF = (g_ntcTempC * 9.0f / 5.0f) + 32.0f;
+    }
+
+    HAL_Delay(500);
   }
 #endif
 
@@ -675,6 +720,18 @@ static void lcd_backlight_off(void)
 }
 
 #endif /* HW_BRINGUP_TEST_LCD_MESSAGE */
+
+#if HW_BRINGUP_TEST_NTC
+static float ntc_resistance_to_celsius(float r_ohms)
+{
+  const float R25   = 10000.0f;
+  const float BETA  = 3950.0f;
+  const float T25_K = 298.15f;
+
+  float tempK = 1.0f / ((1.0f / T25_K) + (1.0f / BETA) * logf(r_ohms / R25));
+  return tempK - 273.15f;
+}
+#endif
 
 /* USER CODE END 4 */
 
