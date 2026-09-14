@@ -9,3 +9,7 @@ Holding cabinet by other (purchase from Amazon) shall provide the hardware (heat
 Once the prototype is operational, the plan is to use an off-the-shelf ESP32-C6-MINI-1-N4 on a breakout board with PCBA antenna. The STM32 shall us the USART to communicate with the ESP32.
 
 Using Flutter, a companion app will be developed to allow a user, that is not near the proofing oven, to be able to monitor the progress of the item in the oven, change the temperature or other settings or turn the device off remotely.
+## Documentation
+- `Docs/ARCHITECTURE.md` — system/firmware architecture, FreeRTOS
+  task and queue design, hardware bring-up findings
+- `Docs/ui_spec.md` — front-panel UI behavior and state machine
