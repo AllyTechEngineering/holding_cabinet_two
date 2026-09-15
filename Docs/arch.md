@@ -98,13 +98,13 @@ here to avoid two sources of truth drifting apart.
 
 **Tasks:**
 
-| Task | Priority | Stack (words) | Entry | Responsibility |
-|---|---|---|---|---|
-| SenseTask | osPriorityNormal | 128 | StartSenseTask | Read ADC1 every 2–3s, Steinhart/Beta convert, push temp |
-| InputTask | osPriorityAboveNormal | 128 | StartInputTask | Poll/debounce 4 switches, push button events |
-| DisplayTask | osPriorityLow | 128 | StartDisplayTask | Own setpoint/mode/timer state, render LCD, forward commands |
-| HeatTask | osPriorityHigh3 | 128 | StartHeatTask | Bang-bang + hysteresis control, drive relay, report status |
-| ConnectTask | osPriorityHigh | 128 | StartConnectTask | USART2 link to ESP32 — Models 3/4 only, not yet implemented |
+| Task        | Priority              | Stack (words) | Entry            | Responsibility                                              |
+|-------------|-----------------------|---------------|------------------|-------------------------------------------------------------|
+| SenseTask   | osPriorityNormal      | 128           | StartSenseTask   | Read ADC1 every 2–3s, Steinhart/Beta convert, push temp     |
+| InputTask   | osPriorityAboveNormal | 128           | StartInputTask   | Poll/debounce 4 switches, push button events                |
+| DisplayTask | osPriorityLow         | 128           | StartDisplayTask | Own setpoint/mode/timer state, render LCD, forward commands |
+| HeatTask    | osPriorityHigh3       | 128           | StartHeatTask    | Bang-bang + hysteresis control, drive relay, report status  |
+| ConnectTask | osPriorityHigh        | 128           | StartConnectTask | USART2 link to ESP32 — Models 3/4 only, not yet implemented |
 
 **Queues** (all depth 1 — latest value wins, no backlog needed):
 
