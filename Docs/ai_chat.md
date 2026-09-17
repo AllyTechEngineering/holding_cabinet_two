@@ -1,6 +1,6 @@
 # History of AI chats
 
-# Session Summary — Holding Cabinet Two - Project Start Up
+# Chat 1
 
 ## 1. FreeRTOS Task/Queue Architecture
 - Defined 5 tasks: SenseTask, InputTask, DisplayTask, HeatTask, ConnectTask
@@ -119,7 +119,7 @@
   non-debugger-dependent test output) — explicitly scoped down to
   "solo consumer MVP" as the right bar, not the higher one.
 
-# Session Summary — Holding Cabinet Two - FreeRTOS tasks and queues implementation
+# Chat 2
 
 ## Repo verification performed
 - Cloned and read actual repo state rather than assuming: `Core/Src/freertos.c` (untouched CubeMX default, no tasks/queues created), `App/Common/app_types.h`/`app_config.h` (empty stubs), all four scaffolded task files (`sensor_task`, `control_task`, `display_task`, `connect_task` — header-comment-only, zero logic)
@@ -164,3 +164,209 @@
 - No documents actually written to the repo (this session produced zero committed files)
 - 16 of 18 planned subsystem doc files remain empty
 - Open items still unresolved: Settings Mode/Enter contradiction, setpoint-confirm visual feedback gap, SET_TIME zero-duration error prompt wording
+
+# Chat 3
+```markdown
+# Holding Cabinet Two — Display / HMI Mockup Session Notes
+
+Hardware: LCD1602 (16 columns × 2 rows), HD44780-compatible controller,
+PCF8574 I2C backpack @ 0x27. Standard ROM (A00) has native → ← arrows
+only — no native up/down glyphs. Up/down would require CGRAM custom
+characters (firmware work not yet done); decided against for now.
+
+---
+
+## Display Conventions (apply to every screen, not re-derived each time)
+
+1. **No leading-zero padding on numbers.** `95F`, not `095F`.
+2. **Centering rule:** when a single line is centered and the padding
+   doesn't divide evenly, the extra space goes on the **left**.
+3. **Block alignment rule (two related lines):** when a screen's two
+   lines are meant to align as a visual pair, do NOT center each line
+   independently. Instead, find the longer line, give it 1 space of
+   left margin (or per rule 2 if centering), and use that **same**
+   left margin for the shorter line — leftover space trails on the
+   right. This keeps the first characters of both lines in the same
+   column.
+4. **Run-mode screens are live data, not titles** — left-aligned, not
+   centered/block-aligned. *(Flagged as my own choice on the Run
+   screen, not yet explicitly confirmed by Bobby — see Open
+   Questions.)*
+
+---
+
+## Settings-Mode Entry (button combo)
+
+- **Combo:** Mode + Down, pressed simultaneously.
+- **Detection scope:** Only listened for **from Idle**. Not from Run,
+  not from any other state.
+- **Rationale:** Idle is the only state where solo Down/Mode already
+  do nothing, so there's no existing behavior to collide with.
+- **Firmware note (not yet implemented):** InputTask currently
+  debounces one pin at a time. Simultaneous-press detection requires
+  tracking both pins within a timing window (e.g., both LOW within
+  ~50ms, held for some minimum duration) — a real addition to the
+  debounce state machine, not a redesign.
+
+---
+
+## State List (in scope for this mockup pass)
+
+Confirmed scope: core run flow only (no Settings-mode screens, no
+fault/error screens in this pass).
+
+1. Idle
+2. Set Temp
+3. **Timer Prompt** *(added mid-session — was missing from the
+   original 6-state list)*
+4. Set Time *(optional — reached only if Timer Prompt → Enter)*
+5. Run
+6. Stop-Confirm
+7. Complete
+
+---
+
+## Screen Mockups
+
+### 1. IDLE — ✅ Locked
+```
++----------------+
+| Proofing Oven  |
+| Enter to Start |
++----------------+
+```
+- Branding + informational, per Bobby's direction — not the setpoint/
+  timer preview I originally guessed.
+- `"Proofing Oven"` (13 chars) uses the 1-space left margin set by the
+  longer line `"Enter to Start"` (14 chars); leftover trails right.
+
+### 2. SET TEMP — ✅ Locked
+```
++----------------+
+| Set Temp: 95F  |
+| Up+ Down-      |
++----------------+
+```
+- Exact wording specified by Bobby: `Set Temp: XXXF` / `Up+ Down-`.
+- No padding: `95F`, not `095F`.
+- Up/Down represented as plain text (`Up+`/`Down-`), not glyphs —
+  decision was to try this first and see if users stumble before
+  investing in CGRAM custom arrow characters.
+
+### 3. TIMER PROMPT — ✅ Locked *(new state, inserted between Set Temp and Set Time)*
+```
++----------------+
+| Countdown Timer|
+| Enter Y, Mode N|
++----------------+
+```
+- Both lines are exactly 15 characters — same 1-space left margin,
+  no leftover-space split needed.
+- **Enter = Yes** → proceed to Set Time screen.
+- **Mode = No** → skip straight to Run, untimed.
+- Chosen over a dedicated "skip" button so the Enter/Mode Yes/No
+  pattern is consistent with Stop-Confirm (one convention, reused).
+
+### 4. SET TIME — ⚠️ Drafted, not explicitly re-confirmed in the one-at-a-time review
+```
++----------------+
+| Set Time: 02:00|
+| Up+ Down-      |
++----------------+
+```
+- Format: `HH:MM`, no seconds — per original UI spec history.
+- `"Set Time: 02:00"` is exactly 15 chars + 1-space margin = 16,
+  **zero slack** on this line. Noted that a 10-hour cap (`10:00`) is
+  still 5 digits, so it still fits — but there's no room to add
+  anything else to this line later.
+
+### 5. RUN — ⚠️ Two variants, format/alignment NOT yet confirmed
+
+**Timed:**
+```
++----------------+
+|Temp: 93/95F    |
+|Timer:   01:47  |
++----------------+
+```
+
+**Untimed** (Mode was pressed at Timer Prompt — no countdown exists):
+```
++----------------+
+|Temp: 93/95F    |
+|                |
++----------------+
+```
+- Both temp and timer shown simultaneously, no view-toggle — my
+  recommendation, reasoning: avoids adding a "which view is showing"
+  micro-state to DisplayTask, and avoids overloading the Mode button
+  with a Run-only meaning (Mode already contradicted itself once in
+  earlier UI spec history). **This recommendation was not explicitly
+  confirmed by Bobby — flagged as open.**
+- `93/95F` = current/setpoint, no padding, per Bobby's correction.
+- Untimed: **no timer shown at all, not even a blank label** — line 2
+  is fully blank, per Bobby's explicit instruction ("the code will
+  determine what we show... no timer, no time shown").
+- Left-aligned, not centered/block-aligned — my assumption since this
+  is live data, not a title screen. **Not yet confirmed.**
+
+### 6. STOP-CONFIRM — ⚠️ Only drafted once (before the one-at-a-time process started); not yet reviewed individually
+```
++----------------+
+|Are You Sure?   |
+|ENTER=Yes MODE=No|   <- 17 chars, OVER the 16-char limit
++----------------+
+```
+- **Known problem:** line 2 as originally drafted is 17 characters —
+  does not fit. Needs shorter wording (e.g., using the `Enter Y,
+  Mode N` phrasing pattern established on Timer Prompt would fit at
+  15 chars).
+- Not yet re-drafted or confirmed under current conventions.
+
+### 7. COMPLETE — ⚠️ Only drafted once; not yet reviewed individually
+```
++----------------+
+|  Proof Done!   |
+|ENTER=New Run   |
++----------------+
+```
+- Original guess only — wording, centering, and block alignment have
+  not been revisited under the confirmed conventions.
+
+---
+
+## Open Questions (unresolved as of this document)
+
+1. **Set Time screen** — never got an explicit "confirmed" from Bobby
+   after the "use same format" instruction; should be treated as
+   pending final sign-off.
+2. **Start-Prompt / confirmation screen** — is there a screen between
+   Set Time and Run (or Timer-Prompt→Mode and Run) that says
+   "Press Enter to Start," or does confirming Set Time (or skipping
+   the timer) go straight into Run? Raised early, never answered.
+3. **Run screen** — is both-views-at-once (my recommendation) actually
+   what Bobby wants, or should it be revisited? Is left-alignment
+   correct, or should Run also use block/center alignment?
+4. **Run screen temp format** — is `93/95F` (slash-separated,
+   current/setpoint) the right presentation, or should current and
+   setpoint be labeled/separated differently?
+5. **Stop-Confirm** — needs a full re-draft under current conventions
+   (the 17-character line 2 must shrink).
+6. **Complete** — needs a full re-draft/review under current
+   conventions (not yet done at all in the itemized pass).
+7. **Settings-mode screens** — explicitly out of scope for this pass
+   (state-list option 1 was chosen) — not started.
+8. **Fault/error screens** (e.g., NTC sensor fault) — explicitly out
+   of scope for this pass — not started.
+
+---
+
+## Where this belongs in the repo (not yet done)
+
+None of this has been written into the actual `Docs/*.md` files yet —
+`idle_off_mode.md`, `set_temp_mode.md`, `set_time_mode.md`,
+`run_mode.md`, `states_modes.md`, `timer.md`, `display.md`,
+`settings_mode.md`, and `complete_mode.md` are all still empty in the
+repo as of the last read. This document is the source material to
+eventually split into those files once the open questions above are
+resolved.
