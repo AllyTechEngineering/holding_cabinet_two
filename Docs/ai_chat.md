@@ -441,3 +441,162 @@ Fault handling (e.g., NTC open-circuit during an active Run), and anything
 about the Settings menu beyond the single Temp-units item, are out of scope
 for this pass — flag if you want those folded in now instead of later.
 ```
+## Chat 4 Cont.
+
+### 1. UI/UX Specification Rework — `Proofing_Oven.xlsx` V1 tab
+- Reviewed the V1 tab (screens 1–11b) against the previously documented
+  v4 UI spec and found a fundamentally different navigation model: Mode
+  now drives *forward* through a chain of Enter=Yes/Mode=No decision
+  screens, replacing the old "Enter absorbs start/confirm/stop, Mode
+  always exits" model. A new 2-second auto-toggle pattern appears
+  throughout (adjust screen ↔ confirm screen, e.g. Set Temp ↔ its
+  confirm variant).
+- User confirmed V1 fully replaces the old spec wherever they conflict
+  — old `states_modes.md`/v4 spec history is obsolete.
+
+### 2. Interview — 11 ambiguities resolved (V1 didn't state these)
+- Countdown reaching 0:00 during Run auto-advances to the "Proof
+  Complete?" decision screen, same as a manual Mode press.
+- Heat/relay control runs independently of DisplayTask's screen state
+  — navigating to adjust temp/time mid-proof does NOT pause heating.
+- New setpoint/timer values reach HeatTask only on confirm (Enter),
+  never live while Up/Down-ing.
+- Re-entering the Run-decision screen mid-proof RESUMES the existing
+  run (keeps elapsed time) rather than restarting it, unless the time
+  was changed.
+- Settings-entry combo (Up+Down held 5s) is detected from Idle only.
+- Up/Down adjusts values regardless of which screen in a toggle pair
+  is showing — the 2s toggle is purely cosmetic, never gates input,
+  and does NOT reset/interrupt on input (confirmed separately).
+- Enter=Yes at the "Proof Complete?" screen immediately stops heat
+  before showing the Complete screens.
+- The 3-minute inactivity timeout always stops heat when it fires and
+  returns to Idle, regardless of whether a proof was active.
+- Manual Mode-button navigation through the adjustment screens
+  (Set Temp/Set Time/Run-decision), by contrast, does NOT stop heat —
+  heat only stops via (a) Enter at the Complete-decision screen, or
+  (b) the 3-min timeout. Heat itself never turns on until Enter is
+  pressed at the Run-decision screen in the first place.
+- Settings will be built as generic scrollable-menu infrastructure
+  now, even though only one item (Temp units F/C) exists today.
+- Temp range set at 65–120°F. No active cooling — a setpoint below
+  ambient is valid input but will never be reached; flagged as a
+  constraint to carry into `HeatTask`'s control-loop design (no
+  dedicated control-loop doc exists yet).
+
+### 3. Documentation Strategy Decision
+- User asked directly: what's the right way to document this so it
+  would pass muster with another firmware engineer. Recommended
+  separating architecture (`arch.md`), requirements/behavior
+  (`states_modes.md` + per-mode files), hardware reference, and
+  history (`changelog.md`) — the structure the repo already had, just
+  unpopulated.
+- Flagged and got confirmation to fix a real repo bug: `persistence.md`
+  had been accidentally overwritten with `arch.md`'s content at some
+  point and documented nothing about actual persistence behavior.
+- Established that `ai_chat.md` and the interview-derived draft table
+  (`ui_state_table_v5_draft.md`) are scratch/staging only — once the
+  real per-file docs are written, they're the source of truth, not the
+  chat transcript or a spreadsheet no longer in sync with resolved
+  decisions. The draft file was never committed to `Docs/`.
+
+### 4. `states_modes.md` (mechanics only) — written and locked
+- Defined mnemonic state names (e.g. `SetTemp-Decision`,
+  `SetTemp-Adjust`) with a content-owner cross-reference table pointing
+  to each mode's file, rather than repeating screen text here.
+- Caught and fixed two real bugs during self-review before calling it
+  done: (1) Mode was only wired to advance out of Idle from one half
+  of the toggle pair, contradicting the file's own footnote; (2)
+  `Settings-Splash`'s auto-advance to `Settings-Adjust` was missing
+  entirely — no documented way out of that state.
+- After user pushback, removed all external references (the source
+  spreadsheet, the draft table) since the spreadsheet had gone stale
+  relative to the resolved decisions and isn't in version control —
+  the file is now fully self-contained. Also dropped a "V1 screen #"
+  cross-reference column per user's explicit choice.
+- Domain-specific value bounds (temp/time min-max) were initially
+  embedded in this file's transition table; relocated to the owning
+  content files instead, consistent with the one-owner-per-fact rule.
+
+### 5. Six per-mode content files — written and locked
+`idle_off_mode.md`, `set_temp_mode.md`, `set_time_mode.md`,
+`run_mode.md`, `complete_mode.md`, `settings_mode.md`.
+- All exact screen text/character positions extracted **directly from
+  the workbook via openpyxl** (not hand-transcribed from the flattened
+  markdown dump), after an early mistake: initially tried to apply an
+  older, more approximate centering/block-alignment convention from a
+  prior mockup session instead of using the precise per-column layout
+  the user had actually laid out in the spreadsheet. User corrected
+  this; all subsequent extraction was done programmatically against
+  the raw cells.
+- Found and corrected the same trailing-space cell typo (e.g. `'t '`,
+  `'Y '`) in multiple places across different screens — treated as
+  one-character-per-LCD-column typos, not intentional content.
+- `run_mode.md`'s Examples 1–4 went through two rounds of correction:
+  first a table-orientation bug (Row 1/Row 2 as columns instead of
+  rows, inconsistent with every other table in the docs), then a
+  content misread (bundled/mislabeled which Temp value paired with
+  which Row 2 text) — corrected to the literal per-example pairing
+  from source after the user gave the exact corrected values directly.
+- `set_temp_mode.md` originally showed `Set Temp:XXXF` (no space after
+  the colon, differing from `set_time_mode.md`'s spacing); user later
+  confirmed this was a typo, not deliberate, and fixed it to match.
+
+### 6. `persistence.md` — rewritten with real content
+- Replaced the erroneous `arch.md`-duplicate content with what persists
+  (setpoint, units, timer duration — written only on Enter-confirm,
+  never on every Up/Down tap), the VBAT/coin-cell finding (Nucleo-64's
+  VBAT isn't tied to VDD by default, per UM1724 — board wiring fact,
+  not an MCU limitation), and boot-always-to-Idle behavior (a proof in
+  progress is never auto-resumed after power loss).
+- Left the specific Flash storage mechanism as an open item initially.
+  When asked to resolve it, an early web search pulled in noise about
+  *other* STM32 families (L4R/S, G4, L5) instead of going straight to
+  the actual uploaded datasheet — user redirected. Re-did it by reading
+  `stm32l476rg.pdf` directly: confirmed 1MB flash, 2 banks × 256 pages
+  × 2KB/page, ~22ms page erase, ~21–23ms page program.
+- Locked in: last 2 pages of Bank 2 (`0x080FF000`–`0x080FFFFF`),
+  hand-rolled 2-page ping-pong emulation — explicitly chosen over ST's
+  EEPROM-emulation middleware as more machinery than 3 small values
+  justify.
+
+### 7. `changelog.md` entry drafted
+- Dated 2026-09-17, summarizing the navigation redesign, the doc
+  restructuring completion, the temp range/no-cooling constraint, the
+  Settings architecture decision, and the persistence.md fix — not
+  yet confirmed pasted in by the user.
+
+### Corrections made after being caught
+- Applied an outdated, approximate text-centering convention instead
+  of the precise per-column layout already given in the source
+  spreadsheet.
+- Broke markdown formatting twice: nested triple-backtick code fences
+  inside an outer triple-backtick fence (closed early, corrupting
+  everything after); mislabeled a comparison table's rows as columns.
+- Misread a garbled user correction as approval to restructure
+  Run Mode's examples by field instead of fixing the literal
+  formatting bug being pointed at — reverted to the user's exact
+  correction once clarified.
+- Wrote "(stops heat if active)" onto manual Mode-button transitions
+  in `states_modes.md` without that being confirmed — the resolved
+  answer had only covered the 3-minute timeout case; corrected after
+  the user's follow-up clarification (manual Mode navigation does not
+  stop heat).
+- Cited an external, out-of-sync spreadsheet and a since-superseded
+  draft file as ongoing "sources" inside a living repo doc — user
+  flagged this; both references were removed and the file made
+  self-contained.
+
+### Not yet done
+- `display.md` remains empty (general LCD rules — I2C address,
+  backlight, init sequence). Not currently blocking anything, since
+  exact screen layouts came from the spreadsheet directly rather than
+  a computed centering rule.
+- No consistency pass yet across the 7 finished UI docs (planned next,
+  before starting FreeRTOS task/queue design).
+- No FreeRTOS/code work done this session — `DisplayTask` state
+  variable, `InputTask` combo/timeout detection, and `HeatTask`'s
+  queue-driven setpoint handling are all still just implied by the
+  docs, not designed or written.
+- `changelog.md` entry drafted but not yet confirmed pasted into the
+  repo by the user.
