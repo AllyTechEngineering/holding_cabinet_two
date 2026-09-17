@@ -370,3 +370,74 @@ None of this has been written into the actual `Docs/*.md` files yet —
 repo as of the last read. This document is the source material to
 eventually split into those files once the open questions above are
 resolved.
+
+## Chat 4
+Suggested name: **`Docs/ui_state_table_v5_draft.md`** — keeping "draft" in the name is deliberate, since this is a staging document. It's not yet split into the per-subsystem files your `Docs/` folder is organized around (`states_modes.md` is supposed to hold the transition table "mechanics only," while `run_mode.md`, `settings_mode.md`, etc. hold behavior) — once you're happy with it, that split is the next step. Dropping it in under a "draft" name now avoids it getting mistaken for the final `states_modes.md` content later.
+
+Here's the raw content:
+
+```markdown
+# Holding Cabinet Two — UI State Table (v5 draft, from `Proofing_Oven.xlsx` V1 tab)
+
+**Status: DRAFT FOR REVIEW. Nothing here has been written into the repo yet.**
+
+This supersedes the previously documented UI/UX behavior (the v4 spec referenced
+in `arch.md`/`overview.md`, and the empty `states_modes.md` etc.). Per your
+confirmation, V1 is now the sole source of truth wherever it conflicts with
+anything documented before.
+
+---
+
+## Resolved decisions (from interview, not stated in the sheet)
+
+| # | Question | Resolution |
+|---|---|---|
+| 1 | Countdown hits 0:00 during Run | Auto-advances to Screen 9 ("Proof Complete?"), identical to a manual Mode press |
+| 2 | Does heat control pause while adjusting temp/time mid-proof (Screen 9 → Mode → 3...)? | No — HeatTask keeps controlling at the current setpoint in the background the whole time |
+| 3 | When does a new setpoint/time reach HeatTask? | Only on confirm (Enter at 4a / 6a) — never live while Up/Down-ing |
+| 4 | Re-entering Screen 7 mid-proof and pressing Enter | Resumes the existing run at its current elapsed position (unless time was changed, then the new value applies) — never resets elapsed time |
+| 5 | Settings-entry combo (Up+Down held 5s) scope | Idle (screens 1/2) only |
+| 6 | Does Up/Down work on both halves of a toggle pair (4/4a, 6/6a, 11a/11b)? | Yes — the 2s toggle is purely cosmetic, never gates input |
+| 7 | Does Enter="Yes" at Screen 9 stop heat immediately? | Yes — relay/heat control stops before screens 10/10a are shown |
+| 8 | 3-min inactivity timeout while a proof is running in the background (reached via Screen 9 → Mode → 3...) | Heat/relay is stopped whenever the 3-min timeout fires and the display drops to Screen 1, regardless of whether a proof was active — timeout always ends the proof, never leaves it running silently |
+| 9 | Does Up/Down snap a toggle pair (4a/6a/11b) back to the value screen for instant feedback? | No — it keeps toggling on its own 2s clock; Up/Down only changes the value, never the display state |
+| 10 | Settings architecture: generic scrollable menu now, or hardcode the one F/C item? | Build it as generic scrollable-menu infrastructure now, even though only one item (Temp units) exists today |
+| 11 | Manual Mode-button navigation through 3/4/4a/5/6/6a/7 while a proof is running in the background | Does **not** stop heat — heat only stops via (a) Enter at Screen 9, or (b) the 3-min inactivity timeout. Heat itself never turns on until Enter is actually pressed at Screen 7 (entering Screen 8) in the first place. |
+
+---
+
+## State Table
+
+Legend: **Enter→** / **Mode→** = destination on that button. "toggles w/"
+= this screen alternates with its pair every 2s, automatically, forever,
+until an input or timeout ends it.
+
+| Screen | Row 1 | Row 2 | Up/Down | Enter → | Mode → | Timeout (3 min) | Notes |
+|---|---|---|---|---|---|---|---|
+| **1** | Taylor | Proofing Oven | — | — | → 2 | — (no timeout, infinite toggle) | toggles w/ 2, 2s each |
+| **2** | To Start Press | Mode | — | — | → 3 | — | toggles w/ 1, 2s each |
+| **3** | To Set Temp | Enter Y  Mode N | — | → 4 | → 1 (heat keeps running if a proof is active — see decision #11) | → 1 (stops heat if active) | "Set Temp decision" |
+| **4** | Set Temp: XXXF | Up+ or Down- | adjust XXX | → 5 (commit) | → 1 (heat keeps running if active) | → 1 (stops heat if active) | toggles w/ 4a, 2s each; Up/Down live on both, no display reset |
+| **4a** | Set Temp: XXXF | Enter Y  Mode N | adjust XXX | → 5 (commit) | → 1 (heat keeps running if active) | → 1 (stops heat if active) | toggles w/ 4 |
+| **5** | Countdown Timer | Enter Y  Mode N | — | → 6 | → 7 (skip timer, untimed run) | → 1 (stops heat if active) | "Set Time decision" |
+| **6** | Set Time: HH:MM | Up+ or Down- | adjust HH:MM (min 0:30, max 10:00) | → 7 (commit) | → 5 | → 1 (stops heat if active) | toggles w/ 6a; Up/Down live on both, no display reset |
+| **6a** | Set Time: HH:MM | Enter Y  Mode N | adjust HH:MM | → 7 (commit) | → 5 | → 1 (stops heat if active) | toggles w/ 6 |
+| **7** | To Start Proof | Enter Y  Mode N | — | → 8 (heat turns on here for the first time; resumes if mid-proof) | → 1 (heat keeps running if active) | → 1 (stops heat if active) | "Run decision" — heat is OFF at this screen until Enter is pressed |
+| **8 (timed)** | Temp: XXXF (live) | Time: HH:MM (live countdown, no leading zeros) | — | — | → 9 | — (none — active run) | 0:00 reached → auto → 9 |
+| **8 (untimed)** | Temp: XXXF (live) | toggles "Countdown Timer" / "Not Used" | — | — | → 9 | — | 2s toggle on row 2 only |
+| **9** | Proof Complete? | Enter Y  Mode N | — | stop heat, → 10 | → 3 (proof keeps running) | — (none — decision affects live proof) | "Complete decision" |
+| **10** | Proof Complete | Press Mode to | — | — | → 3 (start new proof) | → 1 | toggles w/ 10a |
+| **10a** | Proof Complete | Start Again | — | — | → 3 | → 1 | toggles w/ 10 |
+| **Combo** | (from 1 or 2 only) | — | Up+Down held 5s | — | — | — | → 11 |
+| **11** | Settings Menu | \<item name>: \<value> (current) | — | — | — | — | shown once 2s → first item's adjust screen; generic scrollable-list design (Up/Down could later page between items — TBD in design pass) |
+| **11a** | Up F or Down C | Temp: \<current> | toggle F/C | save, → 1 | → 11b (2s show, then toggle) | → 1 (per 11b) | toggles w/ 11b; Up/Down live on both, no display reset |
+| **11b** | Enter Y  Mode N | Temp: \<current> | toggle F/C | save, → 1 | → 11a | → 1 | toggles w/ 11a; default = F |
+
+---
+
+## What I'm NOT covering yet
+
+Fault handling (e.g., NTC open-circuit during an active Run), and anything
+about the Settings menu beyond the single Temp-units item, are out of scope
+for this pass — flag if you want those folded in now instead of later.
+```
