@@ -27,11 +27,11 @@ and the background countdown reaching 0:00.
 
 | Queue | Producer → Consumer | Payload (placeholder type) | Depth / semantics |
 |---|---|---|---|
-| qSenseToHeat | SenseTask → HeatTask | temperature (uint16_t, tenths °C) | 1, `xQueueOverwrite` (latest value wins — continuous state) |
+| qSenseToHeat | SenseTask → HeatTask | temperature (uint16_t, tenths °C; or a `THERMISTOR_FAULT_*` sentinel) | 1, drain-then-put (latest value wins — continuous state) |
 | qInputToDisplay | InputTask → DisplayTask | button event enum (incl. `EVT_ENTER_SETTINGS`) | 8, normal FIFO (`xQueueSendToBack` / `xQueueReceive`) — discrete edge events must not be dropped |
-| qDisplayToHeat | DisplayTask → HeatTask | setpoint / timer / run / stop commands | 1, `xQueueOverwrite` (latest value wins) |
-| qHeatToDisplay | HeatTask → DisplayTask | temp + relay on/off status | 1, `xQueueOverwrite` (latest value wins) |
-| qUartRxToConnect | USART2 RX ISR → ConnectTask | placeholder, protocol TBD | 1, `xQueueOverwriteFromISR` (latest value wins) |
+| qDisplayToHeat | DisplayTask → HeatTask | `HeatCommand_t` (setpoint / run / stop) | 1, drain-then-put (latest value wins) |
+| qHeatToDisplay | HeatTask → DisplayTask | `HeatStatus_t` (temp, relay on/off, error code) | 1, drain-then-put (latest value wins) |
+| qUartRxToConnect | USART2 RX ISR → ConnectTask | placeholder, protocol TBD | 1, drain-then-put from ISR (latest value wins) — not yet implemented |
 
 **Heap sizing lesson (carried over):** CubeMX validates dynamic-allocation
 task stacks against `TOTAL_HEAP_SIZE` and sets an internal `FootprintOK`
@@ -90,12 +90,29 @@ lower-SRAM production MCU (C031) — the deeper `qInputToDisplay` (depth
    added complexity now.
 
 5. **`qSenseToHeat`'s Queue Size, set to CubeMX's default of 16 during
-   initial setup, is being corrected to 1.** Temperature is
+   initial setup, is corrected to 1.** Temperature is
    continuously-updated state, not a discrete event — depth 16 would
    let stale readings queue up and be processed oldest-first if
    HeatTask ever falls behind, which is the opposite of what a control
-   loop wants. Depth 1 with `xQueueOverwrite` guarantees HeatTask
+   loop wants. Depth 1 with overwrite semantics guarantees HeatTask
    always acts on the single freshest reading.
+
+6. **"Latest value wins" queues are implemented as drain-then-put, not
+   `xQueueOverwrite()`.** Discovered while writing `SenseTask`:
+   CubeMX-generated code uses the CMSIS-RTOS2 API
+   (`osMessageQueuePut`/`osMessageQueueGet`), and `osMessageQueuePut()`
+   maps to FreeRTOS's `xQueueSendToBack()` — verified directly in
+   `Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c`.
+   There's no CMSIS-RTOS2 equivalent to `xQueueOverwrite()` exposed by
+   this generated code. On a depth-1 queue, a plain
+   `osMessageQueuePut()` would simply *fail* (return `osErrorResource`)
+   and silently drop the new value if the consumer hasn't read the
+   previous one yet — the opposite of the intended behavior. All four
+   "latest value wins" queues (`qSenseToHeat`, `qDisplayToHeat`,
+   `qHeatToDisplay`, `qUartRxToConnect`) instead do a non-blocking
+   `osMessageQueueGet()` to discard any stale unread value immediately
+   before the `osMessageQueuePut()`. Safe against races since each of
+   these queues has exactly one producer task.
 
 ---
 

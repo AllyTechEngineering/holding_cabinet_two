@@ -18,7 +18,10 @@
 extern "C" {
 #endif
 
-/* ... */
+/* Real SenseTask body. main.c's CubeMX-generated StartSenseTask() (which
+ * owns the task's registered signature) just delegates here -- see the
+ * USER CODE section in Core/Src/main.c. */
+void SenseTask_Run(void *argument);
 
 #ifdef __cplusplus
 }
