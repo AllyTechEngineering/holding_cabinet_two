@@ -27,7 +27,7 @@ and the background countdown reaching 0:00.
 
 | Queue | Producer → Consumer | Payload (placeholder type) | Depth / semantics |
 |---|---|---|---|
-| qSenseToHeat | SenseTask → HeatTask | temperature (int16, tenths °C) | 1, `xQueueOverwrite` (latest value wins — continuous state) |
+| qSenseToHeat | SenseTask → HeatTask | temperature (uint16_t, tenths °C) | 1, `xQueueOverwrite` (latest value wins — continuous state) |
 | qInputToDisplay | InputTask → DisplayTask | button event enum (incl. `EVT_ENTER_SETTINGS`) | 8, normal FIFO (`xQueueSendToBack` / `xQueueReceive`) — discrete edge events must not be dropped |
 | qDisplayToHeat | DisplayTask → HeatTask | setpoint / timer / run / stop commands | 1, `xQueueOverwrite` (latest value wins) |
 | qHeatToDisplay | HeatTask → DisplayTask | temp + relay on/off status | 1, `xQueueOverwrite` (latest value wins) |
@@ -88,3 +88,56 @@ lower-SRAM production MCU (C031) — the deeper `qInputToDisplay` (depth
    entirely) remains possible later via the still-open Build
    Configuration Strategy decision (`arch.md` §7), but isn't worth the
    added complexity now.
+
+5. **`qSenseToHeat`'s Queue Size, set to CubeMX's default of 16 during
+   initial setup, is being corrected to 1.** Temperature is
+   continuously-updated state, not a discrete event — depth 16 would
+   let stale readings queue up and be processed oldest-first if
+   HeatTask ever falls behind, which is the opposite of what a control
+   loop wants. Depth 1 with `xQueueOverwrite` guarantees HeatTask
+   always acts on the single freshest reading.
+
+---
+
+## STM32CubeMX field values
+
+Tasks are already fully configured and need no changes — listed here
+for reference only, matching what's on the Tasks and Queues screen
+today:
+
+| Task Name | Priority | Stack Size (Words) | Entry Function | Code Generation Option | Parameter | Allocation | Buffer Name | Control Block Name |
+|---|---|---|---|---|---|---|---|---|
+| SenseTask | osPriorityNormal | 128 | StartSenseTask | Default | NULL | Dynamic | NULL | NULL |
+| DisplayTask | osPriorityLow | 128 | StartDisplayTask | Default | NULL | Dynamic | NULL | NULL |
+| ConnectTask | osPriorityHigh | 128 | StartConnectTask | Default | NULL | Dynamic | NULL | NULL |
+| HeatTask | osPriorityHigh3 | 128 | StartHeatTask | Default | NULL | Dynamic | NULL | NULL |
+| InputTask | osPriorityAboveNormal | 128 | StartInputTask | Default | NULL | Dynamic | NULL | NULL |
+
+Queues — `qSenseToHeat` needs its Queue Size corrected; the other four
+need to be added:
+
+| Queue Name | Queue Size | Item Size | Allocation | Buffer Name | Control Block Name |
+|---|---|---|---|---|---|
+| qSenseToHeat | **1** (change from 16) | uint16_t | Dynamic | NULL | NULL |
+| qInputToDisplay | 8 | uint8_t | Dynamic | NULL | NULL |
+| qDisplayToHeat | 1 | HeatCommand_t | Dynamic | NULL | NULL |
+| qHeatToDisplay | 1 | HeatStatus_t | Dynamic | NULL | NULL |
+| qUartRxToConnect | 1 | uint8_t | Dynamic | NULL | NULL |
+
+Notes on the Item Size column:
+- **`qInputToDisplay` → `uint8_t`**: the button-event enum (Up, Down,
+  Mode, Enter, `EVT_ENTER_SETTINGS`, etc.) fits in a byte. CubeMX just
+  needs a type name here; the actual `ButtonEvent_t` enum typedef
+  isn't written yet — it'll live in `App/Common/app_types.h` when
+  InputTask/DisplayTask are implemented, but a plain `uint8_t` is
+  enough to get the queue itself generated now.
+- **`qDisplayToHeat` → `HeatCommand_t`**: a struct carrying
+  setpoint/timer/run/stop, since it's more than one value. This type
+  doesn't exist in code yet either — same story, define it in
+  `App/Common/app_types.h` before this compiles. CubeMX doesn't
+  validate the string, it just uses it verbatim in generated code.
+- **`qHeatToDisplay` → `HeatStatus_t`**: same pattern, temp + relay
+  on/off status.
+- **`qUartRxToConnect` → `uint8_t`**: still a placeholder per
+  `arch.md` — the real ESP32 AT-command protocol isn't designed yet,
+  so this is deliberately provisional.

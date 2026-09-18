@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -96,6 +95,31 @@ const osThreadAttr_t InputTask_attributes = {
   .name = "InputTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for qSenseToHeat */
+osMessageQueueId_t qSenseToHeatHandle;
+const osMessageQueueAttr_t qSenseToHeat_attributes = {
+  .name = "qSenseToHeat"
+};
+/* Definitions for qInputToDisplay */
+osMessageQueueId_t qInputToDisplayHandle;
+const osMessageQueueAttr_t qInputToDisplay_attributes = {
+  .name = "qInputToDisplay"
+};
+/* Definitions for qDisplayToHeat */
+osMessageQueueId_t qDisplayToHeatHandle;
+const osMessageQueueAttr_t qDisplayToHeat_attributes = {
+  .name = "qDisplayToHeat"
+};
+/* Definitions for qHeatToDisplay */
+osMessageQueueId_t qHeatToDisplayHandle;
+const osMessageQueueAttr_t qHeatToDisplay_attributes = {
+  .name = "qHeatToDisplay"
+};
+/* Definitions for qUartRxToConnect */
+osMessageQueueId_t qUartRxToConnectHandle;
+const osMessageQueueAttr_t qUartRxToConnect_attributes = {
+  .name = "qUartRxToConnect"
 };
 /* USER CODE BEGIN PV */
 #if HW_BRINGUP_TEST_SWITCHES
@@ -358,6 +382,22 @@ int main(void)
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of qSenseToHeat */
+  qSenseToHeatHandle = osMessageQueueNew (1, sizeof(uint16_t), &qSenseToHeat_attributes);
+
+  /* creation of qInputToDisplay */
+  qInputToDisplayHandle = osMessageQueueNew (8, sizeof(uint8_t), &qInputToDisplay_attributes);
+
+  /* creation of qDisplayToHeat */
+  qDisplayToHeatHandle = osMessageQueueNew (1, sizeof(HeatCommand_t), &qDisplayToHeat_attributes);
+
+  /* creation of qHeatToDisplay */
+  qHeatToDisplayHandle = osMessageQueueNew (1, sizeof(HeatStatus_t), &qHeatToDisplay_attributes);
+
+  /* creation of qUartRxToConnect */
+  qUartRxToConnectHandle = osMessageQueueNew (1, sizeof(uint8_t), &qUartRxToConnect_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
