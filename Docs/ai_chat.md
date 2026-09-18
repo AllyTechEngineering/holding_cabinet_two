@@ -165,16 +165,15 @@
 - 16 of 18 planned subsystem doc files remain empty
 - Open items still unresolved: Settings Mode/Enter contradiction, setpoint-confirm visual feedback gap, SET_TIME zero-duration error prompt wording
 
+
 # Chat 3
-```markdown
-# Holding Cabinet Two — Display / HMI Mockup Session Notes
+
+## Holding Cabinet Two — Display / HMI Mockup Session Notes
 
 Hardware: LCD1602 (16 columns × 2 rows), HD44780-compatible controller,
 PCF8574 I2C backpack @ 0x27. Standard ROM (A00) has native → ← arrows
 only — no native up/down glyphs. Up/down would require CGRAM custom
 characters (firmware work not yet done); decided against for now.
-
----
 
 ## Display Conventions (apply to every screen, not re-derived each time)
 
@@ -193,8 +192,6 @@ characters (firmware work not yet done); decided against for now.
    screen, not yet explicitly confirmed by Bobby — see Open
    Questions.)*
 
----
-
 ## Settings-Mode Entry (button combo)
 
 - **Combo:** Mode + Down, pressed simultaneously.
@@ -207,8 +204,6 @@ characters (firmware work not yet done); decided against for now.
   tracking both pins within a timing window (e.g., both LOW within
   ~50ms, held for some minimum duration) — a real addition to the
   debounce state machine, not a redesign.
-
----
 
 ## State List (in scope for this mockup pass)
 
@@ -223,8 +218,6 @@ fault/error screens in this pass).
 5. Run
 6. Stop-Confirm
 7. Complete
-
----
 
 ## Screen Mockups
 
@@ -376,7 +369,7 @@ Suggested name: **`Docs/ui_state_table_v5_draft.md`** — keeping "draft" in the
 
 Here's the raw content:
 
-```markdown
+
 # Holding Cabinet Two — UI State Table (v5 draft, from `Proofing_Oven.xlsx` V1 tab)
 
 **Status: DRAFT FOR REVIEW. Nothing here has been written into the repo yet.**
@@ -440,7 +433,7 @@ until an input or timeout ends it.
 Fault handling (e.g., NTC open-circuit during an active Run), and anything
 about the Settings menu beyond the single Temp-units item, are out of scope
 for this pass — flag if you want those folded in now instead of later.
-```
+
 ## Chat 4 Cont.
 
 ### 1. UI/UX Specification Rework — `Proofing_Oven.xlsx` V1 tab
@@ -600,3 +593,109 @@ for this pass — flag if you want those folded in now instead of later.
   docs, not designed or written.
 - `changelog.md` entry drafted but not yet confirmed pasted into the
   repo by the user.
+
+# Chat 5
+
+## 1. Project Review & Verification
+- Reviewed actual repo state via git clone rather than trusting memory
+  summary, and found real discrepancies: `Docs/set_time_mode.md` and
+  `Docs/tasks_queues.md` were both still empty despite the changelog's
+  own note that the doc restructuring was "closed" and that production
+  task implementation was underway.
+- Confirmed every file in `App/` (`sensor_task.c`, `control_task.c`,
+  `display_task.c`, `connect_task.c`, drivers) was still pure
+  header-comment-only scaffolding — zero logic — and `freertos.c` had
+  no task or queue creation code at all.
+
+## 2. `Docs/set_time_mode.md` — written and committed
+- Extracted `SetTime-Decision`/`Adjust`/`Confirm` screen content
+  programmatically from `Proofing_Oven.xlsx`'s V1 tab (via `openpyxl`,
+  not hand-transcription).
+- Found and corrected one typo (a trailing space baked into a `'Y'`
+  cell).
+- Preserved an intentional inconsistency verbatim — `SetTime-Decision`'s
+  row 2 layout differs from `SetTime-Confirm`'s, matching an already-
+  documented pattern for `SetTemp-Decision`/`Confirm`.
+
+## 3. FreeRTOS Tasks/Queues Architecture — moved into `Docs/tasks_queues.md`, four design issues found and resolved
+- Content moved out of `arch.md` §6 into its own file (`arch.md` §6 now
+  just points to it).
+- Reviewed the existing 5-task/5-queue design against the now-locked
+  V1 state machine and resolved:
+  1. **`qInputToDisplay` depth** — was depth-1 "latest value wins"
+     (fine for continuous state, wrong for discrete button-press
+     events, which can be silently dropped by overwrite semantics).
+     Changed to depth 8, normal FIFO.
+  2. **Settings-entry chord** (Up+Down held 5s, idle-only) — assigned
+     to InputTask, which already samples both pins; emits one one-shot
+     `EVT_ENTER_SETTINGS` event, DisplayTask decides whether to honor
+     it based on its own state.
+  3. **DisplayTask must wake on a bounded ~100ms periodic tick**, not
+     `portMAX_DELAY`, to drive the 2s toggle pairs, the 3-min
+     inactivity timeout, the ~1s `Run-Active` refresh, and the
+     countdown reaching 0:00. Per explicit user decision, the
+     countdown-to-zero **forces** a jump to `Complete-Decision` even
+     if the user has navigated to a different screen in the meantime.
+  4. **Flash-EEPROM persistence** assigned to DisplayTask, written
+     synchronously at Settings confirm. Verified against the
+     STM32L476RG datasheet (Table 63) and ST's own reference-manual
+     text (quoted from RM0351 on ST's community forum) that a
+     same-bank flash erase/program (~21–24ms) stalls the *entire* MCU
+     — every task, every ISR, the RTOS tick — not just the writing
+     task. Accepted as harmless for this application; no dual-bank
+     split needed.
+- Also caught: `qSenseToHeat`'s CubeMX Queue Size had been left at
+  CubeMX's default (16) instead of the documented depth-1 design —
+  corrected to 1.
+
+## 4. NVIC Review
+- Checked the actual `.ioc` file and `FreeRTOSConfig.h` directly rather
+  than describing generic FreeRTOS/NVIC advice.
+- Confirmed `NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4` already correctly
+  set (required for FreeRTOS).
+- Confirmed `configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY=5` — any ISR
+  calling FreeRTOS `...FromISR()` APIs must be priority ≥5.
+- Confirmed `USART2_IRQn` already correctly enabled at priority 5 (safe
+  for the future `qUartRxToConnect` ISR handoff, even though
+  ConnectTask itself isn't built yet).
+- Confirmed ADC1/I2C1 have no NVIC entries — polling/blocking mode,
+  consistent with the design.
+- Flagged `EXTI15_10_IRQn` (tied to PC13/`GPXTI13`) as a leftover
+  Nucleo-board default "User button" configuration, unrelated to the
+  actual 4-switch design — **not yet cleaned up.**
+
+## 5. CubeMX Tasks and Queues Configuration
+- Provided exact field-by-field values for all 5 tasks and all 5
+  queues, matching the resolved design.
+- User applied these; verified afterward via the `.ioc`:
+  `qSenseToHeat`=1/`uint16_t`, `qInputToDisplay`=8/`uint8_t`,
+  `qDisplayToHeat`=1/`HeatCommand_t`, `qHeatToDisplay`=1/`HeatStatus_t`,
+  `qUartRxToConnect`=1/`uint8_t`, `FootprintOK=true`.
+
+## 6. File/Folder Structure
+- Proposed and documented (`Docs/folders_files.md`) the full `App/`
+  subsystem tree.
+- Two gaps identified and filled: `App/Input/` (`input_task.c/h`,
+  `switch_driver.c/h` — InputTask had no home) and
+  `App/Display/settings_store.c/h` (flash persistence, DisplayTask-owned).
+- User committed both, and separately added `App/Actuators/buzzer_driver.c/h`
+  themselves, closing a gap that had been flagged but not assigned.
+
+## 7. Debug/Observability Strategy
+- Checked `.vscode/launch.json` — confirmed already using the official
+  STM32Cube for VS Code extension (`stlinkgdbtarget`), which ships its
+  own built-in RTOS-aware debug views. No Cortex-Debug extension needed.
+- Decision: VS Code debugger (breakpoints + live task/queue watch) for
+  bring-up observability — no new wiring required.
+
+## 8. Error Handling / Error Mode — user-authored docs reviewed, architecture proposed
+- User added `Docs/error_codes.md` and `Docs/error_mode.md`.
+- Proposed architecture: SenseTask detects NTC Open/Short (ADC
+  thresholds) and reports via sentinel values through `qSenseToHeat`;
+  HeatTask is the fault-arbitration point — immediate direct actuator
+  shutdown, its own heater-response fault check, and forwards the
+  specific error code via `HeatStatus_t`; DisplayTask's periodic tick
+  forces an unconditional, non-exitable jump into a new Error-mode
+  toggle pair (`Err: XX` / `Turn Proofer Off` ↔ `Err: XX` /
+  `Contact Support`) from any screen, ignoring all further input.
+- Caught a
