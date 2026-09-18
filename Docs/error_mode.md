@@ -27,6 +27,9 @@ As displayed:
 ## Error Action
 When an error is detected, turn off actuators and display these screens. There is no time out.
 Ignore any user button input and any communication input.
+The system shall have a timed thermal fuse, that will open if the heater fails on.
+For example, if the heater fails on, and the user is unaware, the fuse shall open after 12 hours of continuous heating.
+Note: the system shall never use firmware as part of the safety system!
 
 ---
 ## Error Codes
