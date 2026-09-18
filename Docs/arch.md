@@ -96,36 +96,8 @@ here to avoid two sources of truth drifting apart.
 
 ## 6. FreeRTOS Task Architecture
 
-**Tasks:**
-
-| Task        | Priority              | Stack (words) | Entry            | Responsibility                                              |
-|-------------|-----------------------|---------------|------------------|-------------------------------------------------------------|
-| SenseTask   | osPriorityNormal      | 128           | StartSenseTask   | Read ADC1 every 2–3s, Steinhart/Beta convert, push temp     |
-| InputTask   | osPriorityAboveNormal | 128           | StartInputTask   | Poll/debounce 4 switches, push button events                |
-| DisplayTask | osPriorityLow         | 128           | StartDisplayTask | Own setpoint/mode/timer state, render LCD, forward commands |
-| HeatTask    | osPriorityHigh3       | 128           | StartHeatTask    | Bang-bang + hysteresis control, drive relay, report status  |
-| ConnectTask | osPriorityHigh        | 128           | StartConnectTask | USART2 link to ESP32 — Models 3/4 only, not yet implemented |
-
-**Queues** (all depth 1 — latest value wins, no backlog needed):
-
-| Queue | Producer → Consumer | Payload (placeholder type) |
-|---|---|---|
-| qSenseToHeat | SenseTask → HeatTask | temperature (int16, tenths °C) |
-| qInputToDisplay | InputTask → DisplayTask | button event enum |
-| qDisplayToHeat | DisplayTask → HeatTask | setpoint / timer / run / stop commands |
-| qHeatToDisplay | HeatTask → DisplayTask | temp + relay on/off status |
-| qUartRxToConnect | USART2 RX ISR → ConnectTask | placeholder, protocol TBD |
-
-**Heap sizing lesson (worth keeping — bit us once already):** CubeMX
-validates dynamic-allocation task stacks against `TOTAL_HEAP_SIZE` and
-sets an internal `FootprintOK` flag; a hard failure here shows as a
-red circle-X on the FREERTOS tree node, not just a warning. Adding
-the 5th task (InputTask) pushed usage over the previous 3000-byte
-budget. Fixed by raising `TOTAL_HEAP_SIZE` to 8192 bytes — trivial
-against the L476RG's 128KB SRAM, with headroom for the still-unwired
-ConnectTask/UART path. If this reappears after adding tasks/queues on
-the production MCU (much less SRAM on the C031), recheck this budget
-first.
+Superseded — this is now fully specified in `tasks_queues.md`. Not
+duplicated here; see that document.
 
 ---
 
