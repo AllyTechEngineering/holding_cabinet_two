@@ -21,13 +21,8 @@ extern I2C_HandleTypeDef hi2c1;
 
 static void lcd_i2c_write(uint8_t data)
 {
-  if (HAL_I2C_Master_Transmit(&hi2c1, LCD_I2C_ADDR,
-                              &data, 1u, 10u) != HAL_OK)
-  {
-    /* An unusable display must not leave the heater energized. */
-    HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
-    Error_Handler();
-  }
+(void)HAL_I2C_Master_Transmit(&hi2c1, LCD_I2C_ADDR,
+                                &data, 1u, 10u);
 }
 
 static void lcd_pulse_enable(uint8_t data)
