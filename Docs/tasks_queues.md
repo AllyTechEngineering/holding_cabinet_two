@@ -19,7 +19,7 @@ resolved below. `arch.md` §6 now just points here.
 
 **DisplayTask must run on a periodic wake, not a pure blocking wait** —
 `xQueueReceive(qInputToDisplay, &evt, pdMS_TO_TICKS(100))`, not
-`portMAX_DELAY`. It needs to act with no external trigger: 2s toggle
+`portMAX_DELAY`. It needs to act with no external trigger: 4s toggle
 pairs, the 3-minute inactivity timeout, the ~1s `Run-Active` refresh,
 and the background countdown reaching 0:00.
 
@@ -64,7 +64,7 @@ lower-SRAM production MCU (C031) — the deeper `qInputToDisplay` (depth
    `Idle-Prompt` — keeping all state ownership in one place.
 
 3. **DisplayTask wakes on a bounded timeout (~100ms), not
-   `portMAX_DELAY`.** This drives the 2s toggle pairs, the 3-minute
+   `portMAX_DELAY`.** This drives the 4s toggle pairs, the 3-minute
    inactivity timeout, the ~1s `Run-Active` refresh, and the
    background countdown. **When the countdown reaches 0:00, DisplayTask
    forces a jump to `Complete-Decision` regardless of which screen is

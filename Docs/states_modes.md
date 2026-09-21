@@ -9,9 +9,9 @@ that content lives in each mode's own file (see "Content owner" column).
 ## Global rules (apply across all states unless noted)
 
 - **Toggle pairs**: some states are actually a pair of screens that
-  auto-alternate every 2 seconds, forever, until an input or timeout ends
+  auto-alternate every 4 seconds, forever, until an input or timeout ends
   them. Up/Down input works identically on either half of the pair — the
-  2s toggle is purely cosmetic display behavior and never gates input,
+  4s toggle is purely cosmetic display behavior and never gates input,
   and pressing Up/Down does **not** reset or interrupt the toggle timing.
 - **3-minute inactivity timeout**: applies to every state except
   `Idle-Splash`/`Idle-Prompt` (no timeout, infinite toggle) and
