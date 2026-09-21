@@ -73,7 +73,7 @@ work on either screen.
 | `SetTime-Confirm` | Change proposed time | `Run-Decision` (retain proposal) | `SetTime-Decision` (discard time proposal) | `Idle-Splash`, stop run if active |
 | `Run-Decision` | — | New proof: apply settings and start `Run-Active`; run edit: apply proposed changes and continue `Run-Active` | Stop run, heater off, `Idle-Splash` | `Idle-Splash`, stop run if active |
 | `Run-Active` | — | `Complete-Decision` (ask whether to end proof) | `SetTemp-Decision` (run edit) | — |
-| `Complete-Decision` | — | Heater off, `Complete-DisplayA` | `SetTemp-Decision` | — |
+| `Complete-Decision` | — | Heater off, `Complete-DisplayA` | Opened manually: return to `Run-Active`, proof unchanged; reached at 0:00: `SetTemp-Decision` | — |
 | `Complete-DisplayA` | — | — | `SetTemp-Decision` | `Idle-Splash` |
 | `Complete-DisplayB` | — | — | `SetTemp-Decision` | `Idle-Splash` |
 | `Settings-Splash` | — | — | — | — |
