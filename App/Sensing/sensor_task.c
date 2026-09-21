@@ -16,6 +16,9 @@
 #include "thermistor_driver.h"
 #include "app_config.h"
 #include "main.h"
+#include "cmsis_os.h"
+
+extern osMessageQueueId_t qSenseToHeatHandle;
 
 /* qSenseToHeat is a depth-1 "latest value wins" queue (Docs/tasks_queues.md).
  * CMSIS-RTOS2's osMessageQueuePut() maps to FreeRTOS's xQueueSendToBack()
