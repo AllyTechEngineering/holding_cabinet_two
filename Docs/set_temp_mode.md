@@ -42,8 +42,8 @@ design** — there's no dedicated control-loop doc yet.
 
 As displayed:
 ```
- Set Temp: XXXF  
- Up+ or Down-   
+ Set Temp: XXXF
+ Up+ or Down-
 ```
 
 ## SetTemp-Confirm
@@ -59,8 +59,8 @@ space, two trailing spaces — preserved exactly as specified.
 
 As displayed:
 ```
- Set Temp: XXXF  
-Enter Y Mode N  
+ Set Temp: XXXF
+Enter Y Mode N
 ```
 ## Editing an active run
 

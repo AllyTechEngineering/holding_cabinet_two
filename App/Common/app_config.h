@@ -24,6 +24,7 @@ extern "C" {
  * degree); Fahrenheit is a display-layer-only conversion. 65-120F. */
 #define APP_TEMP_MIN_TENTHS_C   183u   /* 65F */
 #define APP_TEMP_MAX_TENTHS_C   489u   /* 120F */
+#define APP_TEMP_DEFAULT_TENTHS_C 350u  /* 35°C = 95°F */
 
 /* ---- Countdown timer bounds (Docs/set_time_mode.md) ---- */
 #define APP_TIME_MIN_MINUTES    30u     /* 0:30 */
