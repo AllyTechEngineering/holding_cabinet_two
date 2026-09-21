@@ -391,7 +391,7 @@ int main(void)
   qInputToDisplayHandle = osMessageQueueNew (8, sizeof(uint8_t), &qInputToDisplay_attributes);
 
   /* creation of qDisplayToHeat */
-  qDisplayToHeatHandle = osMessageQueueNew (1, sizeof(HeatCommand_t), &qDisplayToHeat_attributes);
+  qDisplayToHeatHandle = osMessageQueueNew (4, sizeof(HeatCommand_t), &qDisplayToHeat_attributes);
 
   /* creation of qHeatToDisplay */
   qHeatToDisplayHandle = osMessageQueueNew (1, sizeof(HeatStatus_t), &qHeatToDisplay_attributes);
@@ -668,11 +668,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, HeatRelay_Pin|FanRelay_Pin|HumidRelay_Pin|OnOffLed_Pin
-                          |OnOffHeatLed_Pin|OnOffHumidLed_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, HeatRelay_Pin|FanRelay_Pin|HumidRelay_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, OnOffLed_Pin|OnOffHeatLed_Pin|OnOffHumidLed_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : HeatRelay_Pin FanRelay_Pin HumidRelay_Pin OnOffLed_Pin
                            OnOffHeatLed_Pin OnOffHumidLed_Pin */
