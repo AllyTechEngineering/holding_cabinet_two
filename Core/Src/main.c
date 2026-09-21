@@ -125,6 +125,8 @@ const osMessageQueueAttr_t qUartRxToConnect_attributes = {
   .name = "qUartRxToConnect"
 };
 /* USER CODE BEGIN PV */
+volatile uint8_t g_lastInputEvent = 0u;
+volatile uint32_t g_inputEventCount = 0u;
 #if HW_BRINGUP_TEST_SWITCHES
 volatile uint8_t g_upPressed    = 0;
 volatile uint8_t g_downPressed  = 0;
