@@ -17,6 +17,9 @@ the same confirmed temperature and remaining time. If the countdown
 reached 0:00 automatically, Mode follows the existing
 `SetTemp-Decision` path.
 
+Entering `Complete-Decision` triggers the three-beep sequence defined
+in `audible_alert.md`.
+
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | P | r | o | o | f | | C | o | m | p | l | e | t | e | ? |
