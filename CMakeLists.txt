@@ -44,12 +44,14 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
+App/Sensing/sensor_task.c
+App/Sensing/thermistor_driver.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
+   ${CMAKE_CURRENT_SOURCE_DIR}/App/Common
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/Sensing
 )
 
 # Add project symbols (macros)
@@ -63,6 +65,5 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
-
-    # Add user defined libraries
+m
 )

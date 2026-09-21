@@ -27,6 +27,7 @@ extern "C" {
  * these map to once HeatTask forwards them (NTC Open = 10, NTC Short = 11). */
 #define THERMISTOR_FAULT_OPEN   0xFFFFu   /* ADC pegged near max -- NTC disconnected */
 #define THERMISTOR_FAULT_SHORT  0xFFFEu   /* ADC pegged near min -- NTC shorted */
+#define THERMISTOR_FAULT_READ   0xFFFDu   /* ADC start, conversion, or stop failed */
 
 /* Reads ADC1 (blocking, single conversion) and converts to tenths of a
  * degree Celsius via the Beta equation, or returns one of the
