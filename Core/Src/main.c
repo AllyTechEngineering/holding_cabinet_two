@@ -24,7 +24,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "app_types.h"
-#include "thermistor_driver.h"
+#include "sensor_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -819,29 +819,12 @@ static float ntc_resistance_to_celsius(float r_ohms)
   * @retval None
   */
 /* USER CODE END Header_StartSenseTask */
-  (void)argument;
-
-  for (;;)
-  {
-    uint16_t reading = Thermistor_ReadTenthsC();
-    uint16_t previousReading;
-
-    /* This depth-1 queue carries the newest reading, including faults. */
-    (void)osMessageQueueGet(qSenseToHeatHandle,
-                            &previousReading, NULL, 0U);
-
-    if (osMessageQueuePut(qSenseToHeatHandle,
-                          &reading, 0U, 0U) != osOK)
-    {
-      /* Do not leave the heater commanded on if sensing cannot report. */
-      HAL_GPIO_WritePin(HeatRelay_GPIO_Port,
-                        HeatRelay_Pin, GPIO_PIN_SET);
-      Error_Handler();
-    }
-
-    osDelay(2500U);
-  }
-
+void StartSenseTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  SenseTask_Run(argument);
+  /* USER CODE END 5 */
+}
 /* USER CODE BEGIN Header_StartDisplayTask */
 /**
 * @brief Function implementing the DisplayTask thread.
