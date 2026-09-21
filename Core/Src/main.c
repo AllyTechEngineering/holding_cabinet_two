@@ -130,6 +130,7 @@ volatile uint8_t g_upPressed    = 0;
 volatile uint8_t g_downPressed  = 0;
 volatile uint8_t g_modePressed  = 0;
 volatile uint8_t g_enterPressed = 0;
+
 #endif
 #if HW_BRINGUP_TEST_I2C_SCAN
 volatile uint8_t g_i2cFoundAddresses[16] = {0};
@@ -836,10 +837,18 @@ void StartSenseTask(void *argument)
 void StartDisplayTask(void *argument)
 {
   /* USER CODE BEGIN StartDisplayTask */
-  /* Infinite loop */
-  for(;;)
+  uint8_t event;
+
+  (void)argument;
+
+  for (;;)
   {
-    osDelay(1);
+    if (osMessageQueueGet(qInputToDisplayHandle,
+                          &event, NULL, 100U) == osOK)
+    {
+      g_lastInputEvent = event;
+      ++g_inputEventCount;
+    }
   }
   /* USER CODE END StartDisplayTask */
 }
