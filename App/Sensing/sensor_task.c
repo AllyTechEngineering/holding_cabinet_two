@@ -1,24 +1,25 @@
 /**
-  ******************************************************************************
-  * @file           : sensor_task.c
-  * @brief          : FreeRTOS task coordinating periodic ADC reads of the
-  *                    baseplate temp via NTC thermistor
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 AllyTech LLC.
-  * All rights reserved.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : sensor_task.c
+ * @brief          : FreeRTOS task coordinating periodic ADC reads of the
+ *                    baseplate temp via NTC thermistor
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 AllyTech LLC.
+ * All rights reserved.
+ *
+ ******************************************************************************
+ */
 
 #include "sensor_task.h"
-#include "thermistor_driver.h"
 #include "app_config.h"
-#include "main.h"
 #include "cmsis_os.h"
+#include "main.h"
+#include "thermistor_driver.h"
 
 extern osMessageQueueId_t qSenseToHeatHandle;
+volatile uint16_t g_senseTempTenthsC = 0;
 
 /* qSenseToHeat is a depth-1 "latest value wins" queue (Docs/tasks_queues.md).
  * CMSIS-RTOS2's osMessageQueuePut() maps to FreeRTOS's xQueueSendToBack()
@@ -30,20 +31,19 @@ extern osMessageQueueId_t qSenseToHeatHandle;
  * behavior. Overwrite semantics are implemented explicitly instead: drain
  * any stale unread value, then put the new one. Safe against races because
  * SenseTask is the sole producer on this queue. */
-static void sense_push_reading(uint16_t tempTenthsC)
-{
+static void sense_push_reading(uint16_t tempTenthsC) {
   uint16_t discard;
-  osMessageQueueGet(qSenseToHeatHandle, &discard, NULL, 0);  /* non-blocking; fails harmlessly if already empty */
+  osMessageQueueGet(qSenseToHeatHandle, &discard, NULL,
+                    0); /* non-blocking; fails harmlessly if already empty */
   osMessageQueuePut(qSenseToHeatHandle, &tempTenthsC, 0, 0);
 }
 
-void SenseTask_Run(void *argument)
-{
+void SenseTask_Run(void *argument) {
   (void)argument;
 
-  for (;;)
-  {
+  for (;;) {
     uint16_t tempTenthsC = Thermistor_ReadTenthsC();
+    g_senseTempTenthsC = tempTenthsC;
 
     sense_push_reading(tempTenthsC);
 
