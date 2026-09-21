@@ -18,7 +18,11 @@
 extern "C" {
 #endif
 
-/* ... */
+/* Call once from DisplayTask before writing either row. */
+void LCD1602_Init(void);
+
+/* Each string must contain exactly 16 characters. */
+void LCD1602_WriteLines(const char *row1, const char *row2);
 
 #ifdef __cplusplus
 }
