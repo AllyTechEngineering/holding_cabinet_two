@@ -28,6 +28,8 @@ that content lives in each mode's own file (see "Content owner" column).
   previous countdown is ignored. Mode at `Run-Decision` stops the run,
   turns the heater off, and returns to `Idle-Splash`. A 3-minute
   inactivity timeout on an applicable screen also stops the run.
+  For a timed run, reaching 0:00 stops heating immediately, regardless
+  of the screen currently displayed.
 
 ---
 
