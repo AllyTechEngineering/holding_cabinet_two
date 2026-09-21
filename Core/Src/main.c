@@ -25,6 +25,7 @@
 
 #include "app_types.h"
 #include "sensor_task.h"
+#include "input_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -889,11 +890,7 @@ void StartHeatTask(void *argument)
 void StartInputTask(void *argument)
 {
   /* USER CODE BEGIN StartInputTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+  InputTask_Run(argument);
   /* USER CODE END StartInputTask */
 }
 
