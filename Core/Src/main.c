@@ -26,6 +26,7 @@
 #include "app_types.h"
 #include "sensor_task.h"
 #include "input_task.h"
+#include "display_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -839,19 +840,7 @@ void StartSenseTask(void *argument)
 void StartDisplayTask(void *argument)
 {
   /* USER CODE BEGIN StartDisplayTask */
-  uint8_t event;
-
-  (void)argument;
-
-  for (;;)
-  {
-    if (osMessageQueueGet(qInputToDisplayHandle,
-                          &event, NULL, 100U) == osOK)
-    {
-      g_lastInputEvent = event;
-      ++g_inputEventCount;
-    }
-  }
+  DisplayTask_Run(argument);
   /* USER CODE END StartDisplayTask */
 }
 
