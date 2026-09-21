@@ -28,9 +28,7 @@ static void lcd_i2c_write(uint8_t data)
 static void lcd_pulse_enable(uint8_t data)
 {
   lcd_i2c_write(data | LCD_ENABLE_BIT);
-  HAL_Delay(1);
   lcd_i2c_write(data & (uint8_t)~LCD_ENABLE_BIT);
-  HAL_Delay(1);
 }
 
 static void lcd_write4(uint8_t nibble, uint8_t rs)

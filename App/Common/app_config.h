@@ -30,7 +30,7 @@ extern "C" {
 #define APP_TIME_MAX_MINUTES    600u    /* 10:00 */
 
 /* ---- UI timing (Docs/states_modes.md) ---- */
-#define APP_TOGGLE_PAIR_MS         2000u     /* 2s alternation for toggle-pair screens */
+#define APP_TOGGLE_PAIR_MS         4000u     /* 4s alternation for toggle-pair screens */
 #define APP_INACTIVITY_TIMEOUT_MS  180000u   /* 3 minutes -> Idle-Splash */
 #define APP_SETTINGS_CHORD_MS      5000u     /* Up+Down held, idle-only -> Settings-Splash */
 #define APP_DISPLAY_TASK_WAKE_MS   100u      /* DisplayTask periodic wake; see Docs/tasks_queues.md */
