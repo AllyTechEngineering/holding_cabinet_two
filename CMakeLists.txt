@@ -48,6 +48,8 @@ App/Sensing/sensor_task.c
 App/Sensing/thermistor_driver.c
 App/Input/input_task.c
 App/Input/switch_driver.c
+App/Display/display_task.c
+App/Display/lcd1602_driver.c
 )
 
 # Add include paths
@@ -55,6 +57,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Common
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Sensing
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Input
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/Display
 )
 
 # Add project symbols (macros)
