@@ -132,8 +132,7 @@ today:
 | HeatTask | osPriorityHigh3 | 128 | StartHeatTask | Default | NULL | Dynamic | NULL | NULL |
 | InputTask | osPriorityAboveNormal | 128 | StartInputTask | Default | NULL | Dynamic | NULL | NULL |
 
-Queues — `qSenseToHeat` needs its Queue Size corrected; the other four
-need to be added:
+The following queue settings match the current CubeMX configuration:
 
 | Queue Name | Queue Size | Item Size | Allocation | Buffer Name | Control Block Name |
 |---|---|---|---|---|---|
