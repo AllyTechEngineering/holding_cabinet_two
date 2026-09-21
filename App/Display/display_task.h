@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-/* ... */
+void DisplayTask_Run(void *argument);
 
 #ifdef __cplusplus
 }
