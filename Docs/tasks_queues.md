@@ -72,6 +72,10 @@ lower-SRAM production MCU (C031) — the deeper `qInputToDisplay` (depth
    `SetTemp-Decision` etc. while a proof runs in the background (per
    the heat-lifecycle rule in `states_modes.md`), the countdown
    expiring interrupts whatever screen they're on.
+   If the active countdown reaches 0:00 during a run edit, DisplayTask
+   discards all proposed temperature and time changes before entering
+   `Complete-Decision`. The active countdown takes precedence over an
+   unconfirmed edit.
 
 4. **Flash-EEPROM persistence is owned by DisplayTask**, written
    synchronously at the moment of Enter/confirm in Settings mode — not

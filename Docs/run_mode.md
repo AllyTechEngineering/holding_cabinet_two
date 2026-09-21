@@ -32,14 +32,18 @@ As displayed:
 Use the same `Run-Decision` state with this wording so the user is
 confirming an edit rather than being asked to start a proof again:
 
+Displayed as
+```
  Apply Changes? 
  Enter Y Mode N 
+```
 
 
 ## Run-Active (timed variant)
 During either timed or untimed `Run-Active`, Mode opens
-`SetTemp-Decision` to edit the run. This edit path does not pass through
-`Complete-Decision`.
+`SetTemp-Decision` to edit the run. Enter opens `Complete-Decision`
+to ask whether to end the proof. Complete Mode is not part of
+the run-edit path.
 `XXX` = live NTC reading, no leading-zero padding (`98`, not `098`).
 `HH:MM` = live countdown, no leading zeros on the hour digit(s)
 (`4:30` for one hour, not `04:30`). Update rate: ~1 second, readable,
@@ -76,9 +80,6 @@ leaves a stale `0` unless cleared; `10:00` → `4:30` likewise).
 | Row 2 | `Time: 10:00` |
 
 ## Run-Active (untimed variant)
-During either timed or untimed `Run-Active`, Mode opens
-`SetTemp-Decision` to edit the run. This edit path does not pass through
-`Complete-Decision`.
 Row 1 is identical in format to the timed variant. Row 2 toggles every
 2 seconds between "Countdown Timer" and "Not Used" — forever, until the
 user stops the run (per `states_modes.md`'s toggle-pair rule; this is

@@ -7,9 +7,10 @@ heat-lifecycle rules; this file covers screen content/wording only.
 
 ## Complete-Decision
 
-Reached when the user presses Mode during `Run-Active`, or when a
-timed run's countdown reaches 0:00 automatically (see `states_modes.md`).
-Pressing Enter here stops heat immediately.
+Reached when the user presses Enter during `Run-Active`, or when a
+timed run's countdown reaches 0:00. Mode during `Run-Active` opens
+the run-edit path instead. Pressing Enter at `Complete-Decision`
+confirms completion and stops heat immediately.
 
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
