@@ -141,7 +141,7 @@ need to be added:
 |---|---|---|---|---|---|
 | qSenseToHeat | **1** (change from 16) | uint16_t | Dynamic | NULL | NULL |
 | qInputToDisplay | 8 | uint8_t | Dynamic | NULL | NULL |
-| qDisplayToHeat | 1 | HeatCommand_t | Dynamic | NULL | NULL |
+| qDisplayToHeat | DisplayTask → HeatTask | `HeatCommand_t` (setpoint / run / stop) | 4, FIFO; process commands in order |
 | qHeatToDisplay | 1 | HeatStatus_t | Dynamic | NULL | NULL |
 | qUartRxToConnect | 1 | uint8_t | Dynamic | NULL | NULL |
 
