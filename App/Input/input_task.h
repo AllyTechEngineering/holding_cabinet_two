@@ -18,7 +18,8 @@
 extern "C" {
 #endif
 
-/* ... */
+/* Called by CubeMX's StartInputTask() entry point in main.c. */
+void InputTask_Run(void *argument);
 
 #ifdef __cplusplus
 }
