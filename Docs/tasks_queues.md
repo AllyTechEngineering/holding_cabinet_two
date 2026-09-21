@@ -101,22 +101,20 @@ lower-SRAM production MCU (C031) — the deeper `qInputToDisplay` (depth
    loop wants. Depth 1 with overwrite semantics guarantees HeatTask
    always acts on the single freshest reading.
 
-6. **"Latest value wins" queues are implemented as drain-then-put, not
-   `xQueueOverwrite()`.** Discovered while writing `SenseTask`:
-   CubeMX-generated code uses the CMSIS-RTOS2 API
-   (`osMessageQueuePut`/`osMessageQueueGet`), and `osMessageQueuePut()`
-   maps to FreeRTOS's `xQueueSendToBack()` — verified directly in
-   `Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c`.
-   There's no CMSIS-RTOS2 equivalent to `xQueueOverwrite()` exposed by
-   this generated code. On a depth-1 queue, a plain
-   `osMessageQueuePut()` would simply *fail* (return `osErrorResource`)
-   and silently drop the new value if the consumer hasn't read the
-   previous one yet — the opposite of the intended behavior. All four
-   "latest value wins" queues (`qSenseToHeat`, `qDisplayToHeat`,
-   `qHeatToDisplay`, `qUartRxToConnect`) instead do a non-blocking
-   `osMessageQueueGet()` to discard any stale unread value immediately
-   before the `osMessageQueuePut()`. Safe against races since each of
-   these queues has exactly one producer task.
+6. **Current-state queues use drain-then-put.** `qSenseToHeat` and
+   `qHeatToDisplay` have depth 1 because each message replaces an older
+   reading or status. Before sending, the producer makes a non-blocking
+   `osMessageQueueGet()` call to discard an unread value, then calls
+   `osMessageQueuePut()`. A plain put to a full depth-1 queue would fail
+   with `osErrorResource`.
+
+   `qDisplayToHeat` is different: it has depth 4 and uses FIFO semantics.
+   `HeatTask` must receive every setpoint, run, and stop command in order;
+   its producer must not discard queued commands.
+
+   `qUartRxToConnect` is a placeholder for future connectivity work.
+   Its queue design must be reviewed before UART reception is implemented;
+   received bytes must not be discarded under a "latest value wins" rule.
 
 ---
 
@@ -142,7 +140,7 @@ need to be added:
 | qSenseToHeat | **1** (change from 16) | uint16_t | Dynamic | NULL | NULL |
 | qInputToDisplay | 8 | uint8_t | Dynamic | NULL | NULL |
 | qDisplayToHeat | DisplayTask → HeatTask | `HeatCommand_t` (setpoint / run / stop) | 4, FIFO; process commands in order |
-| qHeatToDisplay | 1 | HeatStatus_t | Dynamic | NULL | NULL |
+| qHeatToDisplay | 4 | HeatStatus_t | Dynamic | NULL | NULL |
 | qUartRxToConnect | 1 | uint8_t | Dynamic | NULL | NULL |
 
 Notes on the Item Size column:
