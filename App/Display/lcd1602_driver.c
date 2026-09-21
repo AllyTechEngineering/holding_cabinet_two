@@ -68,7 +68,6 @@ void LCD1602_Init(void) {
 }
 
 void LCD1602_WriteLines(const char *row1, const char *row2) {
-  lcd_command(0x08u); /* Hide display while updating its characters. */
 
   lcd_set_cursor(0u);
   for (uint8_t col = 0u; col < 16u; ++col)
@@ -82,5 +81,4 @@ void LCD1602_WriteLines(const char *row1, const char *row2) {
     lcd_data((uint8_t)row2[col]);
   }
 
-  lcd_command(0x0Cu); /* Show the completed screen. */
 }
