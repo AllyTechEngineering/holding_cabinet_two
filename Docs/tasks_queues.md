@@ -29,7 +29,7 @@ and the background countdown reaching 0:00.
 |---|---|---|---|
 | qSenseToHeat | SenseTask → HeatTask | temperature (uint16_t, tenths °C; or a `THERMISTOR_FAULT_*` sentinel) | 1, drain-then-put (latest value wins — continuous state) |
 | qInputToDisplay | InputTask → DisplayTask | button event enum (incl. `EVT_ENTER_SETTINGS`) | 8, normal FIFO (`xQueueSendToBack` / `xQueueReceive`) — discrete edge events must not be dropped |
-| qDisplayToHeat | DisplayTask → HeatTask | `HeatCommand_t` (setpoint / run / stop) | 1, drain-then-put (latest value wins) |
+| qDisplayToHeat | DisplayTask → HeatTask | `HeatCommand_t` (setpoint / run / stop) | 4, FIFO; process commands in order |
 | qHeatToDisplay | HeatTask → DisplayTask | `HeatStatus_t` (temp, relay on/off, error code) | 1, drain-then-put (latest value wins) |
 | qUartRxToConnect | USART2 RX ISR → ConnectTask | placeholder, protocol TBD | 1, drain-then-put from ISR (latest value wins) — not yet implemented |
 
@@ -138,8 +138,8 @@ The following queue settings match the current CubeMX configuration:
 |---|---|---|---|---|---|
 | qSenseToHeat | **1** (change from 16) | uint16_t | Dynamic | NULL | NULL |
 | qInputToDisplay | 8 | uint8_t | Dynamic | NULL | NULL |
-| qDisplayToHeat | DisplayTask → HeatTask | `HeatCommand_t` (setpoint / run / stop) | 4, FIFO; process commands in order |
-| qHeatToDisplay | 4 | HeatStatus_t | Dynamic | NULL | NULL |
+| qDisplayToHeat | 4 | HeatCommand_t | Dynamic | NULL | NULL |
+| qHeatToDisplay | 1 | HeatStatus_t | Dynamic | NULL | NULL |
 | qUartRxToConnect | 1 | uint8_t | Dynamic | NULL | NULL |
 
 Notes on the Item Size column:
