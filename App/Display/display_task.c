@@ -46,8 +46,8 @@ void DisplayTask_Run(void *argument)
 
       if (show_prompt != 0u)
       {
-        LCD1602_WriteLines(" To Start Press ",
-                           " Mode           ");
+        LCD1602_WriteLines(" To Start       ",
+                           " Press Mode     ");
       }
       else
       {
