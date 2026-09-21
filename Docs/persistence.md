@@ -10,11 +10,13 @@ STM32L476xx datasheet — not re-derived here.
 - Temp units (F/C)
 - Timer duration (last configured HH:MM)
 
-Written only on confirm (Enter press at `SetTemp-Confirm`,
-`SetTime-Confirm`, or `Settings-Confirm` — see the respective mode
-files) — never on every Up/Down tap. Deliberate Flash-wear decision:
-values change on every button tap during adjustment but only need to
-survive power loss once confirmed.
+For a new proof, the selected setpoint and timer duration are saved
+when the user presses Enter at `Run-Decision`. During an active-run
+edit, Up/Down changes proposed values only. They are applied and saved
+only when the user presses Enter at `Run-Decision`. Mode at
+`Run-Decision` stops the run and discards those proposed values.
+Temperature units are saved when Enter confirms the Settings choice.
+No value is written to Flash on every Up/Down press.
 
 ## Mechanism
 

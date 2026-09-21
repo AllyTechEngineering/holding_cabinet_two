@@ -18,15 +18,16 @@ that content lives in each mode's own file (see "Content owner" column).
   `Run-Active`/`Complete-Decision` (no timeout — an active or
   undecided proof is never auto-abandoned). On timeout, always return to
   `Idle-Splash` **and** stop heat/relay control if a proof was active.
-- **Heat control lifecycle**: heat never turns on until `Enter` is
-  pressed at `Run-Decision` (entering `Run-Active`). Once on, heat
-  keeps running in the background regardless of manual Mode-button
-  navigation through `SetTemp-Decision` / `SetTemp-Adjust` /
-  `SetTemp-Confirm` / `SetTime-Decision` / `SetTime-Adjust` /
-  `SetTime-Confirm` / `Run-Decision`. Heat stops **only** via:
-  (a) `Enter` at `Complete-Decision`, or (b) the 3-minute timeout.
-- **Settings-entry combo**: Up+Down held simultaneously for 5 seconds,
-  detected only from `Idle-Splash`/`Idle-Prompt`.
+- **Heat control lifecycle**: On a new proof, heating begins only when
+  Enter is pressed at `Run-Decision`. During an edit of an active run,
+  the existing heater setpoint and countdown continue unchanged while
+  the user navigates the temperature and time screens. Up/Down changes
+  proposed values only. Enter at `Run-Decision` applies the proposed
+  changes and returns to `Run-Active`. If the time was changed, a new
+  countdown begins at the confirmed duration; elapsed time from the
+  previous countdown is ignored. Mode at `Run-Decision` stops the run,
+  turns the heater off, and returns to `Idle-Splash`. A 3-minute
+  inactivity timeout on an applicable screen also stops the run.
 
 ---
 
@@ -55,28 +56,43 @@ that content lives in each mode's own file (see "Content owner" column).
 
 ## Transition table
 
-| State               | Toggles with                               | Up/Down                           | Enter →                         | Mode →                      | Timeout →     |
-|---------------------|--------------------------------------------|-----------------------------------|---------------------------------|-----------------------------|---------------|
-| `Idle-Splash`       | `Idle-Prompt` (2s)                         | —                                 | —                               | `SetTemp-Decision`          | — (none)      |
-| `Idle-Prompt`       | `Idle-Splash` (2s)                         | —                                 | —                               | `SetTemp-Decision`          | — (none)      |
-| `SetTemp-Decision`  | —                                          | —                                 | `SetTemp-Adjust`                | `Idle-Splash`               | `Idle-Splash` |
-| `SetTemp-Adjust`    | `SetTemp-Confirm` (2s)                     | adjust temp                       | `SetTime-Decision` (commit)     | `Idle-Splash`               | `Idle-Splash` |
-| `SetTemp-Confirm`   | `SetTemp-Adjust` (2s)                      | adjust temp                       | `SetTime-Decision` (commit)     | `Idle-Splash`               | `Idle-Splash` |
-| `SetTime-Decision`  | —                                          | —                                 | `SetTime-Adjust`                | `Run-Decision` (skip timer) | `Idle-Splash` |
-| `SetTime-Adjust`    | `SetTime-Confirm` (2s)                     | adjust time | `Run-Decision` (commit)         | `SetTime-Decision`          | `Idle-Splash` |
-| `SetTime-Confirm`   | `SetTime-Adjust` (2s)                      | adjust time                       | `Run-Decision` (commit)         | `SetTime-Decision`          | `Idle-Splash` |
-| `Run-Decision`      | —                                          | —                                 | `Run-Active` (heat on / resume) | `Idle-Splash`               | `Idle-Splash` |
-| `Run-Active`        | (untimed variant only, internal 2s toggle) | —                                 | —                               | `Complete-Decision`         | — (none)      |
-| `Complete-Decision` | —                                          | —                                 | `Complete-DisplayA` (heat off)  | `SetTemp-Decision`          | — (none)      |
-| `Complete-DisplayA` | `Complete-DisplayB` (2s)                   | —                                 | —                               | `SetTemp-Decision`          | `Idle-Splash` |
-| `Complete-DisplayB` | `Complete-DisplayA` (2s)                   | —                                 | —                               | `SetTemp-Decision`          | `Idle-Splash` |
-| `Settings-Splash`   | —                                          | —                                 | —                               | —                           | —             |
-| `Settings-Adjust`   | `Settings-Confirm` (2s)                    | toggle setting value              | save, `Idle-Splash`             | `Settings-Confirm`          | `Idle-Splash` |
-| `Settings-Confirm`  | `Settings-Adjust` (2s)                     | toggle setting value              | save, `Idle-Splash`             | `Settings-Adjust`           | `Idle-Splash` |
+“New proof” means the user entered setup from Idle. “Run edit” means
+the user entered setup by pressing Mode during `Run-Active`. Adjust
+and Confirm screen pairs alternate every 2 seconds; Enter and Up/Down
+work on either screen.
 
-Also from `Idle-Splash`/`Idle-Prompt`: **Up+Down held 5s** → `Settings-Splash`.
+| State | Up/Down | Enter → | Mode → | Timeout → |
+|---|---|---|---|---|
+| `Idle-Splash` | — | — | `SetTemp-Decision` (new proof) | — |
+| `Idle-Prompt` | — | — | `SetTemp-Decision` (new proof) | — |
+| `SetTemp-Decision` | — | `SetTemp-Adjust` | New proof: `Idle-Splash`; run edit: `SetTime-Decision` (skip temperature edit) | `Idle-Splash`, stop run if active |
+| `SetTemp-Adjust` | Change proposed temperature | `SetTime-Decision` (retain proposal) | New proof: `Idle-Splash`; run edit: `SetTime-Decision` (discard temperature proposal) | `Idle-Splash`, stop run if active |
+| `SetTemp-Confirm` | Change proposed temperature | `SetTime-Decision` (retain proposal) | New proof: `Idle-Splash`; run edit: `SetTime-Decision` (discard temperature proposal) | `Idle-Splash`, stop run if active |
+| `SetTime-Decision` | — | `SetTime-Adjust` | `Run-Decision` (skip time edit; new proof is untimed) | `Idle-Splash`, stop run if active |
+| `SetTime-Adjust` | Change proposed time | `Run-Decision` (retain proposal) | `SetTime-Decision` (discard time proposal) | `Idle-Splash`, stop run if active |
+| `SetTime-Confirm` | Change proposed time | `Run-Decision` (retain proposal) | `SetTime-Decision` (discard time proposal) | `Idle-Splash`, stop run if active |
+| `Run-Decision` | — | New proof: apply settings and start `Run-Active`; run edit: apply proposed changes and continue `Run-Active` | Stop run, heater off, `Idle-Splash` | `Idle-Splash`, stop run if active |
+| `Run-Active` | — | — | `SetTemp-Decision` (run edit) | — |
+| `Complete-Decision` | — | Heater off, `Complete-DisplayA` | `SetTemp-Decision` | — |
+| `Complete-DisplayA` | — | — | `SetTemp-Decision` | `Idle-Splash` |
+| `Complete-DisplayB` | — | — | `SetTemp-Decision` | `Idle-Splash` |
+| `Settings-Splash` | — | — | — | — |
+| `Settings-Adjust` | Change proposed setting | Save, `Idle-Splash` | `Settings-Confirm` | `Idle-Splash` |
+| `Settings-Confirm` | Change proposed setting | Save, `Idle-Splash` | `Settings-Adjust` | `Idle-Splash` |
 
-## Auto transitions (not user-triggered)
+Automatic screen changes:
 
-- `Settings-Splash`: shown once for 2s → `Settings-Adjust` automatically.
-- `Run-Active` (timed variant): countdown reaching 0:00 → `Complete-Decision` (identical to a manual Mode press).
+- `Idle-Splash` and `Idle-Prompt` alternate every 2 seconds.
+- `SetTemp-Adjust` and `SetTemp-Confirm` alternate every 2 seconds.
+- `SetTime-Adjust` and `SetTime-Confirm` alternate every 2 seconds.
+- `Complete-DisplayA` and `Complete-DisplayB` alternate every 2 seconds.
+- `Settings-Adjust` and `Settings-Confirm` alternate every 2 seconds.
+- `Settings-Splash` advances to `Settings-Adjust` after 2 seconds.
+- A timed countdown reaching 0:00 opens `Complete-Decision`, including
+  if the user is on an edit screen.
+- If the active countdown reaches 0:00 during a run edit, immediately
+  discard all proposed temperature and time changes and enter
+  `Complete-Decision`. Complete Mode takes precedence over the edit,
+  regardless of which edit screen is displayed.
+- From either Idle screen, holding Up and Down for 5 seconds opens
+`Settings-Splash`.

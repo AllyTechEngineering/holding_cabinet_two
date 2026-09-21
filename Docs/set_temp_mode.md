@@ -62,3 +62,17 @@ As displayed:
  Set Temp: XXXF  
 Enter Y Mode N  
 ```
+## Editing an active run
+
+Mode at `Run-Active` opens `SetTemp-Decision`. The heater continues
+controlling to its previously confirmed setpoint throughout the edit.
+
+At `SetTemp-Decision`, Enter opens the existing Adjust/Confirm screens.
+Mode skips the temperature edit and opens `SetTime-Decision`.
+
+Up/Down changes a proposed setpoint on either `SetTemp-Adjust` or
+`SetTemp-Confirm`. Enter retains that proposal and opens
+`SetTime-Decision`; it does not yet change the active heater setpoint.
+Mode discards the proposed temperature and opens `SetTime-Decision`.
+The new setpoint takes effect only if the user later presses Enter at
+`Run-Decision`.

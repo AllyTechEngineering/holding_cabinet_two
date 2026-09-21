@@ -53,3 +53,19 @@ As displayed:
  Set Time: HH:MM
  Enter Y Mode N 
 ```
+
+## Editing an active run
+
+The existing countdown continues while the time screens are displayed.
+At `SetTime-Decision`, Enter opens the existing Adjust/Confirm screens.
+Mode skips the time edit and opens `Run-Decision`.
+
+Up/Down changes a proposed duration on either `SetTime-Adjust` or
+`SetTime-Confirm`. Enter retains that proposal and opens
+`Run-Decision`; it does not yet change the active countdown. Mode
+discards the proposed duration and returns to `SetTime-Decision`.
+
+If the user later presses Enter at `Run-Decision`, the proposed
+duration starts a new countdown from that moment. All time elapsed
+before that confirmation is ignored. If the user did not change the
+time, the existing countdown continues without restarting.
