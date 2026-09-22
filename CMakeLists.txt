@@ -61,6 +61,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Sensing
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Input
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Display
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/Control
 )
 
 # Add project symbols (macros)
