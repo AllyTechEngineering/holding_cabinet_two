@@ -28,7 +28,7 @@ extern "C" {
 
 /* ---- Countdown timer (Docs/set_time_mode.md) ---- */
 #define APP_TIME_MIN_MINUTES             15u     /* 0:15 */
-#define APP_TIME_MAX_MINUTES             240u    /* 4:00 */
+#define APP_TIME_MAX_MINUTES             600u    /* 10:00 */
 #define APP_TIME_DEFAULT_MINUTES         60u     /* 1:00 */
 
 /* Up/Down: one minute on press, then accelerate while held. */
