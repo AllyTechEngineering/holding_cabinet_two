@@ -14,8 +14,10 @@
 #include "app_types.h"
 #include "cmsis_os.h"
 #include "lcd1602_driver.h"
+#include "run_timer.h"
 #include "time_editor.h"
 #include <stdint.h>
+
 
 extern osMessageQueueId_t qInputToDisplayHandle;
 extern osMessageQueueId_t qHeatToDisplayHandle;
@@ -29,7 +31,7 @@ typedef enum {
   UI_TIME_DECISION,
   UI_TIME_ADJUST,
   UI_TIME_CONFIRM,
-  UI_RUN_DECISION
+  UI_RUN_DECISION UI_RUN_ACTIVE
 } UiScreen_t;
 
 static void display_screen(UiScreen_t screen, uint16_t temp_value,
@@ -76,12 +78,51 @@ static void display_time_screen(UiScreen_t screen, const TimeEditor_t *editor) {
   LCD1602_WriteLines(row1, screen == UI_TIME_ADJUST ? " Up+ or Down-   "
                                                     : " Enter Y Mode N ");
 }
+static void display_run_screen(const RunTimer_t *timer,
+                               const HeatStatus_t *status, uint32_t now_ms,
+                               uint8_t unit_celsius) {
+  char row1[17] = " Temp: ---F     ";
+  char row2[17] = " Time:          ";
+  uint16_t reading = status->currentTempTenthsC;
+
+  row1[10] = unit_celsius != 0u ? 'C' : 'F';
+
+  if (status->errorCode == 0u && reading != 0u && reading < 1000u) {
+    uint16_t temp = unit_celsius != 0u
+                        ? (uint16_t)((reading + 5u) / 10u)
+                        : (uint16_t)((reading * 9u + 25u) / 50u + 32u);
+
+    row1[7] = temp >= 100u ? (char)('0' + temp / 100u) : ' ';
+    row1[8] = (char)('0' + (temp / 10u) % 10u);
+    row1[9] = (char)('0' + temp % 10u);
+  }
+
+  if (RunTimer_Mode(timer) == RUN_TIMER_TIMED) {
+    uint16_t remaining = RunTimer_RemainingMinutes(timer, now_ms);
+    uint16_t hours = (uint16_t)(remaining / 60u);
+    uint16_t minutes = (uint16_t)(remaining % 60u);
+
+    row2[7] = hours >= 10u ? (char)('0' + hours / 10u) : ' ';
+    row2[8] = (char)('0' + hours % 10u);
+    row2[9] = ':';
+    row2[10] = (char)('0' + minutes / 10u);
+    row2[11] = (char)('0' + minutes % 10u);
+    LCD1602_WriteLines(row1, row2);
+  } else {
+    uint32_t elapsed = (uint32_t)(now_ms - timer->start_ms);
+    LCD1602_WriteLines(row1, ((elapsed / APP_TIME_TOGGLE_PAIR_MS) % 2u) == 0u
+                                 ? "Countdown Timer "
+                                 : "Not Used        ");
+  }
+}
 
 void DisplayTask_Run(void *argument) {
   UiScreen_t screen = UI_IDLE_SPLASH;
   TimeEditor_t time_editor;
+  RunTimer_t run_timer;
   HeatStatus_t latest_heat_status = {0};
   uint8_t event;
+  uint8_t timed_proof = 0u;
   uint8_t unit_celsius = 0u; /* Fahrenheit until Settings is implemented. */
   uint16_t proposed_temp =
       (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u + 32u);
@@ -91,6 +132,7 @@ void DisplayTask_Run(void *argument) {
   (void)argument;
 
   TimeEditor_Init(&time_editor);
+  RunTimer_Init(&run_timer);
   LCD1602_Init();
   display_screen(screen, proposed_temp, unit_celsius);
   screen_start_tick = osKernelGetTickCount();
@@ -114,6 +156,7 @@ void DisplayTask_Run(void *argument) {
 
       if (screen == UI_IDLE_SPLASH || screen == UI_IDLE_PROMPT) {
         if (event == EVT_MODE_PRESSED) {
+          timed_proof = 0u;
           screen = UI_TEMP_DECISION;
           last_activity_tick = now;
           display_screen(screen, proposed_temp, unit_celsius);
@@ -177,11 +220,13 @@ void DisplayTask_Run(void *argument) {
         if (event == EVT_MODE_PRESSED) {
           /* Discard the proposed time. */
           TimeEditor_Init(&time_editor);
+          timed_proof = 0u;
           screen = UI_TIME_DECISION;
           display_screen(screen, proposed_temp, unit_celsius);
         } else if (event == EVT_ENTER_PRESSED) {
           /* Keep the proposed time for the later run confirmation. */
           TimeEditor_Stop(&time_editor);
+          timed_proof = 1u;
           screen = UI_RUN_DECISION;
           display_screen(screen, proposed_temp, unit_celsius);
         } else if (event == EVT_UP_PRESSED || event == EVT_DOWN_PRESSED) {
