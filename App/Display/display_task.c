@@ -301,6 +301,13 @@ void DisplayTask_Run(void *argument) {
           screen_start_tick = now;
           display_screen(screen, proposed_temp, unit_celsius);
         }
+      } else if (screen == UI_COMPLETE_DISPLAY_A ||
+                 screen == UI_COMPLETE_DISPLAY_B) {
+        if (event == EVT_MODE_PRESSED) {
+          timed_proof = 0u;
+          screen = UI_TEMP_DECISION;
+          display_screen(screen, proposed_temp, unit_celsius);
+        }
       }
     }    
     uint32_t now = osKernelGetTickCount();
