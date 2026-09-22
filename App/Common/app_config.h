@@ -26,15 +26,27 @@ extern "C" {
 #define APP_TEMP_MAX_TENTHS_C   489u   /* 120F */
 #define APP_TEMP_DEFAULT_TENTHS_C 350u  /* 35°C = 95°F */
 
-/* ---- Countdown timer bounds (Docs/set_time_mode.md) ---- */
-#define APP_TIME_MIN_MINUTES    30u     /* 0:30 */
-#define APP_TIME_MAX_MINUTES    600u    /* 10:00 */
+/* ---- Countdown timer (Docs/set_time_mode.md) ---- */
+#define APP_TIME_MIN_MINUTES             15u     /* 0:15 */
+#define APP_TIME_MAX_MINUTES             240u    /* 4:00 */
+#define APP_TIME_DEFAULT_MINUTES         60u     /* 1:00 */
+
+/* Up/Down: one minute on press, then accelerate while held. */
+#define APP_TIME_TAP_STEP_MINUTES        1u
+#define APP_TIME_HOLD_START_MS           600u
+#define APP_TIME_RAMP_STAGE2_MS          2000u
+#define APP_TIME_RAMP_STAGE3_MS          4000u
+#define APP_TIME_REPEAT_1MIN_MS          200u
+#define APP_TIME_REPEAT_5MIN_SLOW_MS     400u
+#define APP_TIME_REPEAT_5MIN_FAST_MS     200u
+#define APP_TIME_REPEAT_LARGE_STEP_MINUTES 5u
 
 /* ---- UI timing (Docs/states_modes.md) ---- */
-#define APP_TOGGLE_PAIR_MS         4000u     /* 4s alternation for toggle-pair screens */
+#define APP_TOGGLE_PAIR_MS         4000u     /* Existing screen pairs */
+#define APP_TIME_TOGGLE_PAIR_MS    2000u     /* Time Adjust/Confirm pair */
 #define APP_INACTIVITY_TIMEOUT_MS  180000u   /* 3 minutes -> Idle-Splash */
-#define APP_SETTINGS_CHORD_MS      5000u     /* Up+Down held, idle-only -> Settings-Splash */
-#define APP_DISPLAY_TASK_WAKE_MS   100u      /* DisplayTask periodic wake; see Docs/tasks_queues.md */
+#define APP_SETTINGS_CHORD_MS      5000u     /* Up+Down held, idle-only */
+#define APP_DISPLAY_TASK_WAKE_MS   100u      /* DisplayTask periodic wake */
 
 /* ---- InputTask debounce ----
  * Standard mechanical-switch debounce: poll every 20ms, require 3
