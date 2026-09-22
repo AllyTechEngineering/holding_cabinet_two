@@ -276,6 +276,7 @@ void DisplayTask_Run(void *argument) {
   }
 
   if (screen != UI_IDLE_SPLASH && screen != UI_IDLE_PROMPT &&
+      screen != UI_RUN_ACTIVE &&
       (uint32_t)(now - last_activity_tick) >= APP_INACTIVITY_TIMEOUT_MS) {
     TimeEditor_Stop(&time_editor);
     screen = UI_IDLE_SPLASH;
