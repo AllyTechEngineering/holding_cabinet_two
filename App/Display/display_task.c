@@ -277,6 +277,19 @@ void DisplayTask_Run(void *argument) {
         screen = UI_COMPLETE_DECISION;
         display_screen(screen, proposed_temp, unit_celsius);
       }
+    } else if (screen == UI_COMPLETE_DECISION) {
+      if (event == EVT_MODE_PRESSED) {
+        if (complete_due_to_timeout != 0u) {
+          screen = UI_TEMP_DECISION;
+          last_activity_tick = now;
+          display_screen(screen, proposed_temp, unit_celsius);
+        } else {
+          screen = UI_RUN_ACTIVE;
+          last_run_refresh_tick = now;
+          display_run_screen(&run_timer, &latest_heat_status, now,
+                             unit_celsius);
+        }
+      }
     }
   }
 
