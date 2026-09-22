@@ -295,10 +295,14 @@ void DisplayTask_Run(void *argument) {
             display_run_screen(&run_timer, &latest_heat_status, now,
                                unit_celsius);
           }
+        } else if (event == EVT_ENTER_PRESSED) {
+          RunTimer_Stop(&run_timer);
+          screen = UI_COMPLETE_DISPLAY_A;
+          screen_start_tick = now;
+          display_screen(screen, proposed_temp, unit_celsius);
         }
       }
-    }
-
+    }    
     uint32_t now = osKernelGetTickCount();
 
     if (RunTimer_Expired(&run_timer, now)) {
@@ -346,5 +350,12 @@ void DisplayTask_Run(void *argument) {
       display_time_screen(screen, &time_editor);
       screen_start_tick = now;
     }
-  }
+    if ((screen == UI_COMPLETE_DISPLAY_A || screen == UI_COMPLETE_DISPLAY_B) &&
+        (uint32_t)(now - screen_start_tick) >= APP_TOGGLE_PAIR_MS) {
+      screen = screen == UI_COMPLETE_DISPLAY_A ? UI_COMPLETE_DISPLAY_B
+                                               : UI_COMPLETE_DISPLAY_A;
+      display_screen(screen, proposed_temp, unit_celsius);
+      screen_start_tick = now;
+    }
+    }
 }
