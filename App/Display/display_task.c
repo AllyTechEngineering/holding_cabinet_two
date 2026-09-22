@@ -256,99 +256,100 @@ static void display_screen(UiScreen_t screen, uint16_t temp_value,
           } else if (event == EVT_DOWN_RELEASED) {
             TimeEditor_Release(&time_editor, TIME_EDITOR_DOWN);
           }
-        }
-      } else if (screen == UI_RUN_DECISION) {
-        if (event == EVT_MODE_PRESSED) {
-          screen = UI_IDLE_SPLASH;
-          display_screen(screen, proposed_temp, unit_celsius);
-          screen_start_tick = now;
-        } else if (event == EVT_ENTER_PRESSED) {
-          uint8_t started = 1u;
 
-          if (timed_proof != 0u) {
-            started = RunTimer_StartTimed(&run_timer,
-                                          TimeEditor_Minutes(&time_editor), now)
-                          ? 1u
-                          : 0u;
-          } else {
-            RunTimer_StartUntimed(&run_timer, now);
-          }
-
-          if (started != 0u) {
-            screen = UI_RUN_ACTIVE;
-            last_run_refresh_tick = now;
-            display_run_screen(&run_timer, &latest_heat_status, now,
-                               unit_celsius);
-          }
-        }
-      } else if (screen == UI_RUN_ACTIVE) {
-        if (event == EVT_ENTER_PRESSED) {
-          complete_due_to_timeout = 0u;
-          screen = UI_COMPLETE_DECISION;
-          display_screen(screen, proposed_temp, unit_celsius);
-        }
-      } else if (screen == UI_COMPLETE_DECISION) {
-        if (event == EVT_MODE_PRESSED) {
-          if (complete_due_to_timeout != 0u) {
-            screen = UI_TEMP_DECISION;
-            last_activity_tick = now;
+        } else if (screen == UI_RUN_DECISION) {
+          if (event == EVT_MODE_PRESSED) {
+            screen = UI_IDLE_SPLASH;
             display_screen(screen, proposed_temp, unit_celsius);
-          } else {
-            screen = UI_RUN_ACTIVE;
-            last_run_refresh_tick = now;
-            display_run_screen(&run_timer, &latest_heat_status, now,
-                               unit_celsius);
+            screen_start_tick = now;
+          } else if (event == EVT_ENTER_PRESSED) {
+            uint8_t started = 1u;
+
+            if (timed_proof != 0u) {
+              started = RunTimer_StartTimed(
+                            &run_timer, TimeEditor_Minutes(&time_editor), now)
+                            ? 1u
+                            : 0u;
+            } else {
+              RunTimer_StartUntimed(&run_timer, now);
+            }
+
+            if (started != 0u) {
+              screen = UI_RUN_ACTIVE;
+              last_run_refresh_tick = now;
+              display_run_screen(&run_timer, &latest_heat_status, now,
+                                 unit_celsius);
+            }
+          }
+        } else if (screen == UI_RUN_ACTIVE) {
+          if (event == EVT_ENTER_PRESSED) {
+            complete_due_to_timeout = 0u;
+            screen = UI_COMPLETE_DECISION;
+            display_screen(screen, proposed_temp, unit_celsius);
+          }
+        } else if (screen == UI_COMPLETE_DECISION) {
+          if (event == EVT_MODE_PRESSED) {
+            if (complete_due_to_timeout != 0u) {
+              screen = UI_TEMP_DECISION;
+              last_activity_tick = now;
+              display_screen(screen, proposed_temp, unit_celsius);
+            } else {
+              screen = UI_RUN_ACTIVE;
+              last_run_refresh_tick = now;
+              display_run_screen(&run_timer, &latest_heat_status, now,
+                                 unit_celsius);
+            }
           }
         }
       }
-    }
 
-    uint32_t now = osKernelGetTickCount();
+      uint32_t now = osKernelGetTickCount();
 
-    if (RunTimer_Expired(&run_timer, now)) {
-      RunTimer_Stop(&run_timer);
-      TimeEditor_Stop(&time_editor);
-      complete_due_to_timeout = 1u;
-      screen = UI_COMPLETE_DECISION;
-      display_screen(screen, proposed_temp, unit_celsius);
-    }
-    if (screen == UI_RUN_ACTIVE &&
-        (uint32_t)(now - last_run_refresh_tick) >= APP_RUN_DISPLAY_REFRESH_MS) {
-      last_run_refresh_tick = now;
-      display_run_screen(&run_timer, &latest_heat_status, now, unit_celsius);
-    }
-    if (screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) {
-      if (TimeEditor_Poll(&time_editor, now)) {
-        display_time_screen(screen, &time_editor);
+      if (RunTimer_Expired(&run_timer, now)) {
+        RunTimer_Stop(&run_timer);
+        TimeEditor_Stop(&time_editor);
+        complete_due_to_timeout = 1u;
+        screen = UI_COMPLETE_DECISION;
+        display_screen(screen, proposed_temp, unit_celsius);
       }
-    }
+      if (screen == UI_RUN_ACTIVE && (uint32_t)(now - last_run_refresh_tick) >=
+                                         APP_RUN_DISPLAY_REFRESH_MS) {
+        last_run_refresh_tick = now;
+        display_run_screen(&run_timer, &latest_heat_status, now, unit_celsius);
+      }
+      if (screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) {
+        if (TimeEditor_Poll(&time_editor, now)) {
+          display_time_screen(screen, &time_editor);
+        }
+      }
 
-    if (screen != UI_IDLE_SPLASH && screen != UI_IDLE_PROMPT &&
-        screen != UI_RUN_ACTIVE && screen != UI_COMPLETE_DECISION &&
-        (uint32_t)(now - last_activity_tick) >= APP_INACTIVITY_TIMEOUT_MS) {
-      TimeEditor_Stop(&time_editor);
-      screen = UI_IDLE_SPLASH;
-      display_screen(screen, proposed_temp, unit_celsius);
-      screen_start_tick = now;
-    } else if ((screen == UI_IDLE_SPLASH || screen == UI_IDLE_PROMPT ||
-                screen == UI_TEMP_ADJUST || screen == UI_TEMP_CONFIRM) &&
-               (uint32_t)(now - screen_start_tick) >= APP_TOGGLE_PAIR_MS) {
-      if (screen == UI_IDLE_SPLASH)
-        screen = UI_IDLE_PROMPT;
-      else if (screen == UI_IDLE_PROMPT)
+      if (screen != UI_IDLE_SPLASH && screen != UI_IDLE_PROMPT &&
+          screen != UI_RUN_ACTIVE && screen != UI_COMPLETE_DECISION &&
+          (uint32_t)(now - last_activity_tick) >= APP_INACTIVITY_TIMEOUT_MS) {
+        TimeEditor_Stop(&time_editor);
         screen = UI_IDLE_SPLASH;
-      else if (screen == UI_TEMP_ADJUST)
-        screen = UI_TEMP_CONFIRM;
-      else
-        screen = UI_TEMP_ADJUST;
+        display_screen(screen, proposed_temp, unit_celsius);
+        screen_start_tick = now;
+      } else if ((screen == UI_IDLE_SPLASH || screen == UI_IDLE_PROMPT ||
+                  screen == UI_TEMP_ADJUST || screen == UI_TEMP_CONFIRM) &&
+                 (uint32_t)(now - screen_start_tick) >= APP_TOGGLE_PAIR_MS) {
+        if (screen == UI_IDLE_SPLASH)
+          screen = UI_IDLE_PROMPT;
+        else if (screen == UI_IDLE_PROMPT)
+          screen = UI_IDLE_SPLASH;
+        else if (screen == UI_TEMP_ADJUST)
+          screen = UI_TEMP_CONFIRM;
+        else
+          screen = UI_TEMP_ADJUST;
 
-      display_screen(screen, proposed_temp, unit_celsius);
-      screen_start_tick = now;
-    } else if ((screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) &&
-               (uint32_t)(now - screen_start_tick) >= APP_TIME_TOGGLE_PAIR_MS) {
-      screen = screen == UI_TIME_ADJUST ? UI_TIME_CONFIRM : UI_TIME_ADJUST;
-      display_time_screen(screen, &time_editor);
-      screen_start_tick = now;
+        display_screen(screen, proposed_temp, unit_celsius);
+        screen_start_tick = now;
+      } else if ((screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) &&
+                 (uint32_t)(now - screen_start_tick) >=
+                     APP_TIME_TOGGLE_PAIR_MS) {
+        screen = screen == UI_TIME_ADJUST ? UI_TIME_CONFIRM : UI_TIME_ADJUST;
+        display_time_screen(screen, &time_editor);
+        screen_start_tick = now;
+      }
     }
   }
-}
