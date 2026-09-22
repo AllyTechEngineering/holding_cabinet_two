@@ -27,6 +27,8 @@
 #include "sensor_task.h"
 #include "input_task.h"
 #include "display_task.h"
+#include "control_task.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -872,11 +874,7 @@ void StartConnectTask(void *argument)
 void StartHeatTask(void *argument)
 {
   /* USER CODE BEGIN StartHeatTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+HeatTask_Run(argument);
   /* USER CODE END StartHeatTask */
 }
 
