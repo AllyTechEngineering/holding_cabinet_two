@@ -30,7 +30,9 @@ typedef enum {
   UI_TIME_DECISION,
   UI_TIME_ADJUST,
   UI_TIME_CONFIRM,
-  UI_RUN_DECISION UI_RUN_ACTIVE
+  UI_RUN_DECISION,
+  UI_RUN_ACTIVE,
+  UI_COMPLETE_DECISION
 } UiScreen_t;
 
 static void display_screen(UiScreen_t screen, uint16_t temp_value,
@@ -45,6 +47,8 @@ static void display_screen(UiScreen_t screen, uint16_t temp_value,
     LCD1602_WriteLines("Countdown Timer ", "Enter Y Mode N  ");
   } else if (screen == UI_RUN_DECISION) {
     LCD1602_WriteLines(" To Start Proof ", " Enter Y Mode N ");
+    else if (screen == UI_COMPLETE_DECISION) {
+    LCD1602_WriteLines(" Proof Complete?", " Enter Y Mode N ");
   } else {
     /* Positions 12–14 hold the right-aligned, whole-degree value. */
     char row1[17] = " Set Temp:    F ";
@@ -122,12 +126,13 @@ void DisplayTask_Run(void *argument) {
   HeatStatus_t latest_heat_status = {0};
   uint8_t event;
   uint8_t timed_proof = 0u;
+  uint8_t complete_due_to_timeout = 0u;
   uint8_t unit_celsius = 0u; /* Fahrenheit until Settings is implemented. */
   uint16_t proposed_temp =
       (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u + 32u);
   uint32_t screen_start_tick;
   uint32_t last_activity_tick;
-
+  uint32_t last_run_refresh_tick;
   (void)argument;
 
   TimeEditor_Init(&time_editor);
@@ -136,6 +141,7 @@ void DisplayTask_Run(void *argument) {
   display_screen(screen, proposed_temp, unit_celsius);
   screen_start_tick = osKernelGetTickCount();
   last_activity_tick = screen_start_tick;
+  last_run_refresh_tick = screen_start_tick;
 
   for (;;) {
     while (osMessageQueueGet(qHeatToDisplayHandle, &latest_heat_status, NULL,
@@ -260,15 +266,34 @@ void DisplayTask_Run(void *argument) {
 
         if (started != 0u) {
           screen = UI_RUN_ACTIVE;
+          last_run_refresh_tick = now;
           display_run_screen(&run_timer, &latest_heat_status, now,
                              unit_celsius);
         }
+      }
+    } else if (screen == UI_RUN_ACTIVE) {
+      if (event == EVT_ENTER_PRESSED) {
+        complete_due_to_timeout = 0u;
+        screen = UI_COMPLETE_DECISION;
+        display_screen(screen, proposed_temp, unit_celsius);
       }
     }
   }
 
   uint32_t now = osKernelGetTickCount();
 
+  if (RunTimer_Expired(&run_timer, now)) {
+    RunTimer_Stop(&run_timer);
+    TimeEditor_Stop(&time_editor);
+    complete_due_to_timeout = 1u;
+    screen = UI_COMPLETE_DECISION;
+    display_screen(screen, proposed_temp, unit_celsius);
+  }
+  if (screen == UI_RUN_ACTIVE &&
+      (uint32_t)(now - last_run_refresh_tick) >= APP_RUN_DISPLAY_REFRESH_MS) {
+    last_run_refresh_tick = now;
+    display_run_screen(&run_timer, &latest_heat_status, now, unit_celsius);
+  }
   if (screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) {
     if (TimeEditor_Poll(&time_editor, now)) {
       display_time_screen(screen, &time_editor);
@@ -276,7 +301,7 @@ void DisplayTask_Run(void *argument) {
   }
 
   if (screen != UI_IDLE_SPLASH && screen != UI_IDLE_PROMPT &&
-      screen != UI_RUN_ACTIVE &&
+      screen != UI_RUN_ACTIVE && screen != UI_COMPLETE_DECISION &&
       (uint32_t)(now - last_activity_tick) >= APP_INACTIVITY_TIMEOUT_MS) {
     TimeEditor_Stop(&time_editor);
     screen = UI_IDLE_SPLASH;

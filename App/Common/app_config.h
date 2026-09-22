@@ -47,6 +47,7 @@ extern "C" {
 #define APP_INACTIVITY_TIMEOUT_MS  180000u   /* 3 minutes -> Idle-Splash */
 #define APP_SETTINGS_CHORD_MS      5000u     /* Up+Down held, idle-only */
 #define APP_DISPLAY_TASK_WAKE_MS   100u      /* DisplayTask periodic wake */
+#define APP_RUN_DISPLAY_REFRESH_MS 1000u     /* Refresh Run-Active about once per second */
 
 /* ---- InputTask debounce ----
  * Standard mechanical-switch debounce: poll every 20ms, require 3
