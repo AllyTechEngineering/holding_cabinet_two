@@ -20,10 +20,27 @@ Enter Y Mode N
 
 ## SetTime-Adjust
 
-`HH:MM` is a live placeholder for the countdown duration, no seconds
-field, no leading-zero padding beyond the fixed `HH:MM` shape (e.g.
-`4:30`, `10:00`). Valid range: **min 0:30 (30 minutes), max 10:00 (10
-hours)** — Up/Down has no effect past either bound.
+`HH:MM` shows the proposed countdown duration without a seconds field or
+a leading zero on the hour (`1:00`, `4:30`, `10:00`). For a new proof,
+adjustment starts at 1:00. The valid range is 0:15 through 10:00.
+Up/Down stops at either bound; the value does not wrap around.
+
+A debounced Up or Down press changes the duration by one minute
+immediately. If the button remains held, changes repeat as follows:
+
+| Time since press | Change |
+|---|---|
+| Less than 0.6 seconds | No repeat |
+| 0.6 to less than 2 seconds | 1 minute every 200 ms |
+| 2 to less than 4 seconds | 5 minutes every 400 ms |
+| 4 seconds or longer | 5 minutes every 200 ms |
+
+Repeat timing is measured from the previous repeat, so crossing a hold
+threshold does not itself cause an extra change. Releasing the button
+stops repetition. Pressing the opposite direction starts a new hold
+ramp. The same controls work on `SetTime-Adjust` and `SetTime-Confirm`.
+Their 2-second screen alternation continues during adjustment; Up/Down
+does not restart it.
 
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|

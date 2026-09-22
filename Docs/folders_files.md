@@ -2,7 +2,7 @@
 ```
 App/
 ├── Common/
-│   ├── app_config.h        # constants: temp range (65–120°F), time bounds (0:30–10:00),
+│   ├── app_config.h        # constants: temp range (65–120°F), time bounds (0:15–10:00),
 │   │                        # hysteresis band, debounce interval, chord hold (5000ms),
 │   │                        # toggle interval (2000ms), inactivity timeout (3min),
 │   │                        # DisplayTask wake period (100ms)
@@ -27,6 +27,8 @@ App/
 │   ├── display_task.c/h      # DisplayTask — the state machine, owns setpoint/mode/timer
 │   ├── lcd1602_driver.c/h    # LCD1602/PCF8574 I2C driver (ported from bring-up)
 │   └── settings_store.c/h    # ← new, Flash-EEPROM read/write (temp units, setpoint, timer)
+│   └── time_editor.c/h       # proposed countdown duration, bounds, and Up/Down
+│                             # tap/hold ramp; independent of LCD, GPIO, and RTOS
 │
 ├── Actuators/
 │   └── relay_driver.c/h      # active-low relay GPIO driving (ported from bring-up)
