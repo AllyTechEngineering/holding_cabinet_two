@@ -51,6 +51,7 @@ App/Input/switch_driver.c
 App/Display/display_task.c
 App/Display/time_editor.c
 App/Display/lcd1602_driver.c
+App/Display/run_timer.c
 )
 
 # Add include paths
