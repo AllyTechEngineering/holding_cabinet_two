@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 extern osMessageQueueId_t qInputToDisplayHandle;
+extern osMessageQueueId_t qHeatToDisplayHandle;
 
 typedef enum {
   UI_IDLE_SPLASH,
@@ -60,8 +61,7 @@ static void display_screen(UiScreen_t screen, uint16_t temp_value,
   }
 }
 
-static void display_time_screen(UiScreen_t screen,
-                                const TimeEditor_t *editor) {
+static void display_time_screen(UiScreen_t screen, const TimeEditor_t *editor) {
   uint16_t total_minutes = TimeEditor_Minutes(editor);
   uint16_t hours = (uint16_t)(total_minutes / 60u);
   uint16_t minutes = (uint16_t)(total_minutes % 60u);
@@ -73,14 +73,14 @@ static void display_time_screen(UiScreen_t screen,
   row1[14] = (char)('0' + (minutes / 10u));
   row1[15] = (char)('0' + (minutes % 10u));
 
-  LCD1602_WriteLines(row1, screen == UI_TIME_ADJUST
-                               ? " Up+ or Down-   "
-                               : " Enter Y Mode N ");
+  LCD1602_WriteLines(row1, screen == UI_TIME_ADJUST ? " Up+ or Down-   "
+                                                    : " Enter Y Mode N ");
 }
 
 void DisplayTask_Run(void *argument) {
   UiScreen_t screen = UI_IDLE_SPLASH;
   TimeEditor_t time_editor;
+  HeatStatus_t latest_heat_status = {0};
   uint8_t event;
   uint8_t unit_celsius = 0u; /* Fahrenheit until Settings is implemented. */
   uint16_t proposed_temp =
@@ -97,6 +97,11 @@ void DisplayTask_Run(void *argument) {
   last_activity_tick = screen_start_tick;
 
   for (;;) {
+    while (osMessageQueueGet(qHeatToDisplayHandle, &latest_heat_status, NULL,
+                             0u) == osOK) {
+      /* Keep the newest status for the Run screen. */
+    }
+
     if (osMessageQueueGet(qInputToDisplayHandle, &event, NULL,
                           APP_DISPLAY_TASK_WAKE_MS) == osOK) {
       uint32_t now = osKernelGetTickCount();
@@ -229,8 +234,7 @@ void DisplayTask_Run(void *argument) {
       display_screen(screen, proposed_temp, unit_celsius);
       screen_start_tick = now;
     } else if ((screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) &&
-               (uint32_t)(now - screen_start_tick) >=
-                   APP_TIME_TOGGLE_PAIR_MS) {
+               (uint32_t)(now - screen_start_tick) >= APP_TIME_TOGGLE_PAIR_MS) {
       screen = screen == UI_TIME_ADJUST ? UI_TIME_CONFIRM : UI_TIME_ADJUST;
       display_time_screen(screen, &time_editor);
       screen_start_tick = now;
