@@ -92,7 +92,7 @@ const osThreadAttr_t SenseTask_attributes = {
 osThreadId_t DisplayTaskHandle;
 const osThreadAttr_t DisplayTask_attributes = {
     .name = "DisplayTask",
-    .stack_size = 128 * 4,
+    .stack_size = 256 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for ConnectTask */
