@@ -160,7 +160,18 @@ void DisplayTask_Run(void *argument) {
     if (osMessageQueueGet(qInputToDisplayHandle, &event, NULL,
                           APP_DISPLAY_TASK_WAKE_MS) == osOK) {
       uint32_t now = osKernelGetTickCount();
-
+      /* Countdown expiry takes priority over the received button event. */
+      if (RunTimer_Expired(&run_timer, now)) {
+        RunTimer_Stop(&run_timer);
+        TimeEditor_Init(&time_editor);
+        proposed_temp = active_temp;
+        timed_proof = 0u;
+        editing_run = 0u;
+        complete_due_to_timeout = 1u;
+        screen = UI_COMPLETE_DECISION;
+        display_screen(screen, proposed_temp, unit_celsius);
+        continue;
+      }
       if (screen != UI_IDLE_SPLASH && screen != UI_IDLE_PROMPT &&
           (event == EVT_UP_PRESSED || event == EVT_DOWN_PRESSED ||
            event == EVT_MODE_PRESSED || event == EVT_ENTER_PRESSED)) {
