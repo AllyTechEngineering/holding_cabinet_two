@@ -273,6 +273,12 @@ void DisplayTask_Run(void *argument) {
         }
       } else if (screen == UI_RUN_DECISION) {
         if (event == EVT_MODE_PRESSED) {
+          /* Cancel setup or stop the run and discard its proposals. */
+          RunTimer_Stop(&run_timer);
+          TimeEditor_Stop(&time_editor);
+          proposed_temp = active_temp;
+          timed_proof = 0u;
+          editing_run = 0u;
           screen = UI_IDLE_SPLASH;
           display_screen(screen, proposed_temp, unit_celsius);
           screen_start_tick = now;
@@ -280,16 +286,20 @@ void DisplayTask_Run(void *argument) {
           uint8_t started = 1u;
 
           if (timed_proof != 0u) {
+            /* A retained duration starts a new countdown from now. */
             started = RunTimer_StartTimed(&run_timer,
                                           TimeEditor_Minutes(&time_editor), now)
                           ? 1u
                           : 0u;
-          } else {
+          } else if (editing_run == 0u) {
+            /* A new proof without a time proposal is untimed. */
             RunTimer_StartUntimed(&run_timer, now);
           }
+          /* During an edit, no time proposal leaves the timer unchanged. */
 
           if (started != 0u) {
             active_temp = proposed_temp;
+            editing_run = 0u;
             screen = UI_RUN_ACTIVE;
             last_run_refresh_tick = now;
             display_run_screen(&run_timer, &latest_heat_status, now,
@@ -338,7 +348,10 @@ void DisplayTask_Run(void *argument) {
 
     if (RunTimer_Expired(&run_timer, now)) {
       RunTimer_Stop(&run_timer);
-      TimeEditor_Stop(&time_editor);
+      TimeEditor_Init(&time_editor);
+      proposed_temp = active_temp;
+      timed_proof = 0u;
+      editing_run = 0u;
       complete_due_to_timeout = 1u;
       screen = UI_COMPLETE_DECISION;
       display_screen(screen, proposed_temp, unit_celsius);
@@ -357,7 +370,11 @@ void DisplayTask_Run(void *argument) {
     if (screen != UI_IDLE_SPLASH && screen != UI_IDLE_PROMPT &&
         screen != UI_RUN_ACTIVE && screen != UI_COMPLETE_DECISION &&
         (uint32_t)(now - last_activity_tick) >= APP_INACTIVITY_TIMEOUT_MS) {
-      TimeEditor_Stop(&time_editor);
+      RunTimer_Stop(&run_timer);
+      TimeEditor_Init(&time_editor);
+      proposed_temp = active_temp;
+      timed_proof = 0u;
+      editing_run = 0u;
       screen = UI_IDLE_SPLASH;
       display_screen(screen, proposed_temp, unit_celsius);
       screen_start_tick = now;
