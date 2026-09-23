@@ -18,6 +18,7 @@
 
 extern osMessageQueueId_t qSenseToHeatHandle;
 extern osMessageQueueId_t qHeatToDisplayHandle;
+extern osMessageQueueId_t qDisplayToHeatHandle;
 
 #define HEAT_STATUS_WAIT_MS 100u
 
@@ -41,6 +42,9 @@ static void publish_status(const HeatStatus_t *status) {
 
 void HeatTask_Run(void *argument) {
   uint16_t reading;
+  uint16_t setpoint_tenths_c = 0u;
+  uint8_t run_requested = 0u;
+  HeatCommand_t command;
   HeatStatus_t status = {0};
 
   (void)argument;
