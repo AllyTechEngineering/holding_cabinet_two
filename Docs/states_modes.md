@@ -59,9 +59,10 @@ that content lives in each mode's own file (see "Content owner" column).
 ## Transition table
 
 “New proof” means the user entered setup from Idle. “Run edit” means
-the user entered setup by pressing Mode during `Run-Active`. Adjust
-and Confirm screen pairs alternate every 2 seconds; Enter and Up/Down
-work on either screen.
+the user entered setup by pressing Mode during `Run-Active`.
+Temperature Adjust/Confirm screens alternate every 4 seconds.
+Time Adjust/Confirm screens alternate every 2 seconds.
+Enter and Up/Down work on either screen.
 
 | State | Up/Down | Enter → | Mode → | Timeout → |
 |---|---|---|---|---|
@@ -84,10 +85,10 @@ work on either screen.
 
 Automatic screen changes:
 
-- `Idle-Splash` and `Idle-Prompt` alternate every 2 seconds.
-- `SetTemp-Adjust` and `SetTemp-Confirm` alternate every 2 seconds.
+- `Idle-Splash` and `Idle-Prompt` alternate every 4 seconds.
+- `SetTemp-Adjust` and `SetTemp-Confirm` alternate every 4 seconds.
 - `SetTime-Adjust` and `SetTime-Confirm` alternate every 2 seconds.
-- `Complete-DisplayA` and `Complete-DisplayB` alternate every 2 seconds.
+- `Complete-DisplayA` and `Complete-DisplayB` alternate every 4 seconds.
 - `Settings-Adjust` and `Settings-Confirm` alternate every 2 seconds.
 - `Settings-Splash` advances to `Settings-Adjust` after 2 seconds.
 - A timed countdown reaching 0:00 opens `Complete-Decision`, including
@@ -97,4 +98,4 @@ Automatic screen changes:
   `Complete-Decision`. Complete Mode takes precedence over the edit,
   regardless of which edit screen is displayed.
 - From either Idle screen, holding Up and Down for 5 seconds opens
-`Settings-Splash`.
+  `Settings-Splash`.
