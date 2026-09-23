@@ -132,10 +132,12 @@ void DisplayTask_Run(void *argument) {
   HeatStatus_t latest_heat_status = {0};
   uint8_t event;
   uint8_t timed_proof = 0u;
+  uint8_t editing_run = 0u;
   uint8_t complete_due_to_timeout = 0u;
   uint8_t unit_celsius = 0u; /* Fahrenheit until Settings is implemented. */
   uint16_t proposed_temp =
       (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u + 32u);
+  uint16_t active_temp = proposed_temp;
   uint32_t screen_start_tick;
   uint32_t last_activity_tick;
   uint32_t last_run_refresh_tick;
@@ -168,29 +170,39 @@ void DisplayTask_Run(void *argument) {
       if (screen == UI_IDLE_SPLASH || screen == UI_IDLE_PROMPT) {
         if (event == EVT_MODE_PRESSED) {
           timed_proof = 0u;
+          editing_run = 0u;
           screen = UI_TEMP_DECISION;
           last_activity_tick = now;
           display_screen(screen, proposed_temp, unit_celsius);
         }
       } else if (screen == UI_TEMP_DECISION) {
         if (event == EVT_MODE_PRESSED) {
-          screen = UI_IDLE_SPLASH;
+          screen = editing_run != 0u ? UI_TIME_DECISION : UI_IDLE_SPLASH;
           display_screen(screen, proposed_temp, unit_celsius);
           screen_start_tick = now;
         } else if (event == EVT_ENTER_PRESSED) {
-          proposed_temp =
-              unit_celsius != 0u
-                  ? (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C + 5u) / 10u)
-                  : (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u +
-                               32u);
+          if (editing_run != 0u) {
+            proposed_temp = active_temp;
+          } else {
+            proposed_temp =
+                unit_celsius != 0u
+                    ? (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C + 5u) / 10u)
+                    : (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u +
+                                 32u);
+          }
           screen = UI_TEMP_ADJUST;
           display_screen(screen, proposed_temp, unit_celsius);
           screen_start_tick = now;
         }
       } else if (screen == UI_TEMP_ADJUST || screen == UI_TEMP_CONFIRM) {
         if (event == EVT_MODE_PRESSED) {
-          /* New proof: discard the proposal and return to Idle. */
-          screen = UI_IDLE_SPLASH;
+          if (editing_run != 0u) {
+            /* Discard the temperature edit and continue to time setup. */
+            proposed_temp = active_temp;
+            screen = UI_TIME_DECISION;
+          } else {
+            screen = UI_IDLE_SPLASH;
+          }
           display_screen(screen, proposed_temp, unit_celsius);
           screen_start_tick = now;
         } else if (event == EVT_ENTER_PRESSED) {
@@ -271,6 +283,7 @@ void DisplayTask_Run(void *argument) {
           }
 
           if (started != 0u) {
+            active_temp = proposed_temp;
             screen = UI_RUN_ACTIVE;
             last_run_refresh_tick = now;
             display_run_screen(&run_timer, &latest_heat_status, now,
@@ -281,6 +294,10 @@ void DisplayTask_Run(void *argument) {
         if (event == EVT_ENTER_PRESSED) {
           complete_due_to_timeout = 0u;
           screen = UI_COMPLETE_DECISION;
+          display_screen(screen, proposed_temp, unit_celsius);
+        } else if (event == EVT_MODE_PRESSED) {
+          editing_run = 1u;
+          screen = UI_TEMP_DECISION;
           display_screen(screen, proposed_temp, unit_celsius);
         }
       } else if (screen == UI_COMPLETE_DECISION) {
@@ -309,7 +326,7 @@ void DisplayTask_Run(void *argument) {
           display_screen(screen, proposed_temp, unit_celsius);
         }
       }
-    }    
+    }
     uint32_t now = osKernelGetTickCount();
 
     if (RunTimer_Expired(&run_timer, now)) {
@@ -364,5 +381,5 @@ void DisplayTask_Run(void *argument) {
       display_screen(screen, proposed_temp, unit_celsius);
       screen_start_tick = now;
     }
-    }
+  }
 }
