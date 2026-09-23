@@ -230,28 +230,35 @@ void DisplayTask_Run(void *argument) {
         }
       } else if (screen == UI_TIME_DECISION) {
         if (event == EVT_MODE_PRESSED) {
-          /* Skip the timer: this would be an untimed proof. */
+          /* No time proposal: preserve an existing run's countdown. */
+          timed_proof = 0u;
           screen = UI_RUN_DECISION;
-          display_screen(screen, proposed_temp, unit_celsius);
+          LCD1602_WriteLines(editing_run != 0u ? " Apply Changes? "
+                                               : " To Start Proof ",
+                             " Enter Y Mode N ");
         } else if (event == EVT_ENTER_PRESSED) {
+          /* Always start the proposed duration at the default 1:00. */
           TimeEditor_Init(&time_editor);
+          timed_proof = 0u;
           screen = UI_TIME_ADJUST;
           screen_start_tick = now;
           display_time_screen(screen, &time_editor);
         }
       } else if (screen == UI_TIME_ADJUST || screen == UI_TIME_CONFIRM) {
         if (event == EVT_MODE_PRESSED) {
-          /* Discard the proposed time. */
+          /* Discard the proposed duration without changing the run timer. */
           TimeEditor_Init(&time_editor);
           timed_proof = 0u;
           screen = UI_TIME_DECISION;
           display_screen(screen, proposed_temp, unit_celsius);
         } else if (event == EVT_ENTER_PRESSED) {
-          /* Keep the proposed time for the later run confirmation. */
+          /* Retain the duration for confirmation at Run-Decision. */
           TimeEditor_Stop(&time_editor);
           timed_proof = 1u;
           screen = UI_RUN_DECISION;
-          display_screen(screen, proposed_temp, unit_celsius);
+          LCD1602_WriteLines(editing_run != 0u ? " Apply Changes? "
+                                               : " To Start Proof ",
+                             " Enter Y Mode N ");
         } else if (event == EVT_UP_PRESSED || event == EVT_DOWN_PRESSED) {
           TimeEditorDirection_t direction =
               event == EVT_UP_PRESSED ? TIME_EDITOR_UP : TIME_EDITOR_DOWN;
@@ -264,7 +271,6 @@ void DisplayTask_Run(void *argument) {
         } else if (event == EVT_DOWN_RELEASED) {
           TimeEditor_Release(&time_editor, TIME_EDITOR_DOWN);
         }
-
       } else if (screen == UI_RUN_DECISION) {
         if (event == EVT_MODE_PRESSED) {
           screen = UI_IDLE_SPLASH;
@@ -297,6 +303,7 @@ void DisplayTask_Run(void *argument) {
           display_screen(screen, proposed_temp, unit_celsius);
         } else if (event == EVT_MODE_PRESSED) {
           editing_run = 1u;
+          proposed_temp = active_temp;
           screen = UI_TEMP_DECISION;
           display_screen(screen, proposed_temp, unit_celsius);
         }
