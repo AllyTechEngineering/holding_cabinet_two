@@ -98,17 +98,10 @@ The firmware shall support Fahrenheit and Celsius temperature units.
 Fahrenheit shall be the default temperature unit.
 
 
-### TEMP-005 — Heater Control
+### TEMP-005 — Temperature Regulation
 
-The system shall maintain the cabinet temperature within ±3°F of the user-selected temperature.
-
-
-### TEMP-006 — Temperature Sampling
-
-The firmware shall periodically measure cabinet temperature while the system
-is operating.
-
-The required temperature sampling interval is TBD.
+The system shall maintain the cabinet temperature within ±3°F of the
+user-selected temperature.
 
 
 ## 5. Timer Requirements
@@ -185,9 +178,7 @@ The local user interface shall support the following four user inputs:
 - Down
 
 
-### UI-002 — Button Processing
-
-The firmware shall debounce user button inputs.
+### UI-002 — Button Response
 
 A normal button press shall result in one user-interface action unless the
 button supports an intentional hold function.
@@ -402,12 +393,6 @@ The Settings display behavior is TBD pending completion of Settings-mode
 requirements.
 
 
-### DISP-007 — Dynamic Values
-
-The firmware shall update dynamic values on the display without leaving
-characters from previously displayed longer values.
-
-
 ### DISP-008 — Exact Screen Wording
 
 Exact LCD wording and character placement are TBD for consolidation into an
@@ -495,7 +480,7 @@ The detection thresholds are TBD.
 
 ### FAULT-002 — NTC Fault Codes
 
-The following fault codes are assigned:
+The firmware shall report the following fault codes:
 
 - Error 10: NTC open
 - Error 11: NTC short
@@ -519,13 +504,6 @@ While in the Error state, normal user-interface commands shall not resume
 operation.
 
 Recovery behavior from a firmware fault is TBD.
-
-
-### FAULT-006 — Additional Fault Detection
-
-Additional firmware-detected faults are TBD.
-
-Heater-open and heater-short detection are not currently required.
 
 
 ## 15. Settings Requirements
@@ -552,12 +530,3 @@ Additional Settings-mode functionality is TBD.
 ### CONN-001 — Connectivity Status
 
 Remote connectivity is not required for the current proof-of-concept firmware.
-
-
-### CONN-002 — Future Connectivity
-
-Future firmware is expected to support communication with an external
-connectivity module.
-
-The communication protocol, command set, remote-control behavior, security,
-fault handling, and connectivity requirements are TBD.
