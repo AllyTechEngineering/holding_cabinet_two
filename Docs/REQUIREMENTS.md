@@ -360,46 +360,10 @@ The firmware shall provide the required local operating information using
 the cabinet LCD.
 
 
-### DISP-002 — Idle Display
+### DISP-002 — HMI Specification
 
-While Idle, the firmware shall alternate between the Idle splash and Idle
-prompt displays every 4 seconds.
-
-
-### DISP-003 — Temperature Adjustment Display
-
-The temperature Adjust and Confirm displays shall alternate every 4 seconds.
-
-User input shall remain active regardless of which of the two displays is
-currently visible.
-
-
-### DISP-004 — Timer Adjustment Display
-
-The timer Adjust and Confirm displays shall alternate every 2 seconds.
-
-User input shall remain active regardless of which of the two displays is
-currently visible.
-
-
-### DISP-005 — Completion Display
-
-The proof-complete displays shall alternate every 4 seconds.
-
-
-### DISP-006 — Settings Display
-
-The Settings display behavior is TBD pending completion of Settings-mode
-requirements.
-
-
-### DISP-008 — Exact Screen Wording
-
-Exact LCD wording and character placement are TBD for consolidation into an
-appropriate UI reference.
-
-Exact character positioning is not maintained as a behavioral requirement in
-this document.
+The firmware shall implement the LCD screens, screen sequencing, display
+timing, and user interaction defined in `HMI.md`.
 
 
 ## 12. Persistence Requirements

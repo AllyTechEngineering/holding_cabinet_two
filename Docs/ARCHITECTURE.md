@@ -7,8 +7,12 @@ Proofing Oven.
 
 `REQUIREMENTS.md` defines what the firmware is required to do.
 
+`HMI.md` defines the front-panel human-machine interface, including HMI
+states, state transitions, user interactions, LCD content, screen sequencing,
+and display timing.
+
 This document defines how the firmware is organized to satisfy those
-requirements.
+requirements and implement the HMI.
 
 Implementation details that are adequately represented by the source code do
 not need to be duplicated here.
@@ -72,7 +76,7 @@ The general data flow is:
     +-------------+
        Temperature
 
-`DisplayTask` also receives heater status from `HeatTask` and owns LCD/UI
+`DisplayTask` also receives heater status from `HeatTask` and owns LCD/HMI
 operation.
 
 The exact queue relationships are described in Section 5.
@@ -109,13 +113,6 @@ The final sensor calibration strategy and NTC fault thresholds are TBD.
 
 `InputTask` is responsible for physical front-panel button acquisition.
 
-The four user controls are:
-
-- Mode
-- Enter
-- Up
-- Down
-
 The physical front-panel switches are active-low. A GPIO low level represents
 a pressed switch.
 
@@ -128,32 +125,31 @@ This includes:
 - Button debouncing.
 - Press and release detection.
 - Button-hold processing where required.
-- Detection of the Up+Down Settings-entry chord.
+- Detection of multi-button input combinations required by the HMI.
 
-The Up+Down Settings-entry chord is detected by `InputTask`.
+`InputTask` reports button events to `DisplayTask`.
 
-When both buttons remain held for the required duration, `InputTask` generates
-a Settings-entry event.
+`InputTask` does not determine whether a button event is valid for the current
+HMI state. That decision belongs to `DisplayTask`, which owns the HMI state
+machine.
 
-`InputTask` does not determine whether the current application state permits
-entry into Settings. That decision belongs to `DisplayTask`, which owns the
-user-interface state machine.
+The required controls and their HMI behavior are defined in `HMI.md`.
 
 
 ### 4.3 DisplayTask
 
-`DisplayTask` owns the front-panel application state machine.
+`DisplayTask` owns the front-panel application HMI state machine.
 
 Its responsibilities include:
 
 - Processing button events received from `InputTask`.
-- Managing UI states and state transitions.
+- Managing HMI states and state transitions.
 - Managing proposed and confirmed temperature settings.
 - Managing proposed and confirmed timer settings.
 - Managing timed and untimed run state.
 - Managing the proofing countdown.
 - Managing active-run editing.
-- Managing UI inactivity timing.
+- Managing HMI inactivity timing.
 - Rendering information to the LCD.
 - Sending confirmed run-control information to `HeatTask`.
 - Receiving heater status for display purposes.
@@ -167,11 +163,13 @@ The current periodic wake interval is approximately 100 ms.
 This allows `DisplayTask` to perform time-dependent application processing
 without requiring a button event, including:
 
-- Automatic display changes.
+- HMI timing.
 - Inactivity timeout processing.
-- Active-run display refresh.
+- Dynamic display refresh.
 - Countdown processing.
 - Countdown-expiration processing.
+
+The required HMI behavior is defined in `HMI.md`.
 
 
 ### 4.4 HeatTask
@@ -188,7 +186,7 @@ Its responsibilities include:
 - Reporting heater status to `DisplayTask`.
 - Removing the heater command when heating is not permitted.
 
-`HeatTask` does not own the front-panel state machine.
+`HeatTask` does not own the front-panel HMI state machine.
 
 
 ### 4.5 ConnectTask
@@ -222,7 +220,7 @@ Consumer:
 
 Purpose:
 
-Transfers discrete button events to the user-interface state machine.
+Transfers discrete button events to the HMI state machine.
 
 Current queue depth:
 
@@ -336,39 +334,12 @@ bytes could corrupt a communications message.
 
 ## 6. User-Interface State Machine
 
-`DisplayTask` owns the application state machine.
+`DisplayTask` owns the application HMI state machine.
 
-The current primary state flow is:
+The HMI state definitions, state transitions, user interactions, screen
+sequencing, and display timing are defined in `HMI.md`.
 
-    Idle-Splash
-         |
-         v
-    Idle-Prompt
-         |
-         v
-    SetTemp-Decision
-         |
-         v
-    SetTemp-Adjust <--> SetTemp-Confirm
-         |
-         v
-    SetTime-Decision
-         |
-         v
-    SetTime-Adjust <--> SetTime-Confirm
-         |
-         v
-    Run-Decision
-         |
-         v
-    Run-Active
-         |
-         v
-    Complete-Decision
-
-Additional completion and Settings states are entered as required.
-
-The state machine distinguishes between:
+The firmware architecture distinguishes between:
 
 - Configuring a new proofing run.
 - Editing an active proofing run.
@@ -382,13 +353,13 @@ confirmed settings until proposed changes are confirmed.
 The firmware architecture separates proposed user settings from confirmed
 active settings.
 
-During configuration or active-run editing, Up and Down modify proposed
+During configuration or active-run editing, user input modifies proposed
 values.
 
 The proposed values do not immediately modify an active proofing run.
 
-When the user reaches `Run-Decision` and confirms the changes, the proposed
-values become the confirmed values.
+When the user confirms the run configuration, the proposed values become the
+confirmed values.
 
 For an active-run edit:
 
@@ -397,7 +368,6 @@ For an active-run edit:
 - Proposed temperature changes do not affect heater control.
 - Proposed timer changes do not affect the current countdown.
 - Confirming the edit applies the proposed values.
-- Cancelling the run from `Run-Decision` stops the active run.
 
 If a changed timer duration is confirmed, a new countdown begins using the
 newly confirmed duration.
@@ -407,6 +377,9 @@ Elapsed time from the previous countdown is not applied to the new duration.
 If the timer duration was not changed, the existing countdown continues
 without restarting.
 
+The exact user interaction used to propose, confirm, or cancel changes is
+defined in `HMI.md`.
+
 
 ## 8. Countdown Architecture
 
@@ -415,16 +388,15 @@ The proofing countdown is managed by `DisplayTask`.
 The countdown is based on elapsed RTOS time rather than relying on the LCD
 update rate.
 
-This allows the countdown to continue independently of which UI screen is
+This allows the countdown to continue independently of which HMI state is
 currently displayed.
 
 During an active-run edit, the countdown continues in the background.
 
-If the countdown reaches 0:00 while the user is editing the run:
+Countdown expiration is processed independently of HMI display activity.
 
-1. Proposed changes are discarded.
-2. Heating is stopped.
-3. The state machine enters the completion sequence.
+The required behavior resulting from countdown expiration is defined in
+`REQUIREMENTS.md`, with the associated HMI transition defined in `HMI.md`.
 
 
 ## 9. Temperature-Sensing Architecture
@@ -513,34 +485,27 @@ independently verify heater current or actual heater operation.
 
 ## 12. Completion Architecture
 
-Completion can be entered by either:
+Completion can be initiated by either:
 
 - A user request during an active proof.
 - Expiration of a timed proofing countdown.
 
-The completion path retains information about why completion was entered.
+The application retains the reason that completion was initiated so that
+`DisplayTask` can apply the appropriate completion behavior.
 
-For a manually requested completion, cancelling completion returns to the
-active run.
-
-For timer-driven completion, heating has already stopped and the expired run
-is not resumed.
-
-Entry into `Complete-Decision` initiates the completion audible alert.
+The exact completion-state transitions and user interactions are defined in
+`HMI.md`.
 
 
 ## 13. Audible Alert Architecture
 
 The buzzer is controlled by firmware.
 
-The completion alert is generated when the state machine enters
-`Complete-Decision`, rather than continuously while that screen is refreshed.
+Completion-alert generation is initiated by the HMI state machine.
 
-The current completion pattern is:
-
-    Beep 1 -> silence -> Beep 2 -> silence -> Beep 3
-
-The required beep and silence durations are defined in `REQUIREMENTS.md`.
+The required audible-alert behavior and timing are defined in
+`REQUIREMENTS.md` and the associated operator interaction is defined in
+`HMI.md`.
 
 
 ## 14. Persistence Architecture
@@ -559,8 +524,8 @@ Active-run state is not persistent.
 A power interruption or reset does not automatically restore or resume a
 proofing run.
 
-Persistence occurs at defined confirmation points rather than on every Up or
-Down button press.
+Persistence occurs at defined confirmation points rather than on every user
+adjustment.
 
 The final nonvolatile-storage implementation is TBD.
 
@@ -633,6 +598,8 @@ operation.
 
 Detailed recovery behavior is TBD.
 
+The Error-state operator interface is defined in `HMI.md`.
+
 
 ## 16. Display Architecture
 
@@ -640,23 +607,27 @@ Detailed recovery behavior is TBD.
 
 The display driver is responsible for low-level communication with the LCD.
 
-Application code determines what information is displayed based on the
-current state.
+`DisplayTask` renders the LCD according to the current HMI state and associated
+application data.
 
 Dynamic screens are periodically refreshed by `DisplayTask`.
 
-Screen transitions caused by elapsed time are also processed by
-`DisplayTask`.
+The exact LCD content, character placement, display sequencing, and
+HMI-controlled display timing are defined in `HMI.md`.
 
 
 ## 17. Settings Architecture
 
-Settings entry is initiated by an event generated by `InputTask`.
+Settings entry events are generated by `InputTask`.
 
-`DisplayTask` determines whether the event is valid for the current
-application state.
+`DisplayTask` determines whether a Settings-entry event is valid for the
+current application state.
+
+Settings values are managed as proposed values until confirmed.
 
 The current Settings functionality is primarily temperature-unit selection.
+
+The Settings user interaction and display behavior are defined in `HMI.md`.
 
 Additional Settings functionality is TBD.
 
