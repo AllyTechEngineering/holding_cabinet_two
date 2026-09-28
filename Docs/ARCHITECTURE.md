@@ -116,6 +116,9 @@ The four user controls are:
 - Up
 - Down
 
+The physical front-panel switches are active-low. A GPIO low level represents
+a pressed switch.
+
 `InputTask` performs the low-level processing necessary to convert physical
 button activity into discrete application button events.
 
@@ -325,11 +328,10 @@ status.
 
 This queue is reserved for future connectivity work.
 
-Its final payload, depth, and data-handling semantics shall be reviewed when
-the connectivity protocol is designed.
+Its final payload, depth, and data-handling semantics are TBD.
 
-UART byte streams shall not automatically use latest-value-wins semantics
-because discarded bytes could corrupt a communications message.
+UART byte streams will not use latest-value-wins semantics because discarded
+bytes could corrupt a communications message.
 
 
 ## 6. User-Interface State Machine
@@ -371,9 +373,8 @@ The state machine distinguishes between:
 - Configuring a new proofing run.
 - Editing an active proofing run.
 
-This distinction is important because an active proof continues operating
-using its previously confirmed settings while proposed changes are being
-edited.
+During active-run editing, the proof continues operating using its previously
+confirmed settings until proposed changes are confirmed.
 
 
 ## 7. Proposed and Confirmed Values
@@ -421,12 +422,9 @@ During an active-run edit, the countdown continues in the background.
 
 If the countdown reaches 0:00 while the user is editing the run:
 
-1. The active proof takes precedence over the unconfirmed edit.
-2. Proposed changes are discarded.
-3. Heating is stopped.
-4. The state machine enters the completion sequence.
-
-This prevents an edit screen from delaying completion of a timed proof.
+1. Proposed changes are discarded.
+2. Heating is stopped.
+3. The state machine enters the completion sequence.
 
 
 ## 9. Temperature-Sensing Architecture
@@ -436,26 +434,24 @@ ADC input.
 
 The current divider topology places:
 
-- A fixed resistor between the supply and the ADC sense node.
+- A fixed 10 kΩ resistor between 3.3 V and the ADC sense node.
 - The NTC thermistor between the ADC sense node and ground.
 
 With this topology, increasing ADC voltage corresponds to increasing
 thermistor resistance and therefore decreasing temperature.
 
+The current NTC is an MF52B-type thermistor with a nominal resistance of
+10 kΩ at 25°C and a Beta value of approximately 3950 K.
+
 The firmware converts the ADC measurement to thermistor resistance and then
 to temperature using the thermistor Beta equation.
-
-Temperature is converted into an application representation suitable for
-inter-task communication and heater control.
 
 The final production calibration method is TBD.
 
 
 ## 10. Heater-Control Architecture
 
-The proof-of-concept uses on/off temperature control rather than PID control.
-
-This is commonly referred to as bang-bang control with hysteresis.
+The proof-of-concept uses on/off temperature control with hysteresis.
 
 The control concept is:
 
@@ -478,20 +474,16 @@ The control concept is:
     | Heater command    |
     +-------------------+
 
-Hysteresis is used to prevent rapid heater switching near the temperature
-setpoint.
-
-The architecture intentionally does not use PID control for the current
-proof-of-concept.
+Hysteresis prevents rapid heater switching near the temperature setpoint.
 
 The exact heater-on and heater-off thresholds are TBD and will be established
 during hot-cabinet testing.
 
-Those thresholds shall be selected so that the implemented control behavior
-satisfies the temperature-regulation requirement in `REQUIREMENTS.md`.
+The thresholds will be selected to satisfy the temperature-regulation
+requirement in `REQUIREMENTS.md`.
 
-The independent hardware overtemperature protection is external to this
-firmware-control architecture and is not implemented by `HeatTask`.
+Independent hardware overtemperature protection is external to the firmware
+control architecture.
 
 
 ## 11. Heater Command Architecture
@@ -515,9 +507,8 @@ When a stop condition occurs, `DisplayTask` commands the run to stop and
 
 The Heater indicator follows the firmware heater command.
 
-The Heater indicator therefore indicates that firmware is requesting heat. It
-does not independently verify heater current, relay contact operation, or
-actual heater operation.
+The Heater indicator indicates that firmware is requesting heat. It does not
+independently verify heater current or actual heater operation.
 
 
 ## 12. Completion Architecture
@@ -529,16 +520,13 @@ Completion can be entered by either:
 
 The completion path retains information about why completion was entered.
 
-This allows `Complete-Decision` to behave differently depending on whether it
-was entered manually or because the countdown expired.
-
 For a manually requested completion, cancelling completion returns to the
 active run.
 
-For timer-driven completion, heating has already stopped and the completion
-path does not resume the expired run.
+For timer-driven completion, heating has already stopped and the expired run
+is not resumed.
 
-Entry into `Complete-Decision` also initiates the completion audible alert.
+Entry into `Complete-Decision` initiates the completion audible alert.
 
 
 ## 13. Audible Alert Architecture
@@ -547,9 +535,6 @@ The buzzer is controlled by firmware.
 
 The completion alert is generated when the state machine enters
 `Complete-Decision`, rather than continuously while that screen is refreshed.
-
-This prevents periodic display processing from repeatedly retriggering the
-alert.
 
 The current completion pattern is:
 
@@ -571,20 +556,13 @@ Persistent configuration includes:
 
 Active-run state is not persistent.
 
-A power interruption or reset therefore does not automatically restore or
-resume a proofing run.
+A power interruption or reset does not automatically restore or resume a
+proofing run.
 
-Persistence occurs at defined confirmation points rather than on every
-Up or Down button press.
+Persistence occurs at defined confirmation points rather than on every Up or
+Down button press.
 
-This avoids unnecessary nonvolatile-memory writes while the user is merely
-adjusting a proposed value.
-
-The final nonvolatile-storage implementation shall satisfy the persistence
-requirements in `REQUIREMENTS.md`.
-
-The detailed persistence implementation is TBD until this portion of the
-firmware is finalized.
+The final nonvolatile-storage implementation is TBD.
 
 
 ## 15. Fault-Handling Architecture
@@ -592,6 +570,7 @@ firmware is finalized.
 Fault detection is divided between faults that can be detected directly from
 electrical measurements and faults that require observation of system
 behavior over time.
+
 
 ### 15.1 NTC Fault Detection
 
@@ -604,13 +583,13 @@ The NTC voltage divider is arranged so that:
 - An NTC open circuit produces an ADC value near the ADC full-scale value.
 - A normally operating NTC produces an ADC value between these two extremes.
 
-For the STM32L476RG 12-bit ADC, the nominal endpoints are approximately:
+For the STM32L476RG 12-bit ADC, the nominal endpoints are:
 
-- NTC short: ADC = 0.
-- NTC open: ADC = 4095.
+- NTC short: ADC near 0.
+- NTC open: ADC near 4095.
 
-Practical fault-detection thresholds near these endpoints shall be established
-during hardware testing.
+Practical fault-detection thresholds near these endpoints are TBD pending
+hardware testing.
 
 The assigned NTC fault codes are:
 
@@ -626,8 +605,8 @@ application enters the Error state.
 Heater fault detection requires evaluation of the thermal response after the
 heater has been commanded on.
 
-The intended approach is to determine whether the cabinet temperature responds
-as expected after the heater has been commanded on for a defined period.
+The intended approach is to determine whether cabinet temperature responds as
+expected after the heater has been commanded on for a defined period.
 
 The following detection parameters are TBD:
 
@@ -636,18 +615,12 @@ The following detection parameters are TBD:
 - Conditions under which the test is considered valid.
 - Heater fault classification criteria.
 
-These parameters require testing with near-production hardware because heater
-power, cabinet thermal characteristics, NTC placement, ambient temperature,
-and thermal mass affect the expected temperature response.
+These parameters require testing with near-production hardware.
 
 The assigned heater fault codes are:
 
 - Error 20: Heater open.
 - Error 21: Heater short.
-
-The heater-fault detection algorithm shall remain TBD until near-production
-hardware testing provides sufficient data to define reliable detection
-criteria.
 
 
 ### 15.3 Fault Response
@@ -658,7 +631,8 @@ disabled and the application enters the Error state.
 The Error state prevents normal user-interface commands from resuming
 operation.
 
-The detailed recovery behavior from a firmware-detected fault remains TBD.
+Detailed recovery behavior is TBD.
+
 
 ## 16. Display Architecture
 
@@ -669,13 +643,10 @@ The display driver is responsible for low-level communication with the LCD.
 Application code determines what information is displayed based on the
 current state.
 
-This separation prevents low-level LCD driver code from owning application
-state or proofing behavior.
-
 Dynamic screens are periodically refreshed by `DisplayTask`.
 
-Screen transitions that occur because of elapsed time are also processed by
-`DisplayTask` during its periodic execution.
+Screen transitions caused by elapsed time are also processed by
+`DisplayTask`.
 
 
 ## 17. Settings Architecture
@@ -685,11 +656,7 @@ Settings entry is initiated by an event generated by `InputTask`.
 `DisplayTask` determines whether the event is valid for the current
 application state.
 
-This keeps physical button detection separate from application-state
-decisions.
-
-The current Settings functionality is limited primarily to temperature-unit
-selection.
+The current Settings functionality is primarily temperature-unit selection.
 
 Additional Settings functionality is TBD.
 
@@ -708,22 +675,21 @@ The current application task priorities are:
 
 Current task stack allocations are 128 words per application task.
 
-These values are prototype configuration values and may be changed as stack
-usage and system behavior are measured.
-
 The current FreeRTOS heap allocation is 8192 bytes.
 
-RTOS configuration values remain controlled by the STM32CubeMX project.
+These are prototype configuration values and may change based on measured
+system resource usage.
+
+RTOS configuration values are controlled by the STM32CubeMX project.
 
 
 ## 19. Hardware Configuration Ownership
 
 MCU hardware configuration is maintained in the STM32CubeMX project.
 
-This includes items such as:
+This includes:
 
-- GPIO assignments.
-- GPIO electrical configuration.
+- GPIO assignments and electrical configuration.
 - ADC configuration.
 - Timer configuration.
 - UART configuration.
@@ -731,10 +697,11 @@ This includes items such as:
 - FreeRTOS-generated objects.
 - Peripheral instances.
 
-`ARCHITECTURE.md` may describe why a peripheral or interface is used, but it
-does not duplicate the authoritative MCU pin-assignment table.
+Detailed hardware design is maintained in the separate
+`AllyTechEngineering/holding-cabinet-hardware` KiCad repository.
 
-This avoids maintaining the same hardware configuration in multiple places.
+This document may describe firmware-relevant hardware interfaces but does not
+duplicate authoritative MCU configuration or hardware design information.
 
 
 ## 20. Connectivity Architecture
@@ -744,28 +711,16 @@ Connectivity is outside the current proof-of-concept firmware scope.
 The planned architecture reserves `ConnectTask` for communications between the
 STM32 and an external connectivity module.
 
-The STM32 will remain responsible for local real-time cabinet control.
+The STM32 remains responsible for local real-time cabinet control.
 
-The external module is expected to handle network connectivity rather than
-moving temperature-control responsibility away from the STM32.
+The external module handles network connectivity.
 
-The following connectivity architecture remains TBD:
-
-- Physical communications protocol details.
-- Application message protocol.
-- Command structure.
-- Remote monitoring.
-- Remote control.
-- Authentication and security.
-- Communications fault handling.
-- Offline behavior.
-
-These items shall be defined before connectivity functionality is implemented.
+The connectivity architecture is TBD.
 
 
 ## 21. Open Architecture Items
 
-The following architecture items remain intentionally unresolved:
+The following architecture items remain unresolved:
 
 - Final heater hysteresis thresholds.
 - Final NTC calibration method.
@@ -775,6 +730,3 @@ The following architecture items remain intentionally unresolved:
 - Final Settings-mode architecture.
 - Connectivity protocol and implementation.
 - Heater fault-detection parameters and algorithm.
-
-These items are left TBD rather than defining implementation decisions before
-the prototype provides enough information to make those decisions.
