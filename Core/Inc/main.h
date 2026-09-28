@@ -81,12 +81,8 @@ void Error_Handler(void);
 #define ModeSwitch_GPIO_Port GPIOC
 #define EnterSwitch_Pin GPIO_PIN_9
 #define EnterSwitch_GPIO_Port GPIOC
-#define OnOffLed_Pin GPIO_PIN_8
-#define OnOffLed_GPIO_Port GPIOA
-#define OnOffHeatLed_Pin GPIO_PIN_9
+#define OnOffHeatLed_Pin GPIO_PIN_8
 #define OnOffHeatLed_GPIO_Port GPIOA
-#define OnOffHumidLed_Pin GPIO_PIN_10
-#define OnOffHumidLed_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
