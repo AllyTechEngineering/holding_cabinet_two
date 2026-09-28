@@ -358,19 +358,29 @@ Display format:
 
     " Temp: XXXF     "
     " Time: HH:MM    "
+    
+    " Temp:  XXF     "
+    " Time:  H:MM    "
+
+    " Temp:  XXF     "
+    " Time:  H:MM    "
+
+    " Temp:  XXF     "
+    " Time:  0:MM    "
 
 or when Celsius is selected:
 
     " Temp: XXXC     "
     " Time: HH:MM    "
+    
+    " Temp:  XXC     "
+    " Time:  H:MM    "
 
-Examples:
+    " Temp:  XXC     "
+    " Time:  H:MM    "
 
-    " Temp: 98F      "
-    " Time: 4:30     "
-
-    " Temp: 100F     "
-    " Time: 10:00    "
+    " Temp:  XXC     "
+    " Time:  0:MM    "
 
 The complete LCD row must be refreshed or cleared as necessary when a
 variable-width value becomes shorter so that characters from a previous
@@ -391,12 +401,12 @@ and:
 
 Example:
 
-    " Temp: 98F      "
+    " Temp:  98F      "
     "Countdown Timer "
 
 alternating with:
 
-    " Temp: 98F      "
+    " Temp:  98F      "
     "Not Used        "
 
 This alternation continues while the untimed run remains active.

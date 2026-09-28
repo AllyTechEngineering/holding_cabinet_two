@@ -1,15 +1,55 @@
-# Holding Cabinet AKA Proofing Oven, Heated Proofing Box
-Consumer bread proofing cabinet AKA heated proofing box. Single embedded system and firmware code base.
+# Holding Cabinet / Proofing Oven
 
-## Prototype
-Holding cabinet by other (purchase from Amazon) shall provide the hardware (heating elements, housing, NTC temperature sensor, and related wiring). The goal is to replace the controller that comes with the product with the NUCLEO-L476RG dev board and use off-the-shelf relay and display breakout boards. Switches and LED indicators shall be on a solderless breadboard.
+Firmware for a consumer heated proofing cabinet proof of concept.
 
+The current prototype uses an STM32 NUCLEO-L476RG development board with
+FreeRTOS and CMSIS-RTOS2.
 
-## IoT Connectivity
-Once the prototype is operational, the plan is to use an off-the-shelf ESP32-C6-MINI-1-N4 on a breakout board with PCBA antenna. The STM32 shall us the USART to communicate with the ESP32.
+The firmware provides:
 
-Using Flutter, a companion app will be developed to allow a user, that is not near the proofing oven, to be able to monitor the progress of the item in the oven, change the temperature or other settings or turn the device off remotely.
+- Timed and untimed proofing operation
+- Cabinet temperature sensing and control
+- Four-button local user interface
+- 16x2 LCD user interface
+- Proofing countdown timer
+- Active-run editing
+- Completion notification
+- Firmware fault handling
+
+## Hardware
+
+The current proof of concept uses an existing heated proofing cabinet with its
+original enclosure, heater, and temperature sensor.
+
+Detailed hardware design is maintained separately in:
+
+`AllyTechEngineering/holding-cabinet-hardware`
+
+See `Docs/HARDWARE.md` for the firmware-project hardware documentation
+boundary.
+
 ## Documentation
-- `Docs/ARCHITECTURE.md` — system/firmware architecture, FreeRTOS
-  task and queue design, hardware bring-up findings
-- `Docs/ui_spec.md` — front-panel UI behavior and state machine
+
+- `Docs/REQUIREMENTS.md` — firmware behavioral requirements
+- `Docs/ARCHITECTURE.md` — firmware architecture, tasks, queues, control, and data flow
+- `Docs/HMI.md` — front-panel HMI behavior, LCD screens, controls, and state transitions
+- `Docs/HARDWARE.md` — hardware documentation ownership and repository reference
+
+## STM32 Configuration
+
+The STM32CubeMX project is maintained in:
+
+`holding_cabinet_two.ioc`
+
+The CubeMX project is the authoritative source for MCU peripheral, GPIO, and
+pin configuration.
+
+## Development Environment
+
+- STM32 NUCLEO-L476RG
+- STM32L476RG
+- FreeRTOS
+- CMSIS-RTOS2
+- STM32 HAL
+- STM32CubeMX
+- VS Code with STM32 extensions
