@@ -64,11 +64,11 @@ A valid sensor is connected and Run Active is displayed.
 
 ### Procedure
 1. In App/Sensing/sensor_task.c, break at the call to
-   sense_push_reading(tempTenthsC).
-2. Record tempTenthsC.
+   sense_push_reading(tempC).
+2. Record tempC.
 3. Disable that breakpoint.
 4. In App/Control/control_task.c, break at publish_status(&status).
-5. Resume and record reading, status.currentTempTenthsC, and
+5. Resume and record reading, status.currenttempC, and
    status.errorCode.
 6. Disable that breakpoint.
 7. In App/Display/display_task.c, break inside display_run_screen
@@ -80,7 +80,7 @@ A valid sensor is connected and Run Active is displayed.
 
 ### Expected
 - HeatTask copies its received reading into
-  status.currentTempTenthsC.
+  status.currenttempC.
 - A valid reading has errorCode equal to zero.
 - DisplayTask receives updated temperature status.
 - The LCD shows that temperature converted to the selected unit

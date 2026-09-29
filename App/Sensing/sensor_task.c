@@ -19,7 +19,7 @@
 #include "thermistor_driver.h"
 
 extern osMessageQueueId_t qSenseToHeatHandle;
-volatile uint16_t g_senseTempTenthsC = 0;
+volatile uint16_t g_sensetempC = 0;
 
 /* qSenseToHeat is a depth-1 "latest value wins" queue (Docs/tasks_queues.md).
  * CMSIS-RTOS2's osMessageQueuePut() maps to FreeRTOS's xQueueSendToBack()
@@ -31,21 +31,21 @@ volatile uint16_t g_senseTempTenthsC = 0;
  * behavior. Overwrite semantics are implemented explicitly instead: drain
  * any stale unread value, then put the new one. Safe against races because
  * SenseTask is the sole producer on this queue. */
-static void sense_push_reading(uint16_t tempTenthsC) {
+static void sense_push_reading(uint16_t tempC) {
   uint16_t discard;
   osMessageQueueGet(qSenseToHeatHandle, &discard, NULL,
                     0); /* non-blocking; fails harmlessly if already empty */
-  osMessageQueuePut(qSenseToHeatHandle, &tempTenthsC, 0, 0);
+  osMessageQueuePut(qSenseToHeatHandle, &tempC, 0, 0);
 }
 
 void SenseTask_Run(void *argument) {
   (void)argument;
 
   for (;;) {
-    uint16_t tempTenthsC = Thermistor_ReadC();
-    g_senseTempTenthsC = tempTenthsC;
+    uint16_t tempC = Thermistor_ReadC();
+    g_sensetempC = tempC;
 
-    sense_push_reading(tempTenthsC);
+    sense_push_reading(tempC);
 
     osDelay(APP_SENSE_TASK_PERIOD_MS);
   }
