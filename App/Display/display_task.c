@@ -38,6 +38,14 @@ typedef enum {
   UI_COMPLETE_DISPLAY_B
 } UiScreen_t;
 
+static uint16_t temp_to_celsius(uint16_t temp_value, uint8_t unit_celsius) {
+  if (unit_celsius != 0u) {
+    return temp_value;
+  }
+
+  return (uint16_t)(((temp_value - 32u) * 5u + 4u) / 9u);
+}
+
 static void send_heat_command(HeatCommandType_t type, uint16_t setpoint_c) {
   HeatCommand_t command = {
       .type = type,
@@ -303,6 +311,7 @@ void DisplayTask_Run(void *argument) {
         if (event == EVT_MODE_PRESSED) {
           /* Cancel setup or stop the run and discard its proposals. */
           RunTimer_Stop(&run_timer);
+          send_heat_command(HEAT_CMD_STOP, 0u);
           TimeEditor_Stop(&time_editor);
           proposed_temp = active_temp;
           timed_proof = 0u;
@@ -327,6 +336,9 @@ void DisplayTask_Run(void *argument) {
 
           if (started != 0u) {
             active_temp = proposed_temp;
+            send_heat_command(HEAT_CMD_SET_SETPOINT,
+                              temp_to_celsius(active_temp, unit_celsius));
+            send_heat_command(HEAT_CMD_RUN, 0u);
             editing_run = 0u;
             screen = UI_RUN_ACTIVE;
             last_run_refresh_tick = now;
