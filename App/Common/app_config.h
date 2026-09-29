@@ -26,6 +26,9 @@ extern "C" {
 #define APP_TEMP_MAX_C          49u   /* 120F rounded to whole C */
 #define APP_TEMP_DEFAULT_C      35u   /* approximately 95F */
 
+/* ---- Heater temperature control ---- */
+#define APP_HEATER_HYSTERESIS_C  2u
+
 /* ---- Measured-temperature display limits (Docs/HMI.md) ---- */
 #define APP_TEMP_DISPLAY_MIN_F   0u
 #define APP_TEMP_DISPLAY_MAX_F 150u
@@ -73,8 +76,6 @@ extern "C" {
  * Anchored to the moment HeatTask's relay command last changed state,
  * not a rolling window. */
 #define APP_HEATER_FAULT_WINDOW_MS      600000u  /* 10 minutes */
-#define APP_HEATER_ON_MIN_RISE_TENTHS   10u       /* >=1.0C rise expected after 10min commanded ON, else Heater Open (20) */
-#define APP_HEATER_OFF_MAX_RISE_TENTHS  5u        /* >0.5C rise not expected after 10min commanded OFF, else Heater Short (21) */
 
 
 #ifdef __cplusplus
