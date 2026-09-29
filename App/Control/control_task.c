@@ -45,6 +45,7 @@ void HeatTask_Run(void *argument) {
   uint16_t reading;
   uint16_t setpoint_c = 0u;
   uint8_t run_requested = 0u;
+  uint8_t setpoint_valid = 0u;
   HeatCommand_t command;
   HeatStatus_t status = {0};
 
@@ -59,10 +60,13 @@ void HeatTask_Run(void *argument) {
       switch (command.type) {
       case HEAT_CMD_SET_SETPOINT:
         setpoint_c = command.setpointC;
+        setpoint_valid = 1u;
         break;
 
       case HEAT_CMD_RUN:
-        run_requested = 1u;
+        if (setpoint_valid != 0u) {
+          run_requested = 1u;
+        }
         break;
 
       case HEAT_CMD_STOP:
