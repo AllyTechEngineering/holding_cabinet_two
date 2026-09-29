@@ -29,10 +29,9 @@ extern "C" {
 #define THERMISTOR_FAULT_SHORT  0xFFFEu   /* ADC pegged near min -- NTC shorted */
 #define THERMISTOR_FAULT_READ   0xFFFDu   /* ADC start, conversion, or stop failed */
 
-/* Reads ADC1 (blocking, single conversion) and converts to tenths of a
- * degree Celsius via the Beta equation, or returns one of the
+/* Reads ADC1 (blocking, single conversion) and converts to whole degree Celsius via the Beta equation, or returns one of the
  * THERMISTOR_FAULT_* sentinels above. */
-uint16_t Thermistor_ReadTenthsC(void);
+uint16_t Thermistor_ReadC(void);
 
 #ifdef __cplusplus
 }
