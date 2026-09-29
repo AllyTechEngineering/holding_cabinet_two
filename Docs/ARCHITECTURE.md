@@ -425,6 +425,8 @@ representation and the temperature unit selected by the user.
 Fahrenheit and Celsius selection affects the HMI representation of temperature
 but does not change the internal Celsius representation used by the firmware.
 
+Temperature conversions between the selected HMI unit and the internal Celsius representation are rounded to the nearest whole degree. Conversion rounding of up to 0.5°C (0.9°F) is acceptable for this product and does not constitute a temperature-control error.
+
 ## 10. Heater-Control Architecture
 
 The proof-of-concept uses on/off temperature control with hysteresis.
