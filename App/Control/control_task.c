@@ -10,6 +10,7 @@
  *
  *******************************************************************************/
 #include "control_task.h"
+#include "app_config.h"
 #include "app_types.h"
 #include "cmsis_os.h"
 #include "main.h"
@@ -66,6 +67,7 @@ void HeatTask_Run(void *argument) {
 
       case HEAT_CMD_STOP:
         run_requested = 0u;
+        status.relayOn = 0u;
         HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
         break;
 
@@ -79,7 +81,6 @@ void HeatTask_Run(void *argument) {
     }
 
     status.currentTempC = reading;
-    status.relayOn = 0u;
 
     if (reading == THERMISTOR_FAULT_OPEN) {
       status.errorCode = NTC_OPEN_ERROR;
@@ -90,7 +91,16 @@ void HeatTask_Run(void *argument) {
     } else {
       status.errorCode = 0u;
     }
-
+    if (status.errorCode != 0u || run_requested == 0u) {
+      status.relayOn = 0u;
+      HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
+    } else if (reading >= setpoint_c) {
+      status.relayOn = 0u;
+      HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
+    } else if (reading <= (setpoint_c - APP_HEATER_HYSTERESIS_C)) {
+      status.relayOn = 1u;
+      HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_RESET);
+    }
     publish_status(&status);
   }
 }

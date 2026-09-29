@@ -58,11 +58,6 @@ extern "C" {
 #define APP_DISPLAY_TASK_WAKE_MS   100u      /* DisplayTask periodic wake */
 #define APP_RUN_DISPLAY_REFRESH_MS 1000u     /* Refresh Run-Active about once per second */
 
-/* ---- InputTask debounce ----
- * Standard mechanical-switch debounce: poll every 20ms, require 3
- * consecutive matching reads (60ms) before accepting a state change.
- * Not a hardware-derived value like the heater-fault timing below --
- * ordinary firmware practice, safe to leave as a default. */
 #define APP_INPUT_POLL_MS       20u
 #define APP_INPUT_DEBOUNCE_COUNT 3u
 
