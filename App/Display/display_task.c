@@ -42,7 +42,7 @@ static void send_heat_command(HeatCommandType_t type,
                               uint16_t setpoint_tenths_c) {
   HeatCommand_t command = {
       .type = type,
-      .setpointTenthsC = setpoint_tenths_c,
+      .setpointC = setpoint_tenths_c,
   };
 
   (void)osMessageQueuePut(qDisplayToHeatHandle, &command, 0u, 0u);
@@ -103,7 +103,7 @@ static void display_run_screen(const RunTimer_t *timer,
                                uint8_t unit_celsius) {
   char row1[17] = " Temp: ---F     ";
   char row2[17] = " Time:          ";
-  uint16_t reading = status->currentTempTenthsC;
+  uint16_t reading = status->currentTempC;
 
   row1[10] = unit_celsius != 0u ? 'C' : 'F';
 

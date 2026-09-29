@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-/* Sentinel values returned by Thermistor_ReadTenthsC() in place of a real
+/* Sentinel values returned by Thermistor_ReadC() in place of a real
  * reading -- chosen well outside the physically valid range for this
  * product (65-120F / ~183-489 tenths-C), so a fault can never be mistaken
  * for a real temperature. See Docs/error_codes.md for the error codes

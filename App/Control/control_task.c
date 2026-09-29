@@ -58,7 +58,7 @@ void HeatTask_Run(void *argument) {
       continue;
     }
 
-    status.currentTempTenthsC = reading;
+    status.currentTempC = reading;
     status.relayOn = 0u;
 
     if (reading == THERMISTOR_FAULT_OPEN) {

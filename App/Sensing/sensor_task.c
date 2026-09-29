@@ -42,7 +42,7 @@ void SenseTask_Run(void *argument) {
   (void)argument;
 
   for (;;) {
-    uint16_t tempTenthsC = Thermistor_ReadTenthsC();
+    uint16_t tempTenthsC = Thermistor_ReadC();
     g_senseTempTenthsC = tempTenthsC;
 
     sense_push_reading(tempTenthsC);

@@ -50,7 +50,7 @@ typedef uint8_t ButtonEvent_t;
  * (unlike ButtonEvent_t above) there's no manual size constraint here --
  * whatever this struct's real size is, the queue was created to match. */
 typedef enum {
-  HEAT_CMD_SET_SETPOINT = 0, /* setpointTenthsC is valid */
+  HEAT_CMD_SET_SETPOINT = 0, /* setpointC is valid */
   HEAT_CMD_RUN,  /* start bang-bang control at the last-set setpoint */
   HEAT_CMD_STOP, /* stop control, relay off */
 } HeatCommandType_t;
@@ -64,13 +64,12 @@ typedef struct {
  * qHeatToDisplay payload: HeatTask -> DisplayTask
  * ============================================================ */
 typedef struct {
-  uint16_t
-      currentTempTenthsC; /* tenths of degC; see App/Sensing/thermistor_driver.h
-                           * THERMISTOR_FAULT_* sentinels for the NTC-fault case
-                           */
-  uint8_t relayOn;        /* 1 = heat relay energized, 0 = off */
-  uint8_t errorCode;      /* 0 = no error; else see Docs/error_codes.md
-                           * (10/11 = NTC Open/Short, 20/21 = Heater Open/Short) */
+  uint16_t currentTempC; /* whole degC; see App/Sensing/thermistor_driver.h
+                          * THERMISTOR_FAULT_* sentinels for the NTC-fault case
+                          */
+  uint8_t relayOn;       /* 1 = heat relay energized, 0 = off */
+  uint8_t errorCode;     /* 0 = no error; else see Docs/error_codes.md
+                          * (10/11 = NTC Open/Short, 20/21 = Heater Open/Short) */
 } HeatStatus_t;
 
 #ifdef __cplusplus
