@@ -369,14 +369,6 @@ For an active-run edit:
 - Proposed timer changes do not affect the current countdown.
 - Confirming the edit applies the proposed values.
 
-If a changed timer duration is confirmed, a new countdown begins using the
-newly confirmed duration.
-
-Elapsed time from the previous countdown is not applied to the new duration.
-
-If the timer duration was not changed, the existing countdown continues
-without restarting.
-
 The exact user interaction used to propose, confirm, or cancel changes is
 defined in `HMI.md`.
 
