@@ -52,7 +52,7 @@ void HeatTask_Run(void *argument) {
   (void)argument;
 
   HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
-
+  HAL_GPIO_WritePin(OnOffHeatLed_GPIO_Port, OnOffHeatLed_Pin, GPIO_PIN_RESET);
   for (;;) {
 
     while (osMessageQueueGet(qDisplayToHeatHandle, &command, NULL, 0u) ==
@@ -73,6 +73,7 @@ void HeatTask_Run(void *argument) {
         run_requested = 0u;
         status.relayOn = 0u;
         HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(OnOffHeatLed_GPIO_Port, OnOffHeatLed_Pin, GPIO_PIN_RESET);
         break;
 
       default:
@@ -98,12 +99,15 @@ void HeatTask_Run(void *argument) {
     if (status.errorCode != 0u || run_requested == 0u) {
       status.relayOn = 0u;
       HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
+      HAL_GPIO_WritePin(OnOffHeatLed_GPIO_Port, OnOffHeatLed_Pin, GPIO_PIN_RESET);
     } else if (reading >= setpoint_c) {
       status.relayOn = 0u;
       HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
+      HAL_GPIO_WritePin(OnOffHeatLed_GPIO_Port, OnOffHeatLed_Pin, GPIO_PIN_RESET);
     } else if (reading <= (setpoint_c - APP_HEATER_HYSTERESIS_C)) {
       status.relayOn = 1u;
       HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(OnOffHeatLed_GPIO_Port, OnOffHeatLed_Pin, GPIO_PIN_SET);
     }
     publish_status(&status);
   }
