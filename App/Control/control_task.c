@@ -1,14 +1,14 @@
 /********************************************************************************
-  * @file           : control_task.c
-  * @brief          : FreeRTOS task orchestrating heater control loop based on
-  *                    baseplate temperature feedback
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 AllyTech LLC.
-  * All rights reserved.
-  *
-  *******************************************************************************/
+ * @file           : control_task.c
+ * @brief          : FreeRTOS task orchestrating heater control loop based on
+ *                    baseplate temperature feedback
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 AllyTech LLC.
+ * All rights reserved.
+ *
+ *******************************************************************************/
 #include "control_task.h"
 #include "app_types.h"
 #include "cmsis_os.h"
@@ -24,9 +24,9 @@ extern osMessageQueueId_t qDisplayToHeatHandle;
 
 /* Codes 10 and 11 are defined in Docs/error_codes.md.
    Code 12 identifies an ADC read failure and must be added there. */
-#define NTC_OPEN_ERROR  10u
+#define NTC_OPEN_ERROR 10u
 #define NTC_SHORT_ERROR 11u
-#define NTC_READ_ERROR  12u
+#define NTC_READ_ERROR 12u
 
 static void publish_status(const HeatStatus_t *status) {
   HeatStatus_t discarded;
@@ -53,6 +53,26 @@ void HeatTask_Run(void *argument) {
   HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
 
   for (;;) {
+
+    while (osMessageQueueGet(qDisplayToHeatHandle, &command, NULL, 0u) ==
+           osOK) {
+      switch (command.type) {
+      case HEAT_CMD_SET_SETPOINT:
+        setpoint_c = command.setpointC;
+        break;
+
+      case HEAT_CMD_RUN:
+        run_requested = 1u;
+        break;
+
+      case HEAT_CMD_STOP:
+        run_requested = 0u;
+        break;
+
+      default:
+        break;
+      }
+    }
     if (osMessageQueueGet(qSenseToHeatHandle, &reading, NULL,
                           HEAT_STATUS_WAIT_MS) != osOK) {
       continue;
