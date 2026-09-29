@@ -230,13 +230,9 @@ void DisplayTask_Run(void *argument) {
           screen = UI_TIME_DECISION;
           display_screen(screen, proposed_temp, unit_celsius);
         } else if (event == EVT_UP_PRESSED || event == EVT_DOWN_PRESSED) {
-          uint16_t minimum =
-              unit_celsius != 0u
-                  ? (uint16_t)((APP_TEMP_MIN_TENTHS_C + 9u) / 10u)
-                  : 65u;
-          uint16_t maximum = unit_celsius != 0u
-                                 ? (uint16_t)(APP_TEMP_MAX_TENTHS_C / 10u)
-                                 : 120u;
+
+          uint16_t minimum = unit_celsius != 0u ? APP_TEMP_MIN_C : 65u;
+          uint16_t maximum = unit_celsius != 0u ? APP_TEMP_MAX_C : 120u;
 
           if (event == EVT_UP_PRESSED && proposed_temp < maximum) {
             ++proposed_temp;
