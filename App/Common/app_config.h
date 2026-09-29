@@ -76,10 +76,6 @@ extern "C" {
 #define APP_HEATER_ON_MIN_RISE_TENTHS   10u       /* >=1.0C rise expected after 10min commanded ON, else Heater Open (20) */
 #define APP_HEATER_OFF_MAX_RISE_TENTHS  5u        /* >0.5C rise not expected after 10min commanded OFF, else Heater Short (21) */
 
-/* ---- Bang-bang hysteresis band ----
- * NOT YET DECIDED -- no value has been specified anywhere in the design
- * docs. Needed before HeatTask's control loop can be written. */
-/* #define APP_HYSTERESIS_TENTHS_C   TBD */
 
 #ifdef __cplusplus
 }

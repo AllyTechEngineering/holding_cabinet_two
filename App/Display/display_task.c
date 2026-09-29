@@ -106,10 +106,22 @@ static void display_run_screen(const RunTimer_t *timer,
 
   row1[10] = unit_celsius != 0u ? 'C' : 'F';
 
-  if (status->errorCode == 0u && reading != 0u && reading < 1000u) {
-    uint16_t temp = unit_celsius != 0u
-                        ? reading
-                        : (uint16_t)((reading * 9u + 2u) / 5u + 32u);
+  if (status->errorCode == 0u) {
+    uint16_t temp;
+
+    if (unit_celsius != 0u) {
+      temp = reading;
+
+      if (temp > APP_TEMP_DISPLAY_MAX_C) {
+        temp = APP_TEMP_DISPLAY_MAX_C;
+      }
+    } else {
+      temp = (uint16_t)((reading * 9u + 2u) / 5u + 32u);
+
+      if (temp > APP_TEMP_DISPLAY_MAX_F) {
+        temp = APP_TEMP_DISPLAY_MAX_F;
+      }
+    }
 
     row1[7] = temp >= 100u ? (char)('0' + temp / 100u) : ' ';
     row1[8] = (char)('0' + (temp / 10u) % 10u);
