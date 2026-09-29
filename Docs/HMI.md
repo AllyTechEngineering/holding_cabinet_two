@@ -188,13 +188,19 @@ As displayed:
 
 ### 6.2 SetTemp-Adjust
 
+### 6.2 SetTemp-Adjust
+
 `XXX` represents the proposed temperature.
 
 The displayed value is not padded with leading zeroes.
 
 The unit character reflects the selected temperature unit.
 
-The temperature range is 65°F through 120°F.
+The temperature range depends on the selected temperature unit.
+
+When Fahrenheit is selected, the range is 65°F through 120°F.
+
+When Celsius is selected, the range is 18°C through 49°C.
 
 Up increases the proposed temperature by 1 degree.
 

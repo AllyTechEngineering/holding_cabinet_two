@@ -412,6 +412,18 @@ to temperature using the thermistor Beta equation.
 
 The final production calibration method is TBD.
 
+### 9.1 Internal Temperature Representation
+
+Celsius is the firmware's internal temperature representation.
+
+Application-level temperature measurements, confirmed temperature setpoints,
+and heater-control temperatures are represented as whole degrees Celsius.
+
+`DisplayTask` is responsible for converting between the internal Celsius
+representation and the temperature unit selected by the user.
+
+Fahrenheit and Celsius selection affects the HMI representation of temperature
+but does not change the internal Celsius representation used by the firmware.
 
 ## 10. Heater-Control Architecture
 

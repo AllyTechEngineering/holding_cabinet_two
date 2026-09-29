@@ -39,8 +39,6 @@ The firmware shall support both timed and untimed proofing operation.
 The firmware shall control the cabinet heater to maintain a user-selected
 proofing temperature.
 
-The user-selectable temperature range shall be 65°F through 120°F.
-
 
 ### SYS-003 — Local User Interface
 
@@ -67,10 +65,13 @@ power interruption or reset.
 ### TEMP-001 — Setpoint Range
 
 The firmware shall allow the user to select a proofing temperature from
-65°F through 120°F, inclusive.
+65°F through 120°F, inclusive, when Fahrenheit is selected.
+
+The firmware shall allow the user to select a proofing temperature from
+18°C through 49°C, inclusive, when Celsius is selected.
 
 The firmware shall prevent the user from selecting a temperature outside
-this range.
+the applicable range.
 
 
 ### TEMP-002 — Temperature Adjustment
