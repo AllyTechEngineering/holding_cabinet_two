@@ -69,14 +69,6 @@ extern "C" {
 /* ---- SenseTask cadence (Docs/arch.md Section 5: "every 2-3s") ---- */
 #define APP_SENSE_TASK_PERIOD_MS  2500u
 
-/* ---- Heater-fault detection (Docs/error_mode.md, Docs/error_codes.md) ----
- * PLACEHOLDER VALUES -- not yet validated against real hardware. Proposed
- * as a conservative starting point (see chat log); replace once bench
- * data from the real heating element/cabinet thermal mass is available.
- * Anchored to the moment HeatTask's relay command last changed state,
- * not a rolling window. */
-#define APP_HEATER_FAULT_WINDOW_MS      600000u  /* 10 minutes */
-
 
 #ifdef __cplusplus
 }
