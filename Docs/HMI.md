@@ -353,6 +353,20 @@ Mode stops the proof, turns heating off, and returns to `Idle-Splash`.
 `XXX` represents the live cabinet temperature.
 
 The temperature value is not padded with leading zeroes.
+The displayed cabinet-temperature range is 0F through 150F when Fahrenheit
+is selected and 0C through 66C when Celsius is selected.
+
+The degree symbol is not displayed.
+
+The measured-temperature display range is independent of the user-selectable
+proofing-temperature range.
+
+A valid measured cabinet temperature below the display minimum is displayed
+as the display minimum. A valid measured cabinet temperature above the display
+maximum is displayed as the display maximum.
+
+NTC open- and short-circuit conditions are sensor faults and are not handled
+by clamping the measured temperature to the display range.
 
 `HH:MM` represents the remaining countdown time.
 

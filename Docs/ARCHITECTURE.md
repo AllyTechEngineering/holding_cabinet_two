@@ -568,7 +568,46 @@ The assigned NTC fault codes are:
 When an NTC fault is detected, the heater command is disabled and the
 application enters the Error state.
 
+### 15.1.1 Sensor Validity and Temperature Setpoint Limits
 
+The user-selectable proofing-temperature range is not a sensor-validity range.
+
+The minimum and maximum proofing-temperature setpoints are defined in
+`REQUIREMENTS.md`. These limits restrict the temperature that the user may
+select for a proofing run. They shall not be used to determine whether a
+measured cabinet temperature is valid.
+
+A valid measured cabinet temperature may be below the minimum selectable
+setpoint or above the maximum selectable setpoint.
+
+NTC sensor validity is determined from the electrical ADC measurement before
+temperature conversion.
+
+For the STM32L476RG 12-bit ADC:
+
+- An ADC measurement at or near 0 indicates an NTC short circuit.
+- An ADC measurement at or near full scale (4095) indicates an NTC open circuit.
+- ADC measurements between the defined open- and short-circuit thresholds are
+  treated as valid sensor measurements and are converted to temperature using
+  the NTC model.
+
+Practical open- and short-circuit detection thresholds may be placed slightly
+inside the ADC endpoints to provide tolerance for ADC measurement variation and
+the physical sensor circuit.
+
+Once a measurement has passed the NTC electrical fault checks, the calculated
+cabinet temperature is considered a valid temperature measurement. Application
+code shall not reject that temperature solely because it is outside the
+user-selectable proofing-temperature range.
+
+Sensor fault detection and user-selectable temperature limits therefore serve
+separate purposes:
+
+- NTC fault thresholds determine whether the temperature sensor measurement is
+  electrically valid.
+- Proofing-temperature limits determine what temperature setpoint the user is
+  permitted to select.
+  
 ### 15.2 Heater Fault Detection
 
 Heater fault detection requires evaluation of the thermal response after the

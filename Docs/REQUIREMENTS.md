@@ -104,6 +104,16 @@ Fahrenheit shall be the default temperature unit.
 The system shall maintain the cabinet temperature within ±3°F of the
 user-selected temperature.
 
+### TEMP-006 — Measured Temperature Validity
+
+The user-selectable proofing-temperature range shall not be used as the
+validity range for measured cabinet temperature.
+
+A measured cabinet temperature may be below the minimum selectable setpoint or
+above the maximum selectable setpoint without being considered a sensor fault.
+
+Temperature-sensor faults shall be determined from the NTC sensor electrical
+measurement and the applicable sensor-fault detection criteria.
 
 ## 5. Timer Requirements
 
