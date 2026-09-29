@@ -37,6 +37,7 @@ static void publish_status(const HeatStatus_t *status) {
 
   if (osMessageQueuePut(qHeatToDisplayHandle, status, 0u, 0u) != osOK) {
     HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(OnOffHeatLed_GPIO_Port, OnOffHeatLed_Pin, GPIO_PIN_RESET);
     Error_Handler();
   }
 }
