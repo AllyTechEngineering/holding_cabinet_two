@@ -19,12 +19,18 @@
 extern "C" {
 #endif
 
-/* ---- Temperature setpoint bounds (Docs/set_temp_mode.md) ----
- * Canonical storage is Celsius throughout the firmware (tenths of a
- * degree); Fahrenheit is a display-layer-only conversion. 65-120F. */
-#define APP_TEMP_MIN_TENTHS_C   183u   /* 65F */
-#define APP_TEMP_MAX_TENTHS_C   489u   /* 120F */
-#define APP_TEMP_DEFAULT_TENTHS_C 350u  /* 35°C = 95°F */
+/* ---- Temperature setpoint bounds (Docs/HMI.md, Docs/REQUIREMENTS.md) ----
+ * Internal temperature representation is whole degrees Celsius.
+ * HMI conversions are rounded to the nearest whole degree. */
+#define APP_TEMP_MIN_C          18u   /* 65F rounded to whole C */
+#define APP_TEMP_MAX_C          49u   /* 120F rounded to whole C */
+#define APP_TEMP_DEFAULT_C      35u   /* approximately 95F */
+
+/* ---- Measured-temperature display limits (Docs/HMI.md) ---- */
+#define APP_TEMP_DISPLAY_MIN_F   0u
+#define APP_TEMP_DISPLAY_MAX_F 150u
+#define APP_TEMP_DISPLAY_MIN_C   0u
+#define APP_TEMP_DISPLAY_MAX_C  66u
 
 /* ---- Countdown timer (Docs/set_time_mode.md) ---- */
 #define APP_TIME_MIN_MINUTES             15u     /* 0:15 */

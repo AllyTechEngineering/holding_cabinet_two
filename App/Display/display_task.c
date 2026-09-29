@@ -146,7 +146,7 @@ void DisplayTask_Run(void *argument) {
   uint8_t complete_due_to_timeout = 0u;
   uint8_t unit_celsius = 0u; /* Fahrenheit until Settings is implemented. */
   uint16_t proposed_temp =
-      (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u + 32u);
+      (uint16_t)((APP_TEMP_DEFAULT_C * 9u + 2u) / 5u + 32u);
   uint16_t active_temp = proposed_temp;
   uint32_t screen_start_tick;
   uint32_t last_activity_tick;
@@ -207,9 +207,8 @@ void DisplayTask_Run(void *argument) {
           } else {
             proposed_temp =
                 unit_celsius != 0u
-                    ? (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C + 5u) / 10u)
-                    : (uint16_t)((APP_TEMP_DEFAULT_TENTHS_C * 9u + 25u) / 50u +
-                                 32u);
+                    ? APP_TEMP_DEFAULT_C
+                    : (uint16_t)((APP_TEMP_DEFAULT_C * 9u + 2u) / 5u + 32u);
           }
           screen = UI_TEMP_ADJUST;
           display_screen(screen, proposed_temp, unit_celsius);
