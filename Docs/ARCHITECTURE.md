@@ -106,8 +106,6 @@ The thermistor is used in a resistor-divider circuit.
 
 The temperature conversion currently uses the thermistor Beta equation.
 
-The final sensor calibration strategy and NTC fault thresholds are TBD.
-
 
 ### 4.2 InputTask
 
@@ -410,7 +408,8 @@ The current NTC is an MF52B-type thermistor with a nominal resistance of
 The firmware converts the ADC measurement to thermistor resistance and then
 to temperature using the thermistor Beta equation.
 
-The final production calibration method is TBD.
+The final sensor calibration shall be conducted after PCBA final assembly using an ATE production fixture.
+No firmware shall be used for the calibration.
 
 ### 9.1 Internal Temperature Representation
 
@@ -550,17 +549,13 @@ faults using the ADC measurement.
 
 The NTC voltage divider is arranged so that:
 
-- An NTC short circuit produces an ADC value near 0.
-- An NTC open circuit produces an ADC value near the ADC full-scale value.
-- A normally operating NTC produces an ADC value between these two extremes.
+0–5       NTC SHORT
+6–4089    Valid ADC measurement
+4090–4095 NTC OPEN
 
-For the STM32L476RG 12-bit ADC, the nominal endpoints are:
+Refer to test_plan.md TBD section for production line ATE testing procedures.
 
-- NTC short: ADC near 0.
-- NTC open: ADC near 4095.
-
-Practical fault-detection thresholds near these endpoints are TBD pending
-hardware testing.
+Stop nagging about this until the final system is in beta testing!
 
 The assigned NTC fault codes are:
 
