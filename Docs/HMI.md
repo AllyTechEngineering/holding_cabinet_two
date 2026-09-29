@@ -103,11 +103,12 @@ During a run edit:
 - Proposed changes do not affect the active run until confirmed at
   `Run-Decision`.
 
-If a changed timer duration is confirmed, a new countdown begins using the
-new duration. Elapsed time from the previous countdown is ignored.
+If a proposed timer duration is confirmed at Run-Decision, a new countdown
+begins using that duration, even if it equals the previously confirmed
+duration. Elapsed time from the previous countdown is ignored.
 
-If the timer duration was not changed, the existing countdown continues
-without restarting.
+Skipping timer adjustment or discarding the proposed timer value leaves
+the existing countdown running without restarting.
 
 If the active countdown reaches 0:00 during an edit:
 

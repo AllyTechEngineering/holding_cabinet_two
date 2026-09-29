@@ -272,18 +272,23 @@ the changes at Run-Decision.
 
 ### RUN-005 — Apply Edited Time
 
-When the user confirms a changed timer duration during an active run, a new
-countdown shall begin using the newly confirmed duration.
+When the user confirms a proposed timer duration at Run-Decision during an
+active-run edit, a new countdown shall begin using that duration, even if
+it equals the previously confirmed duration.
 
-Elapsed time from the previous countdown shall not be subtracted from the new
+Elapsed time from the previous countdown shall not be subtracted from the
+new duration.
+
+
+### RUN-006 — Preserve Countdown When No Timer Proposal Is Confirmed
+
+During an active-run edit, skipping timer adjustment or discarding the
+proposed timer value shall leave the existing countdown running without
+restarting.
+
+Confirming a proposed timer duration at Run-Decision shall start a new
+countdown using that duration, even if it equals the previously confirmed
 duration.
-
-
-### RUN-006 — Unchanged Timer During Edit
-
-If the timer duration is not changed during an active-run edit, the existing
-countdown shall continue without restarting.
-
 
 ### RUN-007 — Cancel Active Run
 
