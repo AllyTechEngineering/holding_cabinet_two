@@ -49,7 +49,6 @@ void HeatTask_Run(void *argument) {
 
   (void)argument;
 
-  /* This stage reports temperature only. The relay is active-low. */
   HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
 
   for (;;) {
@@ -67,6 +66,7 @@ void HeatTask_Run(void *argument) {
 
       case HEAT_CMD_STOP:
         run_requested = 0u;
+        HAL_GPIO_WritePin(HeatRelay_GPIO_Port, HeatRelay_Pin, GPIO_PIN_SET);
         break;
 
       default:

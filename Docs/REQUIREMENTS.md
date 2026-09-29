@@ -101,8 +101,26 @@ Fahrenheit shall be the default temperature unit.
 
 ### TEMP-005 — Temperature Regulation
 
-The system shall maintain the cabinet temperature within ±3°F of the
-user-selected temperature.
+
+The firmware shall control the heater using the confirmed user temperature
+setpoint.
+
+Heater control shall use degrees Celsius internally regardless of whether
+the user selected Fahrenheit or Celsius.
+
+The confirmed setpoint shall be the upper control limit. The heater shall
+be commanded off when the measured temperature is at or above the upper
+control limit.
+
+The lower control limit shall be the confirmed setpoint minus the configured
+hysteresis. The heater shall be commanded on when the measured temperature
+is at or below the lower control limit.
+
+When the measured temperature is between the lower and upper control limits,
+the existing heater command state shall be maintained.
+
+The initial hysteresis shall be 2°C. The hysteresis may be adjusted based on
+thermal testing with representative hardware.
 
 ### TEMP-006 — Measured Temperature Validity
 

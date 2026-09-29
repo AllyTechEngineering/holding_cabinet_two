@@ -430,34 +430,34 @@ Temperature conversions between the selected HMI unit and the internal Celsius r
 
 The proof-of-concept uses on/off temperature control with hysteresis.
 
-The control concept is:
+Heater control operates using the internal whole-degree Celsius temperature
+representation regardless of the temperature unit selected for the HMI.
 
-    Cabinet temperature
-            |
-            v
-    +-------------------+
-    | Temperature       |
-    | comparison        |
-    +---------+---------+
-              |
-              v
-    +-------------------+
-    | Heater ON / OFF   |
-    | decision          |
-    +---------+---------+
-              |
-              v
-    +-------------------+
-    | Heater command    |
-    +-------------------+
+The confirmed temperature setpoint is the upper control limit.
 
-Hysteresis prevents rapid heater switching near the temperature setpoint.
+The lower control limit is calculated as:
 
-The exact heater-on and heater-off thresholds are TBD and will be established
-during hot-cabinet testing.
+    lower_control_limit = setpoint_c - hysteresis_c
 
-The thresholds will be selected to satisfy the temperature-regulation
-requirement in `REQUIREMENTS.md`.
+The initial hysteresis is 2°C.
+
+The heater-control decision is:
+
+- If the measured temperature is greater than or equal to the upper control
+  limit, command the heater off.
+- If the measured temperature is less than or equal to the lower control
+  limit, command the heater on.
+- If the measured temperature is between the lower and upper control limits,
+  retain the existing heater command state.
+
+The configured hysteresis is an initial control value and may be adjusted
+during thermal testing with representative hardware. Actual cabinet
+temperature overshoot and undershoot will be characterized during that
+testing.
+
+A stop condition, inactive run, or firmware-detected condition that prohibits
+heating overrides the temperature-control decision and commands the heater
+off.
 
 Independent hardware overtemperature protection is external to the firmware
 control architecture.
@@ -733,10 +733,6 @@ The connectivity architecture is TBD.
 
 The following architecture items remain unresolved:
 
-- Final heater hysteresis thresholds.
-- Final NTC calibration method.
-- NTC open-circuit detection threshold.
-- NTC short-circuit detection threshold.
 - Final persistence implementation.
 - Final Settings-mode architecture.
 - Connectivity protocol and implementation.
