@@ -20,6 +20,7 @@
 
 extern osMessageQueueId_t qInputToDisplayHandle;
 extern osMessageQueueId_t qHeatToDisplayHandle;
+extern osMessageQueueId_t qDisplayToHeatHandle;
 
 typedef enum {
   UI_IDLE_SPLASH,
@@ -36,6 +37,16 @@ typedef enum {
   UI_COMPLETE_DISPLAY_A,
   UI_COMPLETE_DISPLAY_B
 } UiScreen_t;
+
+static void send_heat_command(HeatCommandType_t type,
+                              uint16_t setpoint_tenths_c) {
+  HeatCommand_t command = {
+      .type = type,
+      .setpointTenthsC = setpoint_tenths_c,
+  };
+
+  (void)osMessageQueuePut(qDisplayToHeatHandle, &command, 0u, 0u);
+}
 
 static void display_screen(UiScreen_t screen, uint16_t temp_value,
                            uint8_t unit_celsius) {
