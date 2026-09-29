@@ -193,6 +193,7 @@ void DisplayTask_Run(void *argument) {
       /* Countdown expiry takes priority over the received button event. */
       if (RunTimer_Expired(&run_timer, now)) {
         RunTimer_Stop(&run_timer);
+        send_heat_command(HEAT_CMD_STOP, 0u);
         TimeEditor_Init(&time_editor);
         proposed_temp = active_temp;
         timed_proof = 0u;
@@ -371,6 +372,7 @@ void DisplayTask_Run(void *argument) {
           }
         } else if (event == EVT_ENTER_PRESSED) {
           RunTimer_Stop(&run_timer);
+          send_heat_command(HEAT_CMD_STOP, 0u);
           screen = UI_COMPLETE_DISPLAY_A;
           screen_start_tick = now;
           display_screen(screen, proposed_temp, unit_celsius);
@@ -388,6 +390,7 @@ void DisplayTask_Run(void *argument) {
 
     if (RunTimer_Expired(&run_timer, now)) {
       RunTimer_Stop(&run_timer);
+      send_heat_command(HEAT_CMD_STOP, 0u);
       TimeEditor_Init(&time_editor);
       proposed_temp = active_temp;
       timed_proof = 0u;
@@ -411,6 +414,7 @@ void DisplayTask_Run(void *argument) {
         screen != UI_RUN_ACTIVE && screen != UI_COMPLETE_DECISION &&
         (uint32_t)(now - last_activity_tick) >= APP_INACTIVITY_TIMEOUT_MS) {
       RunTimer_Stop(&run_timer);
+      send_heat_command(HEAT_CMD_STOP, 0u);
       TimeEditor_Init(&time_editor);
       proposed_temp = active_temp;
       timed_proof = 0u;
