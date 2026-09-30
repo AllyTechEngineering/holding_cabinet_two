@@ -22,7 +22,8 @@ Observed hardware:
 - GPIO4, GPIO5, GPIO6, and GPIO7 available on headers
 
 The exact board schematic has not yet been identified.
-Dorhea suggested looking for documents related to nanoESP32-C6. I found: https://github.com/wuxx/nanoESP32-C6/blob/master/README_en.md
+Dorhea suggested looking for documents related to nanoESP32-C6. I found: T
+
 
 ## PC Development Environment
 
