@@ -100,7 +100,7 @@ osThreadId_t ConnectTaskHandle;
 const osThreadAttr_t ConnectTask_attributes = {
   .name = "ConnectTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for HeatTask */
 osThreadId_t HeatTaskHandle;
@@ -427,7 +427,7 @@ int main(void)
   qHeatToDisplayHandle = osMessageQueueNew (1, sizeof(HeatStatus_t), &qHeatToDisplay_attributes);
 
   /* creation of qUartRxToConnect */
-  qUartRxToConnectHandle = osMessageQueueNew (1, sizeof(uint8_t), &qUartRxToConnect_attributes);
+  qUartRxToConnectHandle = osMessageQueueNew (128, sizeof(uint8_t), &qUartRxToConnect_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
