@@ -525,6 +525,13 @@ Additional Settings-mode functionality is TBD.
 
 ## 16. Connectivity Requirements
 
-### CONN-001 — Connectivity Status
+### CONN-001 — Connectivity Support
 
-Remote connectivity is not required for the current proof-of-concept firmware.
+The firmware shall support remote connectivity through an external
+connectivity module.
+
+
+### CONN-002 — Independent Local Operation
+
+The cabinet shall remain fully operational when remote connectivity is
+unavailable.

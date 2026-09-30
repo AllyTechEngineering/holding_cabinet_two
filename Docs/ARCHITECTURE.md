@@ -189,15 +189,16 @@ Its responsibilities include:
 
 ### 4.5 ConnectTask
 
-`ConnectTask` is reserved for future external connectivity.
+`ConnectTask` owns communications with the external ESP32-C6 connectivity
+module.
 
-The intended architecture is for the STM32 to remain responsible for
-real-time cabinet control while an external connectivity module provides
+The STM32 is the master. The ESP32-C6 operates as a slave communications
+device using ESP-AT.
+
+`ConnectTask` manages connectivity state and uses the ESP-AT interface for
 network communications.
 
-The connectivity protocol and detailed `ConnectTask` architecture are TBD.
-
-Connectivity is not required for the current proof-of-concept firmware.
+Connectivity operation is independent of local cabinet control.
 
 
 ## 5. Inter-Task Communication
@@ -717,16 +718,25 @@ duplicate authoritative MCU configuration or hardware design information.
 
 ## 20. Connectivity Architecture
 
-Connectivity is outside the current proof-of-concept firmware scope.
+The STM32 communicates with an ESP32-C6 running Espressif ESP-AT firmware.
 
-The planned architecture reserves `ConnectTask` for communications between the
-STM32 and an external connectivity module.
+The connectivity software is layered as:
 
-The STM32 remains responsible for local real-time cabinet control.
+    ConnectTask
+        |
+        v
+    ESP-AT Interface
+        |
+        v
+    UART Transport
+        |
+        v
+    USART2
 
-The external module handles network connectivity.
+The STM32 is the master and initiates ESP-AT commands. The ESP32-C6 is the
+slave communications device.
 
-The connectivity architecture is TBD.
+USART2 provides the STM32-to-ESP32 serial interface.
 
 
 ## 21. Open Architecture Items
@@ -735,5 +745,5 @@ The following architecture items remain unresolved:
 
 - Final persistence implementation.
 - Final Settings-mode architecture.
-- Connectivity protocol and implementation.
+- Connectivity implementation.
 - Heater fault-detection parameters and algorithm.
