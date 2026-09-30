@@ -4,13 +4,13 @@
 
 This document records the ESP32-C6 development-board setup and ESP-AT bring-up used during development of the Holding Cabinet Two project.
 
-The board is a low-cost ESP32-C6 development board based on an ESP32-C6-WROOM-1 module. It appears similar to YD-ESP32-C6 development boards, but the exact manufacturer, board revision, and schematic have not yet been confirmed.
+The board is a low-cost ESP32-C6 development board based on an ESP32-C6-WROOM-1 module. The part number on Amazon is ESP32-C6-DevKitM-1 and sold by Dorhea. It is a Chinese knock-off with no documentation that was purchased on Amazon.
 
 ## Development Board
 
 Observed hardware:
 
-- Module: ESP32-C6-WROOM-1
+- Module: ESP32-C6-WROOM-1 (not really sure)
 - Flash: 4 MB
 - Board designation when purchased: ESP32-C6-1-N4 Development Board
 - USB-C connector labeled `COM`
@@ -22,6 +22,7 @@ Observed hardware:
 - GPIO4, GPIO5, GPIO6, and GPIO7 available on headers
 
 The exact board schematic has not yet been identified.
+Dorhea suggested looking for documents related to nanoESP32-C6. I found: https://github.com/wuxx/nanoESP32-C6/blob/master/README_en.md
 
 ## PC Development Environment
 
@@ -34,6 +35,12 @@ The exact board schematic has not yet been identified.
 Working directory used for ESP32-C6 flashing:
 
     C:\esp_32_c6
+
+
+## AT Command Set
+
+https://docs.espressif.com/projects/esp-at/en/latest/esp32c6/AT_Command_Set/index.html
+
 
 ## ESP-AT Source
 
