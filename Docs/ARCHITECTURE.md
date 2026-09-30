@@ -738,6 +738,22 @@ slave communications device.
 
 USART2 provides the STM32-to-ESP32 serial interface.
 
+### 20.1 UART Transport
+
+USART2 provides the transport between the STM32 and the ESP32-C6.
+
+Transmit operations use blocking UART transmission.
+
+Receive operations use the USART2 interrupt. Received bytes are passed from
+the UART receive handling to `ConnectTask` through the FreeRTOS
+`qUartRxToConnect` queue.
+
+The receive queue contains 128 `uint8_t` entries.
+
+DMA and UART hardware flow control are not used.
+
+UART errors are handled by the UART transport layer. The transport detects
+UART receive errors, records the error condition, and restores UART reception.
 
 ## 21. Open Architecture Items
 

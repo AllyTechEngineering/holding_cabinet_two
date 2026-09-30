@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-/* ... */
+void ConnectTask_Run(void *argument);
 
 #ifdef __cplusplus
 }
