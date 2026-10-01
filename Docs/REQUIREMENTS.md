@@ -5,10 +5,6 @@
 This document is the authoritative source for the behavioral requirements of
 the Holding Cabinet / Proofing Oven firmware.
 
-The requirements are developed incrementally as the prototype is designed,
-implemented, and tested. A requirement does not need to be defined before
-development begins if the required behavior has not yet been determined.
-
 Implementation details are maintained in the firmware source code,
 `ARCHITECTURE.md`, and the STM32CubeMX project as appropriate.
 
@@ -23,8 +19,6 @@ The following terms are used for unresolved items:
 - **TBD (To Be Determined):** The requirement or value has not yet been decided.
 - **TBC (To Be Confirmed):** The expected requirement or value is known but
   still requires confirmation.
-
-TBD and TBC entries are resolved as the design matures.
 
 
 ## 3. System Requirements
@@ -412,6 +406,7 @@ power cycles:
 - Temperature setpoint
 - Temperature unit
 - Timer duration
+- Wi-Fi network credentials
 
 
 ### PERSIST-002 — Save Point
@@ -422,11 +417,14 @@ the run configuration.
 Temperature units shall be saved when the user confirms the Settings
 selection.
 
+Wi-Fi network credentials shall be saved only after successful Wi-Fi
+provisioning.
+
 
 ### PERSIST-003 — Proposed Values
 
-Unconfirmed temperature or timer adjustments shall not be stored as persistent
-configuration.
+Unconfirmed temperature, timer, or Wi-Fi configuration values shall not be
+stored as persistent configuration.
 
 
 ### PERSIST-004 — Active Run State
@@ -527,9 +525,6 @@ The firmware shall report the following connectivity fault code:
 
 An ESP32 communication failure shall place the firmware into the Error state.
 
-The fault response may be revised as connectivity behavior is developed and
-tested.
-
 
 ## 15. Settings Requirements
 
@@ -545,9 +540,15 @@ Fahrenheit shall be the default setting.
 A changed setting shall become persistent when the user confirms the setting.
 
 
-### SETTINGS-003 — Additional Settings
+### SETTINGS-003 — Wi-Fi Configuration
 
-Additional Settings-mode functionality is TBD.
+Settings mode shall provide an option to start or edit Wi-Fi configuration.
+
+Selecting and confirming the Wi-Fi configuration option shall start the
+Wi-Fi provisioning process.
+
+Wi-Fi network selection and password entry shall be performed through the
+external provisioning application rather than through the cabinet HMI.
 
 
 ## 16. Connectivity Requirements

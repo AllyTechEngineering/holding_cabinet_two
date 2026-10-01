@@ -54,57 +54,153 @@ CTS and RTS are not used.
 
 ## 4. Command Processing
 
-TBD.
+The STM32 shall issue ESP-AT commands through the ESP-AT interface.
+
+The ESP-AT interface shall process command responses and unsolicited result
+codes independently.
+
+Only one response-dependent ESP-AT command transaction shall be active at a
+time unless a later architecture revision explicitly supports concurrent
+transactions.
+
+Detailed response parsing is TBD.
 
 
 ## 5. Startup and Synchronization
 
-TBD.
+During connectivity initialization, the STM32 shall verify that valid ESP-AT
+communication can be established with the ESP32-C6.
+
+The initial synchronization command sequence is TBD.
 
 
 ## 6. ESP-AT Configuration
 
-TBD.
+The ESP32-C6 shall operate using Espressif ESP-AT firmware.
+
+The STM32 shall configure only ESP-AT functions required by the Holding
+Cabinet MVP.
+
+ESP-AT persistent configuration shall not be treated as the authoritative
+source of cabinet Wi-Fi configuration.
+
+Detailed initialization commands are TBD.
 
 
 ## 7. Provisioning Commands
 
-TBD.
+Wi-Fi provisioning shall use Espressif BluFi support provided by ESP-AT.
+
+Provisioning control shall include the ability to:
+
+- Enable BluFi provisioning.
+- Detect BluFi connection activity.
+- Receive provisioning results.
+- Detect successful Wi-Fi connection.
+- Disable BluFi provisioning.
+
+Provisioning shall be stopped when:
+
+- Wi-Fi provisioning succeeds.
+- The user cancels provisioning.
+- The 5-minute provisioning timeout expires.
+
+The exact ESP-AT command sequence and unsolicited result codes used for BluFi
+provisioning are TBD and shall be defined from the applicable Espressif
+ESP-AT documentation.
 
 
 ## 8. Wi-Fi Commands
 
-TBD.
+The ESP-AT interface shall support the commands required to:
+
+- Configure the ESP32-C6 for station Wi-Fi operation.
+- Apply Wi-Fi credentials under STM32 control.
+- Initiate Wi-Fi connection.
+- Detect successful Wi-Fi connection.
+- Detect network acquisition.
+- Detect Wi-Fi disconnection.
+
+The STM32-stored Wi-Fi credentials are authoritative.
+
+The exact command set is TBD.
 
 
 ## 9. Network Commands
 
-TBD.
+The ESP-AT interface shall support the network operations required for remote
+cabinet communications.
+
+The required TCP, SSL/TLS, HTTP, or other network command set is TBD.
 
 
 ## 10. Firebase Transport Commands
 
-TBD.
+The ESP-AT interface shall provide the network transport required for the
+STM32 firmware to communicate with the required Firebase service.
+
+The exact Firebase API and ESP-AT transport command mapping is TBD.
+
+Flutter application account-management behavior is outside this interface.
 
 
 ## 11. Unsolicited Result Codes
 
-TBD.
+The ESP-AT interface shall process unsolicited result codes required to detect
+at minimum:
+
+- BluFi connection state
+- Wi-Fi connection
+- Wi-Fi disconnection
+- Network address acquisition
+- Network connection closure
+- Other asynchronous events required by the selected Firebase transport
+
+The exact unsolicited result code set is TBD.
 
 
 ## 12. Command Timeouts
 
-TBD.
+Each ESP-AT operation that requires a response shall have a defined timeout.
+
+Timeout values are TBD.
+
+A single ESP-AT command timeout shall not automatically be classified as an
+ESP32 communication failure.
+
+The connectivity logic shall determine when command failures constitute loss
+of valid ESP-AT communication.
 
 
 ## 13. ESP-AT Error Handling
 
-TBD.
+ESP-AT command responses indicating failure shall be handled by the ESP-AT
+interface.
+
+UART framing, overrun, noise, parity, and transport-level errors are handled
+by the UART transport layer.
+
+Wi-Fi connection failure is not an ESP32 communication failure.
+
+Internet or Firebase unavailability is not an ESP32 communication failure.
+
+The detailed retry policy is TBD.
 
 
 ## 14. ESP-AT Command Set
 
-TBD.
+The MVP ESP-AT command set shall be limited to commands required for:
+
+- ESP32 communication verification
+- ESP-AT initialization
+- BluFi provisioning
+- Wi-Fi station connection
+- Wi-Fi connection status
+- Network transport
+- Firebase-facing communications
+- Required connection recovery
+
+The exact command list is TBD.
 
 
 ## 15. References

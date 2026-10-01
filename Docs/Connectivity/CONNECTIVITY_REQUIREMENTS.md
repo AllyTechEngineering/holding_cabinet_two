@@ -27,8 +27,6 @@ The following terms are used for unresolved items:
 
 ## 3. ESP32 Device Management Requirements
 
-## 3. ESP32 Device Management Requirements
-
 ### ESP-001 — ESP32 Communication Establishment
 
 Parent: `FAULT-007`, `FAULT-008`
@@ -73,22 +71,171 @@ Periodic ESP32 heartbeat commands are not required.
 
 ## 4. Provisioning Requirements
 
-TBD.
+### PROV-001 — Provisioning Initiation
+
+Parent: `SETTINGS-003`, `CONN-001`
+
+Wi-Fi provisioning shall begin only after the user selects and confirms the
+Wi-Fi configuration option from Settings.
+
+
+### PROV-002 — Provisioning Interface
+
+Parent: `SETTINGS-003`, `CONN-001`
+
+Wi-Fi provisioning data shall be received from an external provisioning
+application through a BLE provisioning connection.
+
+
+### PROV-003 — Provisioning Data Entry
+
+Parent: `SETTINGS-003`
+
+Wi-Fi network selection and password entry shall be performed by the external
+provisioning application.
+
+The cabinet HMI shall not provide SSID or Wi-Fi password entry.
+
+
+### PROV-004 — Provisioning Duration
+
+Parent: `SETTINGS-003`
+
+An active provisioning session shall remain available for up to 5 minutes.
+
+
+### PROV-005 — Provisioning Success
+
+Parent: `SETTINGS-003`, `CONN-001`
+
+Wi-Fi provisioning shall be considered successful when the ESP32-C6
+successfully connects to the selected Wi-Fi network and obtains network
+connectivity.
+
+Internet access and Firebase access shall not be required to declare Wi-Fi
+provisioning successful.
+
+
+### PROV-006 — Successful Provisioning Completion
+
+Parent: `SETTINGS-003`, `PERSIST-001`, `PERSIST-002`
+
+After successful Wi-Fi provisioning:
+
+- The new Wi-Fi configuration shall become the active configuration.
+- The STM32 shall retain the accepted Wi-Fi credentials as persistent
+  configuration.
+- BLE provisioning shall end.
+- Normal connectivity operation shall resume.
+- A reboot shall not be required.
+
+
+### PROV-007 — Failed Credential Validation
+
+Parent: `SETTINGS-003`
+
+If the cabinet cannot connect to the selected Wi-Fi network using candidate
+credentials:
+
+- The candidate credentials shall not replace the existing stored Wi-Fi
+  configuration.
+- The provisioning session shall remain active while the 5-minute provisioning
+  window remains valid.
+- The provisioning client shall be able to provide corrected credentials.
+
+
+### PROV-008 — Existing Credential Retention
+
+Parent: `PERSIST-001`, `PERSIST-003`
+
+Starting Wi-Fi provisioning shall not erase the currently stored Wi-Fi
+credentials.
+
+Existing stored credentials shall remain valid until a new Wi-Fi
+configuration has been successfully provisioned.
+
+
+### PROV-009 — Provisioning Cancellation
+
+Parent: `SETTINGS-003`, `PERSIST-003`
+
+The user shall be able to cancel an active Wi-Fi provisioning session from
+the cabinet HMI.
+
+When provisioning is cancelled:
+
+- BLE provisioning shall stop.
+- Unaccepted candidate credentials shall be discarded.
+- Existing stored Wi-Fi credentials shall be retained.
+- The firmware shall return to Settings.
+
+
+### PROV-010 — Provisioning Timeout
+
+Parent: `SETTINGS-003`, `PERSIST-003`
+
+If the 5-minute provisioning window expires before successful completion:
+
+- BLE provisioning shall stop.
+- Unaccepted candidate credentials shall be discarded.
+- Existing stored Wi-Fi credentials shall be retained.
+- The firmware shall return to Settings.
+
+Provisioning timeout shall not be treated as a cabinet fault.
+
+
+### PROV-011 — Initial and Replacement Configuration
+
+Parent: `SETTINGS-003`
+
+The same provisioning process shall support both initial Wi-Fi configuration
+and later replacement of an existing Wi-Fi configuration.
 
 
 ## 5. Wi-Fi Connectivity Requirements
 
-TBD.
+### WIFI-001 — Stored Credential Use
+
+Parent: `CONN-001`, `PERSIST-001`
+
+The connectivity subsystem shall use the Wi-Fi credentials stored by the
+STM32 when establishing normal Wi-Fi connectivity.
+
+
+### WIFI-002 — Wi-Fi Connection Failure
+
+Parent: `CONN-002`
+
+Failure to connect to the configured Wi-Fi network shall not prevent normal
+local cabinet operation.
+
+
+### WIFI-003 — Wi-Fi Connection Loss
+
+Parent: `CONN-002`
+
+Loss of an established Wi-Fi connection shall not prevent normal local
+cabinet operation.
 
 
 ## 6. Network Connectivity Requirements
 
-TBD.
+### NET-001 — Local Operation Without Internet Connectivity
+
+Parent: `CONN-002`
+
+Loss or absence of Internet connectivity shall not prevent normal local
+cabinet operation.
 
 
 ## 7. Firebase Communications Requirements
 
-TBD.
+### FIREBASE-001 — Remote Service Independence
+
+Parent: `CONN-002`
+
+Loss or absence of Firebase connectivity shall not prevent normal local
+cabinet operation.
 
 
 ## 8. Cabinet Data Reporting Requirements
@@ -103,14 +250,60 @@ TBD.
 
 ## 10. Connectivity State and Status Requirements
 
-TBD.
+### STATUS-001 — Provisioning Result
+
+Parent: `SETTINGS-003`
+
+The connectivity subsystem shall provide the cabinet HMI with the result of
+Wi-Fi provisioning.
+
+The result shall distinguish successful provisioning from unsuccessful
+provisioning.
+
+
+### STATUS-002 — Connectivity Independence
+
+Parent: `CONN-002`
+
+Wi-Fi, Internet, or Firebase unavailability shall be represented as
+connectivity status conditions and shall not by themselves place the cabinet
+into the Error state.
 
 
 ## 11. Credentials and Security Requirements
 
-TBD.
+### CRED-001 — STM32 Credential Authority
+
+Parent: `PERSIST-001`
+
+The STM32 shall be the authoritative persistent store for accepted Wi-Fi
+credentials.
+
+
+### CRED-002 — ESP32 Credential Use
+
+Parent: `CONN-001`, `PERSIST-001`
+
+The ESP32-C6 shall use Wi-Fi credentials provided under STM32 control for
+normal Wi-Fi connection operation.
+
+The ESP32-C6 shall not be treated as the authoritative persistent store for
+Wi-Fi credentials.
 
 
 ## 12. Fault Handling and Recovery Requirements
 
-TBD.
+### RECOVERY-001 — ESP32 Communication Fault
+
+Parent: `FAULT-007`, `FAULT-008`
+
+Loss of valid ESP-AT communication with the ESP32-C6 shall be handled as an
+ESP32 communication failure.
+
+
+### RECOVERY-002 — Non-Fault Connectivity Failures
+
+Parent: `CONN-002`
+
+Wi-Fi connection failure, Internet unavailability, and Firebase
+unavailability shall not by themselves be treated as cabinet faults.
