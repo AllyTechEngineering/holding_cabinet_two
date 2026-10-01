@@ -54,6 +54,7 @@ App/Display/lcd1602_driver.c
 App/Display/run_timer.c
 App/Control/control_task.c
 App/Connectivity/connect_task.c
+App/Connectivity/uart_transport.c
 )
 
 # Add include paths
