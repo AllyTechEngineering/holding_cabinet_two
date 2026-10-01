@@ -9,13 +9,24 @@
  ********************************************************************************/
 
 #include "connect_task.h"
+#include "uart_transport.h"
 #include "cmsis_os.h"
 
-void ConnectTask_Run(void *argument)
-{
+extern UART_HandleTypeDef huart2;
+extern osMessageQueueId_t qUartRxToConnectHandle;
+
+void ConnectTask_Run(void *argument) {
   (void)argument;
 
-  for (;;) {
-    osDelay(1);
+  if (UartTransport_Init(&huart2, qUartRxToConnectHandle) != HAL_OK) {
+    for (;;) {
+      osDelay(1000u);
+    }
+  }
+
+  if (UartTransport_StartRx() != HAL_OK) {
+    for (;;) {
+      osDelay(1000u);
+    }
   }
 }
