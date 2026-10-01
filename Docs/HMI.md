@@ -61,6 +61,7 @@ The following screen pairs automatically alternate:
 | `SetTime-Adjust` / `SetTime-Confirm` | 2 seconds |
 | `Complete-DisplayA` / `Complete-DisplayB` | 4 seconds |
 | `Settings-Adjust` / `Settings-Confirm` | 2 seconds |
+| `Error-DisplayA` / `Error-DisplayB` | 2 seconds |
 
 Screen alternation is cosmetic and does not prevent user input.
 
@@ -82,6 +83,8 @@ The timeout does not apply to:
 - `Idle-Prompt`
 - `Run-Active`
 - `Complete-Decision`
+- `Error-DisplayA`
+- `Error-DisplayB`
 
 When the inactivity timeout occurs on another applicable screen:
 
@@ -141,6 +144,7 @@ If the active countdown reaches 0:00 during an edit:
 | `Settings-Splash` | — | — | — | — |
 | `Settings-Adjust` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Confirm` | `Idle-Splash` |
 | `Settings-Confirm` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Adjust` | `Idle-Splash` |
+| `Error` | — | — | — | — |
 
 
 ## 5. Idle Screens
@@ -185,8 +189,6 @@ As displayed:
     " To Set Temp    "
     " Enter Y Mode N "
 
-
-### 6.2 SetTemp-Adjust
 
 ### 6.2 SetTemp-Adjust
 
@@ -353,6 +355,7 @@ Mode stops the proof, turns heating off, and returns to `Idle-Splash`.
 `XXX` represents the live cabinet temperature.
 
 The temperature value is not padded with leading zeroes.
+
 The displayed cabinet-temperature range is 0F through 150F when Fahrenheit
 is selected and 0C through 66C when Celsius is selected.
 
@@ -591,7 +594,7 @@ When a firmware-detected error places the system in the Error state:
 The Error display alternates its second row every 2 seconds.
 
 
-### 11.1 Error Display A
+### 11.1 Error-DisplayA
 
 `XX` represents the active two-digit error code.
 
@@ -606,7 +609,7 @@ As displayed:
     "Turn Proofer Off"
 
 
-### 11.2 Error Display B
+### 11.2 Error-DisplayB
 
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -617,18 +620,6 @@ As displayed:
 
     "Err: XX         "
     "Contact Support "
-
-
-### 11.3 Error Codes
-
-| Error | Code |
-|---|---:|
-| NTC Open | 10 |
-| NTC Short | 11 |
-| Heater Open | 20 |
-| Heater Short | 21 |
-
-Codes 30 through 90 remain reserved/TBD.
 
 
 ## 12. Audible HMI

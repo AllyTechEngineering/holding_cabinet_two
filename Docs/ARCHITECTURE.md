@@ -412,6 +412,7 @@ to temperature using the thermistor Beta equation.
 The final sensor calibration shall be conducted after PCBA final assembly using an ATE production fixture.
 No firmware shall be used for the calibration.
 
+
 ### 9.1 Internal Temperature Representation
 
 Celsius is the firmware's internal temperature representation.
@@ -426,6 +427,7 @@ Fahrenheit and Celsius selection affects the HMI representation of temperature
 but does not change the internal Celsius representation used by the firmware.
 
 Temperature conversions between the selected HMI unit and the internal Celsius representation are rounded to the nearest whole degree. Conversion rounding of up to 0.5°C (0.9°F) is acceptable for this product and does not constitute a temperature-control error.
+
 
 ## 10. Heater-Control Architecture
 
@@ -550,9 +552,9 @@ faults using the ADC measurement.
 
 The NTC voltage divider is arranged so that:
 
-0–5       NTC SHORT
-6–4089    Valid ADC measurement
-4090–4095 NTC OPEN
+    0–5       NTC SHORT
+    6–4089    Valid ADC measurement
+    4090–4095 NTC OPEN
 
 Refer to test_plan.md TBD section for production line ATE testing procedures.
 
@@ -565,6 +567,7 @@ The assigned NTC fault codes are:
 
 When an NTC fault is detected, the heater command is disabled and the
 application enters the Error state.
+
 
 ### 15.1.1 Sensor Validity and Temperature Setpoint Limits
 
@@ -605,7 +608,8 @@ separate purposes:
   electrically valid.
 - Proofing-temperature limits determine what temperature setpoint the user is
   permitted to select.
-  
+
+
 ### 15.2 Heater Fault Detection
 
 Heater fault detection requires evaluation of the thermal response after the
@@ -640,6 +644,18 @@ operation.
 Detailed recovery behavior is TBD.
 
 The Error-state operator interface is defined in `HMI.md`.
+
+
+### 15.4 Safety Boundary
+
+Firmware fault detection and heater control are not part of the independent
+hardware safety system.
+
+Independent hardware protection shall be capable of removing heater power
+without firmware intervention.
+
+The hardware safety implementation is defined by the hardware design and is
+outside the firmware architecture.
 
 
 ## 16. Display Architecture
@@ -738,6 +754,7 @@ slave communications device.
 
 USART2 provides the STM32-to-ESP32 serial interface.
 
+
 ### 20.1 UART Transport
 
 USART2 provides the transport between the STM32 and the ESP32-C6.
@@ -754,6 +771,7 @@ DMA and UART hardware flow control are not used.
 
 UART errors are handled by the UART transport layer. The transport detects
 UART receive errors, records the error condition, and restores UART reception.
+
 
 ## 21. Open Architecture Items
 

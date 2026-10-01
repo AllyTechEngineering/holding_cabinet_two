@@ -101,7 +101,6 @@ Fahrenheit shall be the default temperature unit.
 
 ### TEMP-005 — Temperature Regulation
 
-
 The firmware shall control the heater using the confirmed user temperature
 setpoint.
 
@@ -122,6 +121,7 @@ the existing heater command state shall be maintained.
 The initial hysteresis shall be 2°C. The hysteresis may be adjusted based on
 thermal testing with representative hardware.
 
+
 ### TEMP-006 — Measured Temperature Validity
 
 The user-selectable proofing-temperature range shall not be used as the
@@ -132,6 +132,7 @@ above the maximum selectable setpoint without being considered a sensor fault.
 
 Temperature-sensor faults shall be determined from the NTC sensor electrical
 measurement and the applicable sensor-fault detection criteria.
+
 
 ## 5. Timer Requirements
 
@@ -319,6 +320,7 @@ Confirming a proposed timer duration at Run-Decision shall start a new
 countdown using that duration, even if it equals the previously confirmed
 duration.
 
+
 ### RUN-007 — Cancel Active Run
 
 The user shall be able to stop an active proofing run.
@@ -502,6 +504,31 @@ While in the Error state, normal user-interface commands shall not resume
 operation.
 
 Recovery behavior from a firmware fault is TBD.
+
+
+### FAULT-006 — Heater Fault Codes
+
+The following error codes are reserved for heater faults:
+
+- Error 20: Heater open
+- Error 21: Heater short
+
+Heater fault-detection criteria are TBD.
+
+
+### FAULT-007 — Connectivity Fault Code
+
+The firmware shall report the following connectivity fault code:
+
+- Error 30: ESP32 communication failure
+
+
+### FAULT-008 — Connectivity Fault Response
+
+An ESP32 communication failure shall place the firmware into the Error state.
+
+The fault response may be revised as connectivity behavior is developed and
+tested.
 
 
 ## 15. Settings Requirements
