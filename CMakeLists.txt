@@ -53,6 +53,7 @@ App/Display/time_editor.c
 App/Display/lcd1602_driver.c
 App/Display/run_timer.c
 App/Control/control_task.c
+App/Connectivity/connect_task.c
 )
 
 # Add include paths
@@ -62,6 +63,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Input
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Display
     ${CMAKE_CURRENT_SOURCE_DIR}/App/Control
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/Connectivity
 )
 
 # Add project symbols (macros)

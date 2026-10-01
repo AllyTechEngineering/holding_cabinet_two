@@ -24,10 +24,12 @@
 /* USER CODE BEGIN Includes */
 
 #include "app_types.h"
+#include "connect_task.h"
 #include "control_task.h"
 #include "display_task.h"
 #include "input_task.h"
 #include "sensor_task.h"
+
 
 
 /* USER CODE END Includes */
@@ -868,13 +870,9 @@ void StartDisplayTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartConnectTask */
-void StartConnectTask(void *argument)
-{
+void StartConnectTask(void *argument) {
   /* USER CODE BEGIN StartConnectTask */
-  /* Infinite loop */
-  for (;;) {
-    osDelay(1);
-  }
+  ConnectTask_Run(argument);
   /* USER CODE END StartConnectTask */
 }
 
