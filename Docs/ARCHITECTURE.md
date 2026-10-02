@@ -9,11 +9,8 @@ Proofing Oven.
 
 `HMI.md` defines the front-panel HMI.
 
-This document defines how the firmware is organized to satisfy those
-requirements.
-
-STM32 peripheral configuration and MCU pin assignments are maintained by the
-STM32CubeMX project.
+STM32 peripheral configuration, GPIO assignments, and MCU pin assignments are
+maintained by the STM32CubeMX project.
 
 
 ## 2. Platform
@@ -30,7 +27,7 @@ The current firmware targets:
 
 ## 3. Application Tasks
 
-The application uses:
+The application uses five FreeRTOS tasks:
 
 - `SenseTask`
 - `InputTask`
@@ -50,6 +47,8 @@ The application uses:
 - Detects NTC electrical faults.
 - Provides temperature information to `HeatTask`.
 
+The current sensing period is 2500 ms.
+
 
 ### 4.2 InputTask
 
@@ -57,16 +56,17 @@ The application uses:
 
 - Samples the front-panel buttons.
 - Debounces button input.
-- Detects press, release, and required hold events.
+- Detects press and release events.
+- Detects required hold events.
 - Detects the Settings-entry button combination.
 - Reports button events to `DisplayTask`.
 
-`DisplayTask` determines whether an input is valid for the current HMI state.
+`DisplayTask` determines whether an event is valid for the current HMI state.
 
 
 ### 4.3 DisplayTask
 
-`DisplayTask` owns the front-panel HMI state machine.
+`DisplayTask` owns the application HMI state machine.
 
 It manages:
 
@@ -79,36 +79,35 @@ It manages:
 - HMI inactivity timing.
 - LCD rendering.
 - Run-control commands to `HeatTask`.
-- Persistent-setting save requests.
-- Cabinet-side connectivity HMI interaction.
 
-`DisplayTask` currently wakes approximately every 100 ms.
+`DisplayTask` wakes approximately every 100 ms.
 
 
 ### 4.4 HeatTask
 
-`HeatTask` owns heater control.
+`HeatTask` owns heater-control operation.
 
 It:
 
-- Receives cabinet temperature.
-- Receives run, stop, and setpoint commands.
+- Receives cabinet temperature from `SenseTask`.
+- Receives run, stop, and setpoint commands from `DisplayTask`.
 - Determines the heater command.
 - Drives the heater output.
 - Drives the Heater indicator.
 - Reports heater status to `DisplayTask`.
 
-Connectivity state does not control whether local proofing may operate.
+Local heater control does not depend on connectivity.
 
 
 ### 4.5 ConnectTask
 
 `ConnectTask` owns STM32-side connectivity operation.
 
-It manages communications with the ESP32-C6 and reports connectivity status
-to the application.
+The current implementation initializes the ESP32-C6 UART transport and starts
+interrupt-driven UART reception.
 
-Connectivity failure does not stop local proofing operation.
+ESP-AT command processing and higher-level connectivity behavior remain to be
+implemented.
 
 
 ## 5. Inter-Task Communication
@@ -121,9 +120,9 @@ Consumer: `DisplayTask`
 
 Depth: 8
 
-Semantics: FIFO
+Payload: `uint8_t` / `ButtonEvent_t`
 
-Transfers discrete button events.
+Semantics: FIFO
 
 
 ### 5.2 qSenseToHeat
@@ -134,10 +133,11 @@ Consumer: `HeatTask`
 
 Depth: 1
 
+Payload: `uint16_t`
+
 Semantics: latest value wins
 
-The producer uses drain-then-put behavior so the queue contains the newest
-temperature value.
+The producer uses drain-then-put behavior.
 
 
 ### 5.3 qDisplayToHeat
@@ -148,9 +148,9 @@ Consumer: `HeatTask`
 
 Depth: 4
 
-Semantics: FIFO
+Payload: `HeatCommand_t`
 
-Transfers `HeatCommand_t` commands.
+Semantics: FIFO
 
 
 ### 5.4 qHeatToDisplay
@@ -161,60 +161,65 @@ Consumer: `DisplayTask`
 
 Depth: 1
 
-Semantics: latest value wins
+Payload: `HeatStatus_t`
 
-Transfers `HeatStatus_t`.
+Semantics: latest value wins
 
 
 ### 5.5 qUartRxToConnect
 
+Producer: UART receive callback
+
 Consumer: `ConnectTask`
 
-Purpose: ESP32 UART receive data.
+Depth: 128
 
-UART data shall not use latest-value-wins semantics.
+Payload: `uint8_t`
 
-The final queue configuration may be revised during connectivity development.
+Semantics: FIFO
 
-
-### 5.6 Connectivity Application Interface
-
-Communication between `DisplayTask` and `ConnectTask` is TBD.
+Received UART bytes shall not use latest-value-wins behavior.
 
 
-## 6. HMI State Machine
+### 5.6 Application / Connectivity Interface
+
+The application-level interface between `ConnectTask` and the rest of the
+application is TBD.
+
+
+## 6. HMI Architecture
 
 `DisplayTask` owns the HMI state machine.
 
-Exact HMI states, transitions, controls, screen content, and display timing
-are defined in `HMI.md`.
+Exact states, transitions, controls, screen content, and display timing are
+defined in `HMI.md`.
 
 
-## 7. Proposed and Confirmed Values
+## 7. Run Timer
 
-Configuration changes are maintained as proposed values until confirmed.
+`run_timer.c/.h` manages active timed and untimed run timing.
 
-During active-run editing:
+Timed runs use the RTOS tick count and a configured duration.
 
-- The confirmed temperature remains active.
-- The existing countdown continues.
-- Proposed changes do not affect the active run.
-- Confirming the edit applies the proposed values.
+Remaining time is calculated from elapsed time rather than by decrementing a
+stored minute counter.
+
+Countdown expiration is processed independently of the currently displayed
+setup or run-edit screen.
 
 
-## 8. Countdown
+## 8. Time Editor
 
-`DisplayTask` manages the proofing countdown using elapsed RTOS time.
+`time_editor.c/.h` manages proposed countdown duration and Up/Down hold
+acceleration.
 
-The countdown continues during active-run editing.
-
-Countdown expiration is processed independently of the displayed HMI screen.
+It does not own the active run timer.
 
 
 ## 9. Temperature Sensing
 
-The cabinet temperature is measured using an NTC thermistor connected to an
-STM32 ADC input.
+Cabinet temperature is measured using an NTC thermistor connected to an STM32
+ADC input.
 
 The current divider uses:
 
@@ -231,19 +236,17 @@ Temperature conversion uses the thermistor Beta equation.
 
 ### 9.1 Internal Temperature Representation
 
-Celsius is the internal temperature representation.
-
-Application temperature, setpoint, and heater-control values use whole degrees
+Application temperature values are represented internally as whole degrees
 Celsius.
 
-`DisplayTask` converts between internal Celsius and the selected display unit.
+`DisplayTask` converts between internal Celsius and the selected HMI unit.
 
 Conversions are rounded to the nearest whole degree.
 
 
 ## 10. Heater Control
 
-The firmware uses on/off control with hysteresis.
+The firmware uses on/off temperature control with hysteresis.
 
 The confirmed setpoint is the upper control limit.
 
@@ -255,50 +258,68 @@ The initial hysteresis is 2°C.
 
 Control behavior:
 
-- Temperature >= upper limit: heater off.
-- Temperature <= lower limit: heater on.
-- Between limits: retain the existing heater command.
+- Temperature at or above the upper limit: heater off.
+- Temperature at or below the lower limit: heater on.
+- Between the limits: retain the existing heater command.
 
-The hysteresis may be adjusted after thermal testing.
+A stop condition or detected NTC fault overrides normal temperature control
+and commands the heater off.
 
-A stop condition or firmware fault requiring shutdown overrides temperature
-control and commands the heater off.
+The current heater-control logic is implemented in `control_task.c`.
+
+`heater_control.c/.h` are currently placeholders.
 
 
-## 11. Completion
+## 11. Heater Output
+
+The current development relay interface is active-low.
+
+The Heater indicator is active-high and follows the firmware heater command.
+
+The Heater indicator does not verify heater current or actual heater
+operation.
+
+Independent hardware overtemperature protection is external to the firmware
+control architecture.
+
+
+## 12. Completion
 
 Completion may result from:
 
 - User-requested completion.
 - Timed countdown expiration.
 
-`DisplayTask` retains the completion reason so the HMI can apply the behavior
-defined in `HMI.md`.
+The application retains the completion reason so the HMI can apply the
+behavior defined in `HMI.md`.
 
 
-## 12. Persistence
+## 13. Persistence
 
-Persistent proofing configuration includes:
+Persistent configuration is required for:
 
-- Temperature setpoint.
+- Confirmed temperature setpoint.
 - Temperature unit.
-- Timer duration.
-
-Persistent connectivity configuration includes the Wi-Fi information required
-for reconnection.
-
-The STM32 is the authoritative persistent store for cabinet configuration.
+- Confirmed timer duration.
+- Wi-Fi configuration.
 
 Active-run state is not persistent.
 
+`settings_store.c/.h` currently exist as placeholders.
+
 The final nonvolatile-storage implementation is TBD.
 
+The STM32 shall be the authoritative persistent store for cabinet Wi-Fi
+configuration.
 
-## 13. Fault Handling
 
-### 13.1 NTC Faults
+## 14. Fault Handling
 
-NTC open- and short-circuit conditions are detected from the ADC measurement.
+### 14.1 NTC Faults
+
+NTC electrical fault detection is performed before temperature conversion.
+
+The current prototype detection uses ADC endpoint thresholds.
 
 Final production thresholds are TBD.
 
@@ -307,10 +328,12 @@ Assigned codes:
 - Error 10: NTC open.
 - Error 11: NTC short.
 
-An NTC fault disables heating and enters the Error state.
+The current firmware also identifies an ADC read failure internally.
+
+An NTC fault disables heating.
 
 
-### 13.2 Heater Faults
+### 14.2 Heater Faults
 
 Assigned codes:
 
@@ -320,126 +343,112 @@ Assigned codes:
 Detection criteria are TBD.
 
 
-### 13.3 Connectivity Conditions
+### 14.3 Connectivity Conditions
 
-Connectivity failures are not safety faults and do not enter the cabinet
-Error state.
+Loss of ESP32, Wi-Fi, Internet, mobile-app, or cloud connectivity does not
+disable local proofing operation.
 
-Connectivity status is managed by `ConnectTask`.
+Connectivity failures are not cabinet safety faults.
 
 
-## 14. Settings
+## 15. Settings
+
+Settings entry is detected by `InputTask`.
 
 `DisplayTask` owns Settings HMI behavior.
 
-Temperature-unit selection is currently implemented.
+Temperature-unit selection and Wi-Fi configuration are defined as Settings
+functions.
 
-Wi-Fi configuration will be initiated through Settings.
-
-Exact Wi-Fi Settings HMI behavior is TBD.
-
-
-## 15. FreeRTOS Scheduling
-
-Current priorities:
-
-| Task | Priority |
-|---|---|
-| `HeatTask` | `osPriorityHigh3` |
-| `ConnectTask` | `osPriorityHigh` |
-| `InputTask` | `osPriorityAboveNormal` |
-| `SenseTask` | `osPriorityNormal` |
-| `DisplayTask` | `osPriorityLow` |
-
-Current task stack allocations are 128 words per application task.
-
-Current FreeRTOS heap allocation is 8192 bytes.
-
-RTOS configuration is maintained by STM32CubeMX.
+The final Wi-Fi Settings HMI is TBD.
 
 
-## 16. Connectivity Architecture
+## 16. FreeRTOS Configuration
 
-### 16.1 Responsibilities
+The STM32CubeMX project currently defines:
 
-The connectivity system uses:
+| Task | Priority | Stack |
+|---|---|---:|
+| `HeatTask` | `osPriorityHigh3` | 128 words |
+| `ConnectTask` | `osPriorityHigh` | 128 words |
+| `InputTask` | `osPriorityAboveNormal` | 128 words |
+| `SenseTask` | `osPriorityNormal` | 128 words |
+| `DisplayTask` | `osPriorityLow` | 256 words |
+
+The FreeRTOS heap is 8192 bytes.
+
+STM32CubeMX is authoritative for generated RTOS configuration.
+
+
+## 17. Connectivity Architecture
+
+### 17.1 System Responsibilities
+
+The MVP connectivity system consists of:
 
 - STM32 cabinet firmware.
-- ESP32-C6.
+- ESP32-C6 connectivity processor.
 - Flutter mobile application.
-- Firebase.
+- Firebase backend.
 
-STM32 responsibilities:
+The STM32 remains the cabinet application controller.
 
-- Cabinet control.
-- Cabinet identity.
-- Persistent cabinet configuration.
-- Connectivity coordination.
+The ESP32-C6 provides wireless connectivity.
 
-ESP32-C6 responsibilities:
-
-- BLE connectivity.
-- Wi-Fi connectivity.
-- Network communications.
-
-Flutter responsibilities:
-
-- User account interaction.
-- Cabinet association.
-- Wi-Fi network selection.
-- Wi-Fi credential entry.
-- Connectivity configuration.
-- Firebase interaction.
-- Remote cabinet interaction.
-
-Firebase is the MVP cloud backend.
+The Flutter application handles user-facing connectivity configuration,
+cabinet association, Firebase interaction, and remote cabinet interaction.
 
 
-### 16.2 STM32 / ESP32-C6
+### 17.2 ESP32-C6
 
-The ESP32-C6 runs Espressif ESP-AT firmware for the MVP.
+The selected development module is the ESP32-C6-DEVKITC-1-N8.
 
-No custom ESP32 application firmware is planned for the MVP.
+The ESP32-C6 is intended to run Espressif ESP-AT firmware for the MVP.
 
-The STM32 communicates with the ESP32-C6 using UART and ESP-AT commands.
-
-The STM32 is the application controller.
-
-The ESP32-C6 is the connectivity peripheral.
+No custom ESP32 application firmware is currently planned for the MVP.
 
 
-### 16.3 Wi-Fi Provisioning
+### 17.3 STM32 / ESP32 Interface
 
-The intended provisioning flow is:
+The STM32 communicates with the ESP32-C6 over USART2.
 
-    Flutter application
-        |
-        | BLE
-        v
-    ESP32-C6
-        |
-        | connectivity data
-        v
-    STM32
-        |
-        | stored Wi-Fi configuration
-        v
-    ESP32-C6
-        |
-        v
-    Wi-Fi network
+Current USART2 configuration:
 
-The Flutter application handles network selection and credential entry.
+- 115200 baud
+- 8 data bits
+- No parity
+- 1 stop bit
+- No hardware flow control
 
-The STM32 retains the Wi-Fi configuration.
+The STM32 initiates ESP-AT commands.
 
-The ESP32-C6 uses the configuration to establish the Wi-Fi connection.
-
-The exact BLE/ESP-AT provisioning mechanism is TBD pending verification on
-the selected ESP32-C6 hardware.
+The ESP32-C6 operates as the connectivity peripheral.
 
 
-### 16.4 Cabinet Identity
+### 17.4 UART Transport
+
+`uart_transport.c/.h` implements the current STM32 UART transport.
+
+Transmit uses blocking HAL UART transmission.
+
+Receive uses interrupt-driven, one-byte reception.
+
+Received bytes are placed into `qUartRxToConnect`.
+
+UART errors are recorded and receive operation is rearmed.
+
+DMA and hardware flow control are not currently used.
+
+
+### 17.5 ESP-AT Layer
+
+The ESP-AT command/response layer is not yet implemented.
+
+Command framing, response parsing, timeouts, retries, startup handling, and
+recovery behavior are TBD.
+
+
+### 17.6 Cabinet Identity
 
 The cabinet uses a numeric serial number.
 
@@ -448,24 +457,62 @@ The STM32 is the cabinet-side source of the serial number.
 The serial-number format and storage implementation are TBD.
 
 
-### 16.5 Cloud
+### 17.7 Wi-Fi Provisioning
 
-Firebase is the MVP cloud platform.
+The mobile application handles:
+
+- Cabinet association.
+- Wi-Fi network selection.
+- Wi-Fi credential entry.
+- Connectivity configuration.
+
+BLE is the intended local provisioning transport.
+
+The exact ESP-AT BLE provisioning mechanism remains TBD pending verification
+with the selected ESP32-C6 ESP-AT firmware.
+
+Wi-Fi configuration received during provisioning is retained by the STM32.
+
+The ESP32-C6 uses the supplied configuration to connect to the Wi-Fi network.
+
+
+### 17.8 Wi-Fi Configuration Changes
+
+Existing Wi-Fi configuration is changed through the cabinet Settings workflow
+and mobile application.
+
+The configuration replacement and failure-recovery transaction is TBD.
+
+
+### 17.9 Cloud
+
+Firebase is the MVP cloud backend.
 
 MQTT is not used for the MVP.
 
-The Firebase data model and remote command interface are TBD.
+The Firebase data model, synchronization behavior, telemetry, and remote
+command interface are TBD.
 
 
-## 17. Open Architecture Items
+## 18. Hardware Configuration Ownership
+
+The STM32CubeMX project is authoritative for MCU peripheral, GPIO, pin, and
+generated RTOS configuration.
+
+Detailed electrical and production hardware design is maintained in:
+
+`AllyTechEngineering/holding-cabinet-hardware`
+
+
+## 19. Open Architecture Items
 
 - Nonvolatile-storage implementation.
 - Wi-Fi Settings HMI.
-- `DisplayTask` / `ConnectTask` interface.
-- ESP-AT command set and recovery behavior.
+- Application / `ConnectTask` interface.
+- ESP-AT command/response layer.
 - BLE provisioning mechanism.
-- Wi-Fi credential replacement behavior.
+- Wi-Fi configuration replacement behavior.
 - Cabinet serial-number format and storage.
 - Firebase data model and remote command interface.
-- Heater fault-detection algorithm.
+- Heater fault-detection criteria.
 - Production NTC fault thresholds.

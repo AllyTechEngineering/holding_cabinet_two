@@ -11,7 +11,8 @@ source code, and the STM32CubeMX project as appropriate.
 
 ## 2. Requirement Conventions
 
-Each requirement is assigned a unique identifier.
+Each requirement is assigned a unique identifier. Requirement identifiers are
+not reused or renumbered after assignment.
 
 - **TBD:** To Be Determined
 - **TBC:** To Be Confirmed
@@ -94,19 +95,19 @@ Fahrenheit shall be the default temperature unit.
 The firmware shall control the heater using the confirmed user temperature
 setpoint.
 
-The confirmed setpoint shall be the upper control limit.
+The confirmed setpoint shall be the upper control limit. The heater shall
+be commanded off when the measured temperature is at or above the upper
+control limit.
 
-The heater shall be commanded off when the measured temperature is at or
-above the upper control limit.
-
-The heater shall be commanded on when the measured temperature is at or below
-the lower control limit.
+The lower control limit shall be the confirmed setpoint minus the configured
+hysteresis. The heater shall be commanded on when the measured temperature
+is at or below the lower control limit.
 
 When the measured temperature is between the lower and upper control limits,
 the existing heater command state shall be maintained.
 
-The initial difference between the upper and lower control limits shall be
-2°C and may be adjusted based on thermal testing.
+The initial hysteresis shall be 2°C. The hysteresis may be adjusted based on
+thermal testing with representative hardware.
 
 
 ### TEMP-006 — Measured Temperature Validity
@@ -116,6 +117,9 @@ validity range for measured cabinet temperature.
 
 A measured cabinet temperature may be below the minimum selectable setpoint or
 above the maximum selectable setpoint without being considered a sensor fault.
+
+Temperature-sensor faults shall be determined from the NTC sensor electrical
+measurement and the applicable sensor-fault detection criteria.
 
 
 ## 5. Timer Requirements
@@ -349,6 +353,9 @@ sequence to configure another proof.
 Each entry into the Complete-Decision state shall generate one audible
 sequence of three beeps.
 
+This shall apply to both manually requested completion and automatic
+countdown expiration.
+
 
 ### AUD-002 — Beep Timing
 
@@ -381,7 +388,7 @@ timing, and user interaction defined in `HMI.md`.
 
 ## 12. Persistence Requirements
 
-### PERSIST-001 — Persistent Configuration
+### PERSIST-001 — Persistent Proofing Configuration
 
 The firmware shall retain the following confirmed configuration values across
 power cycles:
@@ -389,7 +396,6 @@ power cycles:
 - Temperature setpoint
 - Temperature unit
 - Timer duration
-- Wi-Fi configuration
 
 
 ### PERSIST-002 — Proofing Configuration Save Point
@@ -415,8 +421,8 @@ following power loss or reset.
 
 ### PERSIST-005 — Wi-Fi Configuration
 
-The firmware shall retain the Wi-Fi configuration required to reconnect to
-the configured network after a power cycle.
+The cabinet shall retain the Wi-Fi configuration required to reconnect to the
+configured network after a power cycle.
 
 
 ## 13. Heater Output Requirements
@@ -459,12 +465,12 @@ actual heater current.
 
 The firmware shall detect an open or shorted cabinet temperature sensor.
 
-The detection thresholds are TBD.
+The final production detection thresholds are TBD.
 
 
 ### FAULT-002 — NTC Fault Codes
 
-The firmware shall report the following fault codes:
+The firmware shall report:
 
 - Error 10: NTC open
 - Error 11: NTC short
@@ -500,10 +506,10 @@ The following error codes are reserved for heater faults:
 Heater fault-detection criteria are TBD.
 
 
-### FAULT-007 — Connectivity Failure
+### FAULT-007 — Connectivity Availability
 
-Loss of connectivity shall not stop local cabinet operation or place the
-cabinet into the Error state.
+Loss of connectivity shall not stop local proofing operation or prevent the
+cabinet from being operated locally.
 
 
 ## 15. Settings Requirements
@@ -522,32 +528,28 @@ A changed setting shall become persistent when the user confirms the setting.
 
 ### SETTINGS-003 — Wi-Fi Configuration
 
-The Settings mode shall allow the user to initiate Wi-Fi configuration or
-modification.
-
-The mobile application shall be used to configure the Wi-Fi network and
-credentials.
+Settings shall provide access to Wi-Fi configuration.
 
 The exact HMI behavior is TBD.
 
 
 ## 16. Connectivity Requirements
 
-### CONN-001 — Connectivity Support
+### CONN-001 — Remote Connectivity
 
 The cabinet shall support remote connectivity.
 
 
 ### CONN-002 — Independent Local Operation
 
-The cabinet shall remain fully operational for local proofing when remote
+The cabinet shall remain fully operational for local proofing when
 connectivity is unavailable.
 
 
-### CONN-003 — Wi-Fi Provisioning
+### CONN-003 — Mobile Provisioning
 
-The user shall be able to provision the cabinet onto a Wi-Fi network using
-the mobile application.
+The user shall be able to configure the cabinet's Wi-Fi network using the
+mobile application.
 
 
 ### CONN-004 — Cabinet Identification
@@ -560,14 +562,14 @@ account using the cabinet serial number.
 
 ### CONN-005 — Wi-Fi Reconnection
 
-The cabinet shall be able to reconnect to its configured Wi-Fi network after
-power-up without requiring the user to repeat provisioning.
+After Wi-Fi has been configured, the cabinet shall be able to reconnect to
+the configured network after a power cycle without repeating provisioning.
 
 
 ### CONN-006 — Wi-Fi Configuration Changes
 
 The user shall be able to change the cabinet's Wi-Fi configuration using the
-Settings workflow and mobile application.
+mobile application and cabinet Settings workflow.
 
 
 ### CONN-007 — Provisioning Result
@@ -577,8 +579,8 @@ The cabinet shall indicate whether Wi-Fi provisioning succeeds or fails.
 The exact HMI behavior is TBD.
 
 
-### CONN-008 — Remote Operation
+### CONN-008 — Mobile Application Control
 
-The MVP shall support cabinet interaction from the mobile application.
+The MVP shall support cabinet control from the mobile application.
 
-The remote functions and data are TBD.
+The specific remote commands, status, and data are TBD.

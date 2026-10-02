@@ -18,8 +18,7 @@ This document is the authoritative source for:
 - Completion interaction.
 - Error displays.
 - Audible completion indication.
-- Firmware-controlled Heater indication.
-- Cabinet-side connectivity interaction when defined.
+- Heater indication.
 
 The LCD is a 16-column by 2-row character display.
 
@@ -38,8 +37,6 @@ The front panel provides four user controls:
 - Up
 - Down
 
-The physical switches are active-low.
-
 A normal button press produces one HMI action unless the button supports an
 intentional hold function.
 
@@ -53,7 +50,7 @@ opens `Settings-Splash`.
 
 ### 3.1 Screen Alternation
 
-The following implemented screen pairs automatically alternate:
+The following screen pairs automatically alternate:
 
 | Screen Pair | Interval |
 |---|---:|
@@ -64,7 +61,7 @@ The following implemented screen pairs automatically alternate:
 | `Settings-Adjust` / `Settings-Confirm` | 2 seconds |
 | `Error-DisplayA` / `Error-DisplayB` | 2 seconds |
 
-Screen alternation is cosmetic and does not prevent user input.
+Screen alternation does not prevent user input.
 
 Up and Down operate identically on either member of an Adjust/Confirm pair.
 
@@ -91,10 +88,7 @@ When the inactivity timeout occurs on another applicable screen:
 
 - The HMI returns to `Idle-Splash`.
 - Any proposed changes are discarded.
-- If a proofing run was active, the run is stopped and heating is disabled.
-
-The inactivity behavior of future connectivity Settings screens shall be
-defined when those screens are finalized.
+- If a proofing run was active, the run is stopped.
 
 
 ### 3.3 Active-Run Editing
@@ -110,39 +104,18 @@ During a run edit:
 - Proposed changes do not affect the active run until confirmed at
   `Run-Decision`.
 
-If a proposed timer duration is confirmed at Run-Decision, a new countdown
+If a proposed timer duration is confirmed at `Run-Decision`, a new countdown
 begins using that duration, even if it equals the previously confirmed
 duration.
-
-Elapsed time from the previous countdown is ignored.
 
 Skipping timer adjustment or discarding the proposed timer value leaves
 the existing countdown running without restarting.
 
 If the active countdown reaches 0:00 during an edit:
 
-- Heating stops.
+- The active proof ends.
 - Proposed temperature and timer changes are discarded.
 - The HMI immediately enters `Complete-Decision`.
-
-
-### 3.4 Connectivity Independence
-
-Loss of connectivity does not place the HMI into the Error state solely
-because connectivity is unavailable.
-
-Normal local proofing operation remains available when:
-
-- The ESP32-C6 is unavailable.
-- Wi-Fi is unavailable.
-- Internet connectivity is unavailable.
-- Firebase is unavailable.
-- The mobile application is unavailable.
-
-Connectivity status and provisioning screens are separate from the
-safety-related Error HMI.
-
-The final connectivity screens are TBD.
 
 
 ## 4. HMI State Transition Table
@@ -161,18 +134,15 @@ The final connectivity screens are TBD.
 | `SetTime-Decision` | — | `SetTime-Adjust` | `Run-Decision`; new proof becomes untimed | `Idle-Splash`; stop active run |
 | `SetTime-Adjust` | Change proposed time | `Run-Decision`, retain proposal | `SetTime-Decision`, discard time proposal | `Idle-Splash`; stop active run |
 | `SetTime-Confirm` | Change proposed time | `Run-Decision`, retain proposal | `SetTime-Decision`, discard time proposal | `Idle-Splash`; stop active run |
-| `Run-Decision` | — | New proof: apply settings and start run; run edit: apply changes and continue run | Stop run, heater off, `Idle-Splash` | `Idle-Splash`; stop active run |
+| `Run-Decision` | — | New proof: apply settings and start run; run edit: apply changes and continue run | Stop run, `Idle-Splash` | `Idle-Splash`; stop active run |
 | `Run-Active` | — | `Complete-Decision` | `SetTemp-Decision` | — |
-| `Complete-Decision` | — | Heater off, `Complete-DisplayA` | Manual entry: `Run-Active`; timer expiration: `SetTemp-Decision` | — |
+| `Complete-Decision` | — | `Complete-DisplayA` | Manual entry: `Run-Active`; timer expiration: `SetTemp-Decision` | — |
 | `Complete-DisplayA` | — | — | `SetTemp-Decision` | `Idle-Splash` |
 | `Complete-DisplayB` | — | — | `SetTemp-Decision` | `Idle-Splash` |
 | `Settings-Splash` | — | — | — | — |
 | `Settings-Adjust` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Confirm` | `Idle-Splash` |
 | `Settings-Confirm` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Adjust` | `Idle-Splash` |
 | `Error` | — | — | — | — |
-
-Connectivity Settings states are not added to this table until their exact
-navigation and behavior are defined.
 
 
 ## 5. Idle Screens
@@ -228,9 +198,9 @@ The unit character reflects the selected temperature unit.
 
 The temperature range depends on the selected temperature unit.
 
-When Fahrenheit is selected, the range is 65°F through 120°F.
+When Fahrenheit is selected, the range is 65F through 120F.
 
-When Celsius is selected, the range is 18°C through 49°C.
+When Celsius is selected, the range is 18C through 49C.
 
 Up increases the proposed temperature by 1 degree.
 
@@ -350,8 +320,6 @@ Display format:
 
 ### 8.1 Run-Decision — New Proof
 
-For a new proof, heating remains off until Enter is pressed.
-
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | T | o | | S | t | a | r | t | | P | r | o | o | f | |
@@ -375,7 +343,7 @@ As displayed:
 
 Enter applies the proposed changes and returns to `Run-Active`.
 
-Mode stops the proof, turns heating off, and returns to `Idle-Splash`.
+Mode stops the proof and returns to `Idle-Splash`.
 
 
 ### 8.3 Run-Active — Timed
@@ -393,13 +361,8 @@ The measured-temperature display range is independent of the user-selectable
 proofing-temperature range.
 
 A valid measured cabinet temperature below the display minimum is displayed
-as the display minimum.
-
-A valid measured cabinet temperature above the display maximum is displayed
-as the display maximum.
-
-NTC open- and short-circuit conditions are sensor faults and are not handled
-by clamping the measured temperature to the display range.
+as the display minimum. A valid measured cabinet temperature above the display
+maximum is displayed as the display maximum.
 
 `HH:MM` represents the remaining countdown time.
 
@@ -413,26 +376,15 @@ Display format:
     " Temp: XXXF     "
     " Time: HH:MM    "
 
-    " Temp:  XXF     "
-    " Time:  H:MM    "
+Examples:
 
-    " Temp:  XXF     "
-    " Time:  0:MM    "
+    " Temp:  98F     "
+    " Time:  1:30    "
 
 or when Celsius is selected:
 
-    " Temp: XXXC     "
-    " Time: HH:MM    "
-
-    " Temp:  XXC     "
-    " Time:  H:MM    "
-
-    " Temp:  XXC     "
-    " Time:  0:MM    "
-
-The complete LCD row must be refreshed or cleared as necessary when a
-variable-width value becomes shorter so that characters from a previous
-value are not left on the display.
+    " Temp:  37C     "
+    " Time:  1:30    "
 
 
 ### 8.4 Run-Active — Untimed
@@ -497,7 +449,6 @@ If completion was entered manually:
 
 If completion was entered because the countdown reached 0:00:
 
-- Heating has already stopped.
 - Enter proceeds to `Complete-DisplayA`.
 - Mode proceeds to `SetTemp-Decision`.
 
@@ -541,11 +492,7 @@ to `Idle-Splash`.
 Settings is entered by holding Up and Down simultaneously for 5 seconds while
 the HMI is in either Idle screen.
 
-The currently implemented Settings function selects Fahrenheit or Celsius.
-
-Wi-Fi configuration will also be accessible through Settings.
-
-The Wi-Fi Settings navigation and screens are TBD.
+The current Settings function selects Fahrenheit or Celsius.
 
 
 ### 10.1 Settings-Splash
@@ -612,21 +559,17 @@ or:
 
 ### 10.4 Wi-Fi Settings
 
-TBD.
+Wi-Fi configuration is accessible through Settings.
+
+The Wi-Fi Settings screens, navigation, button behavior, status displays,
+success indication, and failure indication are TBD.
 
 
 ## 11. Error HMI
 
-The Error HMI is reserved for firmware-detected conditions that require
-normal cabinet operation or heating to be inhibited.
+While the system is in the Error state:
 
-Connectivity loss alone does not enter the Error state.
-
-When a firmware-detected error places the system in the Error state:
-
-- Heating is disabled.
-- Normal button input is ignored.
-- Communications input does not resume operation.
+- Normal user controls do not resume operation.
 - The Error state has no inactivity timeout.
 
 The Error display alternates its second row every 2 seconds.
@@ -679,30 +622,11 @@ The sequence occurs once each time `Complete-Decision` is entered.
 
 ### 13.1 System Power Indicator
 
-The System Power indicator is hardware controlled.
-
-It indicates that the switched system power rail is energized.
-
-Firmware does not control this indicator.
+The System Power indicator indicates that system power is on.
 
 
 ### 13.2 Heater Indicator
 
-The Heater indicator is firmware controlled.
+The Heater indicator is on while the heater is commanded on.
 
-The indicator is active-high.
-
-The Heater indicator is on only while firmware is commanding the heater to
-energize.
-
-The indicator is off:
-
-- At startup.
-- When a proofing run stops.
-- When a timed run reaches 0:00.
-- When a fault disables heating.
-- Whenever the heater command is off.
-
-The Heater indicator represents the firmware heater command.
-
-It does not independently indicate or verify actual heater current.
+The Heater indicator is off while the heater is commanded off.
