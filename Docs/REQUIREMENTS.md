@@ -5,20 +5,16 @@
 This document is the authoritative source for the behavioral requirements of
 the Holding Cabinet / Proofing Oven firmware.
 
-Implementation details are maintained in the firmware source code,
-`ARCHITECTURE.md`, and the STM32CubeMX project as appropriate.
+Implementation details are maintained in `ARCHITECTURE.md`, the firmware
+source code, and the STM32CubeMX project as appropriate.
 
 
 ## 2. Requirement Conventions
 
-Each requirement is assigned a unique identifier. Requirement identifiers are
-not reused or renumbered after assignment.
+Each requirement is assigned a unique identifier.
 
-The following terms are used for unresolved items:
-
-- **TBD (To Be Determined):** The requirement or value has not yet been decided.
-- **TBC (To Be Confirmed):** The expected requirement or value is known but
-  still requires confirmation.
+- **TBD:** To Be Determined
+- **TBC:** To Be Confirmed
 
 
 ## 3. System Requirements
@@ -98,22 +94,19 @@ Fahrenheit shall be the default temperature unit.
 The firmware shall control the heater using the confirmed user temperature
 setpoint.
 
-Heater control shall use degrees Celsius internally regardless of whether
-the user selected Fahrenheit or Celsius.
+The confirmed setpoint shall be the upper control limit.
 
-The confirmed setpoint shall be the upper control limit. The heater shall
-be commanded off when the measured temperature is at or above the upper
-control limit.
+The heater shall be commanded off when the measured temperature is at or
+above the upper control limit.
 
-The lower control limit shall be the confirmed setpoint minus the configured
-hysteresis. The heater shall be commanded on when the measured temperature
-is at or below the lower control limit.
+The heater shall be commanded on when the measured temperature is at or below
+the lower control limit.
 
 When the measured temperature is between the lower and upper control limits,
 the existing heater command state shall be maintained.
 
-The initial hysteresis shall be 2°C. The hysteresis may be adjusted based on
-thermal testing with representative hardware.
+The initial difference between the upper and lower control limits shall be
+2°C and may be adjusted based on thermal testing.
 
 
 ### TEMP-006 — Measured Temperature Validity
@@ -123,9 +116,6 @@ validity range for measured cabinet temperature.
 
 A measured cabinet temperature may be below the minimum selectable setpoint or
 above the maximum selectable setpoint without being considered a sensor fault.
-
-Temperature-sensor faults shall be determined from the NTC sensor electrical
-measurement and the applicable sensor-fault detection criteria.
 
 
 ## 5. Timer Requirements
@@ -310,10 +300,6 @@ During an active-run edit, skipping timer adjustment or discarding the
 proposed timer value shall leave the existing countdown running without
 restarting.
 
-Confirming a proposed timer duration at Run-Decision shall start a new
-countdown using that duration, even if it equals the previously confirmed
-duration.
-
 
 ### RUN-007 — Cancel Active Run
 
@@ -363,9 +349,6 @@ sequence to configure another proof.
 Each entry into the Complete-Decision state shall generate one audible
 sequence of three beeps.
 
-This shall apply to both manually requested completion and automatic
-countdown expiration.
-
 
 ### AUD-002 — Beep Timing
 
@@ -406,10 +389,10 @@ power cycles:
 - Temperature setpoint
 - Temperature unit
 - Timer duration
-- Wi-Fi network credentials
+- Wi-Fi configuration
 
 
-### PERSIST-002 — Save Point
+### PERSIST-002 — Proofing Configuration Save Point
 
 Temperature setpoint and timer duration shall be saved when the user confirms
 the run configuration.
@@ -417,20 +400,23 @@ the run configuration.
 Temperature units shall be saved when the user confirms the Settings
 selection.
 
-Wi-Fi network credentials shall be saved only after successful Wi-Fi
-provisioning.
-
 
 ### PERSIST-003 — Proposed Values
 
-Unconfirmed temperature, timer, or Wi-Fi configuration values shall not be
-stored as persistent configuration.
+Unconfirmed temperature or timer adjustments shall not be stored as persistent
+configuration.
 
 
 ### PERSIST-004 — Active Run State
 
 Active proofing state and elapsed or remaining run time shall not be restored
 following power loss or reset.
+
+
+### PERSIST-005 — Wi-Fi Configuration
+
+The firmware shall retain the Wi-Fi configuration required to reconnect to
+the configured network after a power cycle.
 
 
 ## 13. Heater Output Requirements
@@ -514,16 +500,10 @@ The following error codes are reserved for heater faults:
 Heater fault-detection criteria are TBD.
 
 
-### FAULT-007 — Connectivity Fault Code
+### FAULT-007 — Connectivity Failure
 
-The firmware shall report the following connectivity fault code:
-
-- Error 30: ESP32 communication failure
-
-
-### FAULT-008 — Connectivity Fault Response
-
-An ESP32 communication failure shall place the firmware into the Error state.
+Loss of connectivity shall not stop local cabinet operation or place the
+cabinet into the Error state.
 
 
 ## 15. Settings Requirements
@@ -542,24 +522,63 @@ A changed setting shall become persistent when the user confirms the setting.
 
 ### SETTINGS-003 — Wi-Fi Configuration
 
-Settings mode shall provide an option to start or edit Wi-Fi configuration.
+The Settings mode shall allow the user to initiate Wi-Fi configuration or
+modification.
 
-Selecting and confirming the Wi-Fi configuration option shall start the
-Wi-Fi provisioning process.
+The mobile application shall be used to configure the Wi-Fi network and
+credentials.
 
-Wi-Fi network selection and password entry shall be performed through the
-external provisioning application rather than through the cabinet HMI.
+The exact HMI behavior is TBD.
 
 
 ## 16. Connectivity Requirements
 
 ### CONN-001 — Connectivity Support
 
-The firmware shall support remote connectivity through an external
-connectivity module.
+The cabinet shall support remote connectivity.
 
 
 ### CONN-002 — Independent Local Operation
 
-The cabinet shall remain fully operational when remote connectivity is
-unavailable.
+The cabinet shall remain fully operational for local proofing when remote
+connectivity is unavailable.
+
+
+### CONN-003 — Wi-Fi Provisioning
+
+The user shall be able to provision the cabinet onto a Wi-Fi network using
+the mobile application.
+
+
+### CONN-004 — Cabinet Identification
+
+Each cabinet shall have a numeric serial number used to identify the cabinet.
+
+The mobile application shall support associating the cabinet with the user's
+account using the cabinet serial number.
+
+
+### CONN-005 — Wi-Fi Reconnection
+
+The cabinet shall be able to reconnect to its configured Wi-Fi network after
+power-up without requiring the user to repeat provisioning.
+
+
+### CONN-006 — Wi-Fi Configuration Changes
+
+The user shall be able to change the cabinet's Wi-Fi configuration using the
+Settings workflow and mobile application.
+
+
+### CONN-007 — Provisioning Result
+
+The cabinet shall indicate whether Wi-Fi provisioning succeeds or fails.
+
+The exact HMI behavior is TBD.
+
+
+### CONN-008 — Remote Operation
+
+The MVP shall support cabinet interaction from the mobile application.
+
+The remote functions and data are TBD.

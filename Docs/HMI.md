@@ -19,6 +19,7 @@ This document is the authoritative source for:
 - Error displays.
 - Audible completion indication.
 - Firmware-controlled Heater indication.
+- Cabinet-side connectivity interaction when defined.
 
 The LCD is a 16-column by 2-row character display.
 
@@ -52,7 +53,7 @@ opens `Settings-Splash`.
 
 ### 3.1 Screen Alternation
 
-The following screen pairs automatically alternate:
+The following implemented screen pairs automatically alternate:
 
 | Screen Pair | Interval |
 |---|---:|
@@ -92,6 +93,9 @@ When the inactivity timeout occurs on another applicable screen:
 - Any proposed changes are discarded.
 - If a proofing run was active, the run is stopped and heating is disabled.
 
+The inactivity behavior of future connectivity Settings screens shall be
+defined when those screens are finalized.
+
 
 ### 3.3 Active-Run Editing
 
@@ -108,7 +112,9 @@ During a run edit:
 
 If a proposed timer duration is confirmed at Run-Decision, a new countdown
 begins using that duration, even if it equals the previously confirmed
-duration. Elapsed time from the previous countdown is ignored.
+duration.
+
+Elapsed time from the previous countdown is ignored.
 
 Skipping timer adjustment or discarding the proposed timer value leaves
 the existing countdown running without restarting.
@@ -118,6 +124,25 @@ If the active countdown reaches 0:00 during an edit:
 - Heating stops.
 - Proposed temperature and timer changes are discarded.
 - The HMI immediately enters `Complete-Decision`.
+
+
+### 3.4 Connectivity Independence
+
+Loss of connectivity does not place the HMI into the Error state solely
+because connectivity is unavailable.
+
+Normal local proofing operation remains available when:
+
+- The ESP32-C6 is unavailable.
+- Wi-Fi is unavailable.
+- Internet connectivity is unavailable.
+- Firebase is unavailable.
+- The mobile application is unavailable.
+
+Connectivity status and provisioning screens are separate from the
+safety-related Error HMI.
+
+The final connectivity screens are TBD.
 
 
 ## 4. HMI State Transition Table
@@ -145,6 +170,9 @@ If the active countdown reaches 0:00 during an edit:
 | `Settings-Adjust` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Confirm` | `Idle-Splash` |
 | `Settings-Confirm` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Adjust` | `Idle-Splash` |
 | `Error` | — | — | — | — |
+
+Connectivity Settings states are not added to this table until their exact
+navigation and behavior are defined.
 
 
 ## 5. Idle Screens
@@ -365,8 +393,10 @@ The measured-temperature display range is independent of the user-selectable
 proofing-temperature range.
 
 A valid measured cabinet temperature below the display minimum is displayed
-as the display minimum. A valid measured cabinet temperature above the display
-maximum is displayed as the display maximum.
+as the display minimum.
+
+A valid measured cabinet temperature above the display maximum is displayed
+as the display maximum.
 
 NTC open- and short-circuit conditions are sensor faults and are not handled
 by clamping the measured temperature to the display range.
@@ -382,9 +412,6 @@ Display format:
 
     " Temp: XXXF     "
     " Time: HH:MM    "
-    
-    " Temp:  XXF     "
-    " Time:  H:MM    "
 
     " Temp:  XXF     "
     " Time:  H:MM    "
@@ -396,9 +423,6 @@ or when Celsius is selected:
 
     " Temp: XXXC     "
     " Time: HH:MM    "
-    
-    " Temp:  XXC     "
-    " Time:  H:MM    "
 
     " Temp:  XXC     "
     " Time:  H:MM    "
@@ -425,12 +449,12 @@ and:
 
 Example:
 
-    " Temp:  98F      "
+    " Temp:  98F     "
     "Countdown Timer "
 
 alternating with:
 
-    " Temp:  98F      "
+    " Temp:  98F     "
     "Not Used        "
 
 This alternation continues while the untimed run remains active.
@@ -517,7 +541,11 @@ to `Idle-Splash`.
 Settings is entered by holding Up and Down simultaneously for 5 seconds while
 the HMI is in either Idle screen.
 
-The current Settings function selects Fahrenheit or Celsius.
+The currently implemented Settings function selects Fahrenheit or Celsius.
+
+Wi-Fi configuration will also be accessible through Settings.
+
+The Wi-Fi Settings navigation and screens are TBD.
 
 
 ### 10.1 Settings-Splash
@@ -582,7 +610,17 @@ or:
     "     Temp:C     "
 
 
+### 10.4 Wi-Fi Settings
+
+TBD.
+
+
 ## 11. Error HMI
+
+The Error HMI is reserved for firmware-detected conditions that require
+normal cabinet operation or heating to be inhibited.
+
+Connectivity loss alone does not enter the Error state.
 
 When a firmware-detected error places the system in the Error state:
 
@@ -665,5 +703,6 @@ The indicator is off:
 - When a fault disables heating.
 - Whenever the heater command is off.
 
-The Heater indicator represents the firmware heater command. It does not
-independently indicate or verify actual heater current.
+The Heater indicator represents the firmware heater command.
+
+It does not independently indicate or verify actual heater current.

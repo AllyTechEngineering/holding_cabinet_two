@@ -1,39 +1,35 @@
 # Folders and Files Plan
+
 ```
 App/
 ├── Common/
-│   ├── app_config.h        # constants: temp range (65–120°F), time bounds (0:15–10:00),
-│   │                        # hysteresis band, debounce interval, chord hold (5000ms),
-│   │                        # toggle interval (2000ms), inactivity timeout (3min),
-│   │                        # DisplayTask wake period (100ms)
-│   └── app_types.h          # shared typedefs: ButtonEvent_t (incl. EVT_ENTER_SETTINGS),
-│                             # HeatCommand_t, HeatStatus_t — the CubeMX queue Item Size types
+│   ├── app_config.h         # application constants
+│   └── app_types.h          # shared application types
 │
 ├── Sensing/
-│   ├── sensor_task.c/h       # SenseTask — periodic ADC read, pushes to qSenseToHeat
-│   └── thermistor_driver.c/h # NTC Beta-equation conversion (ported from main.c bring-up)
+│   ├── sensor_task.c/h      # SenseTask — temperature acquisition
+│   └── thermistor_driver.c/h
+│                            # NTC ADC-to-temperature conversion
 │
 ├── Control/
-│   ├── control_task.c/h      # HeatTask — consumes qSenseToHeat + qDisplayToHeat,
-│   │                          # drives relay_driver, reports to qHeatToDisplay
-│   └── heater_control.c/h    # pure bang-bang/hysteresis algorithm — no HAL/RTOS calls,
-│                              # so it's testable in isolation
+│   ├── control_task.c/h     # HeatTask — heater-control task
+│   └── heater_control.c/h   # bang-bang/hysteresis control algorithm
 │
-├── Input/                    # ← new, InputTask has no home yet
-│   ├── input_task.c/h        # InputTask — debounce loop, chord timing, pushes to qInputToDisplay
-│   └── switch_driver.c/h     # raw GPIO read + active-low debounce logic (ported from bring-up)
+├── Input/
+│   ├── input_task.c/h       # InputTask — button processing
+│   └── switch_driver.c/h    # low-level switch interface
 │
 ├── Display/
-│   ├── display_task.c/h      # DisplayTask — the state machine, owns setpoint/mode/timer
-│   ├── lcd1602_driver.c/h    # LCD1602/PCF8574 I2C driver (ported from bring-up)
-│   └── settings_store.c/h    # ← new, Flash-EEPROM read/write (temp units, setpoint, timer)
-│   └── time_editor.c/h       # proposed countdown duration, bounds, and Up/Down
-│                             # tap/hold ramp; independent of LCD, GPIO, and RTOS
+│   ├── display_task.c/h     # DisplayTask — HMI state machine
+│   ├── lcd1602_driver.c/h   # LCD1602/PCF8574 driver
+│   ├── settings_store.c/h   # persistent application settings
+│   └── time_editor.c/h      # countdown-duration editor and hold ramp
 │
 ├── Actuators/
-│   └── relay_driver.c/h      # active-low relay GPIO driving (ported from bring-up)
-│   └── buzzer_driver.c/h      # active-high (NPN low side switch) GPIO driving (ported from bring-up)
+│   ├── relay_driver.c/h     # heater output driver
+│   └── buzzer_driver.c/h    # buzzer output driver
 │
 └── Connectivity/
-    └── connect_task.c/h      # ConnectTask — untouched, Models 3/4 
+    └── connect_task.c/h     # ConnectTask — connectivity task
+
 ```
