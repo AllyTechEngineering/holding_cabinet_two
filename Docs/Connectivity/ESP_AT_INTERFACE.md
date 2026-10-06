@@ -76,7 +76,10 @@ The initial synchronization command sequence is TBD.
 
 ## 6. ESP-AT Configuration
 
-The ESP32-C6 shall operate using Espressif ESP-AT firmware.
+The ESP32-C6 shall operate using released Espressif ESP-AT firmware.
+
+The MVP shall not require custom ESP32 application firmware or a custom
+ESP-AT build.
 
 The STM32 shall configure only ESP-AT functions required by the Holding
 Cabinet MVP.
@@ -89,15 +92,22 @@ Detailed initialization commands are TBD.
 
 ## 7. Provisioning Commands
 
-Wi-Fi provisioning shall use Espressif BluFi support provided by ESP-AT.
+Wi-Fi provisioning shall use the standard BLE/GATT capabilities provided by
+the released ESP32-C6 ESP-AT firmware.
+
+The STM32 shall control BLE operation through ESP-AT commands.
+
+The BLE interface shall provide bidirectional data transport between the
+Flutter provisioning application and the STM32 connectivity subsystem.
 
 Provisioning control shall include the ability to:
 
-- Enable BluFi provisioning.
-- Detect BluFi connection activity.
-- Receive provisioning results.
-- Detect successful Wi-Fi connection.
-- Disable BluFi provisioning.
+- Enable BLE operation.
+- Advertise the cabinet for provisioning.
+- Detect BLE connection activity.
+- Receive provisioning data from the application.
+- Send provisioning status and results to the application.
+- Disable BLE operation when provisioning ends.
 
 Provisioning shall be stopped when:
 
@@ -105,9 +115,11 @@ Provisioning shall be stopped when:
 - The user cancels provisioning.
 - The 5-minute provisioning timeout expires.
 
-The exact ESP-AT command sequence and unsolicited result codes used for BluFi
-provisioning are TBD and shall be defined from the applicable Espressif
-ESP-AT documentation.
+The MVP shall use the standard GATT services and characteristics available in
+the released ESP32-C6 ESP-AT firmware.
+
+The exact ESP-AT BLE command sequence and application data format are TBD and
+shall be defined from the applicable Espressif ESP-AT documentation.
 
 
 ## 8. Wi-Fi Commands
@@ -128,33 +140,50 @@ The exact command set is TBD.
 
 ## 9. Network Commands
 
-The ESP-AT interface shall support the network operations required for remote
-cabinet communications.
+The ESP-AT interface shall support SSL/TLS network connections required for
+remote cabinet communications.
 
-The required TCP, SSL/TLS, HTTP, or other network command set is TBD.
+The STM32 shall provide application-layer network data to the ESP32-C6 through
+ESP-AT.
+
+Received network data shall be delivered by ESP-AT to the STM32 through the
+UART interface.
+
+The exact ESP-AT network command sequence is TBD.
 
 
 ## 10. Firebase Transport Commands
 
-The ESP-AT interface shall provide the network transport required for the
-STM32 firmware to communicate with the required Firebase service.
+Firebase Realtime Database communications shall use its HTTPS/REST interface
+through the ESP32-C6 SSL/TLS network transport.
 
-The exact Firebase API and ESP-AT transport command mapping is TBD.
+The STM32 shall construct and process the Firebase application-layer
+communications.
+
+The ESP32-C6 shall provide the network transport and shall not own Firebase
+application logic.
+
+The interface shall support outbound Firebase data operations and a persistent
+connection for asynchronous Firebase data reception.
+
+The exact Firebase REST requests and ESP-AT transport command mapping are TBD.
 
 Flutter application account-management behavior is outside this interface.
 
 
 ## 11. Unsolicited Result Codes
 
-The ESP-AT interface shall process unsolicited result codes required to detect
-at minimum:
+The ESP-AT interface shall process unsolicited result codes and asynchronous
+data required to detect at minimum:
 
-- BluFi connection state
+- BLE connection state
+- BLE provisioning data reception
 - Wi-Fi connection
 - Wi-Fi disconnection
 - Network address acquisition
 - Network connection closure
-- Other asynchronous events required by the selected Firebase transport
+- Incoming network data
+- Other asynchronous events required by Firebase communications
 
 The exact unsolicited result code set is TBD.
 
@@ -193,10 +222,10 @@ The MVP ESP-AT command set shall be limited to commands required for:
 
 - ESP32 communication verification
 - ESP-AT initialization
-- BluFi provisioning
+- BLE/GATT provisioning
 - Wi-Fi station connection
 - Wi-Fi connection status
-- Network transport
+- SSL/TLS network transport
 - Firebase-facing communications
 - Required connection recovery
 
