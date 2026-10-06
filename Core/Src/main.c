@@ -57,14 +57,12 @@
 #define HW_BRINGUP_TEST_UART_LOOPBACK                                          \
   0 /* 1 = run UART loopback test, bypass RTOS. Set to 0 to resume normal      \
        startup. */
-#define HW_BRINGUP_TEST_ESP32_AT                                               \
-  1 /* 1 = run ESP32-C6 AT test, bypass RTOS. Set to 0 to resume normal        \
-       startup. */
+
 
 #if HW_BRINGUP_TEST_LED + HW_BRINGUP_TEST_SWITCHES +                           \
         HW_BRINGUP_TEST_I2C_SCAN + HW_BRINGUP_TEST_LCD_MESSAGE +               \
         HW_BRINGUP_TEST_RELAYS + HW_BRINGUP_TEST_NTC +                         \
-        HW_BRINGUP_TEST_UART_LOOPBACK + HW_BRINGUP_TEST_ESP32_AT >             \
+        HW_BRINGUP_TEST_UART_LOOPBACK >                                        \
     1
 #error "Only one HW_BRINGUP_TEST_* flag may be enabled at a time."
 #endif
@@ -177,29 +175,6 @@ volatile uint32_t g_uartRxErrorCount = 0;
 volatile HAL_StatusTypeDef g_uartTxResult;
 volatile HAL_StatusTypeDef g_uartRxResult;
 #endif
-
-#if HW_BRINGUP_TEST_ESP32_AT
-typedef enum {
-  ESP32_AT_TEST_WAITING = 0,
-  ESP32_AT_TEST_OK,
-  ESP32_AT_TEST_TIMEOUT,
-  ESP32_AT_TEST_RX_BUFFER_FULL
-} Esp32AtTestResult_t;
-
-volatile uint8_t g_esp32AtCommand[4] = {0};
-volatile uint16_t g_esp32AtCommandLength = 0;
-
-volatile uint8_t g_esp32AtResponse[32] = {0};
-volatile uint16_t g_esp32AtResponseLength = 0;
-volatile uint8_t g_esp32AtRxByte = 0;
-
-volatile HAL_StatusTypeDef g_esp32AtTxResult;
-volatile HAL_StatusTypeDef g_esp32AtRxResult;
-
-volatile Esp32AtTestResult_t g_esp32AtTestResult =
-    ESP32_AT_TEST_WAITING;
-#endif
-
 
 /* USER CODE END PV */
 
@@ -418,8 +393,6 @@ int main(void) {
     HAL_Delay(500);
   }
 #endif
-
-
 
   /* USER CODE END 2 */
 
