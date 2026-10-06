@@ -179,11 +179,27 @@ volatile HAL_StatusTypeDef g_uartRxResult;
 #endif
 
 #if HW_BRINGUP_TEST_ESP32_AT
-volatile uint8_t g_esp32AtResponse[16] = {0};
+typedef enum {
+  ESP32_AT_TEST_WAITING = 0,
+  ESP32_AT_TEST_OK,
+  ESP32_AT_TEST_TIMEOUT,
+  ESP32_AT_TEST_RX_BUFFER_FULL
+} Esp32AtTestResult_t;
+
+volatile uint8_t g_esp32AtCommand[4] = {0};
+volatile uint16_t g_esp32AtCommandLength = 0;
+
+volatile uint8_t g_esp32AtResponse[32] = {0};
 volatile uint16_t g_esp32AtResponseLength = 0;
+volatile uint8_t g_esp32AtRxByte = 0;
+
 volatile HAL_StatusTypeDef g_esp32AtTxResult;
 volatile HAL_StatusTypeDef g_esp32AtRxResult;
+
+volatile Esp32AtTestResult_t g_esp32AtTestResult =
+    ESP32_AT_TEST_WAITING;
 #endif
+
 
 /* USER CODE END PV */
 
@@ -403,37 +419,7 @@ int main(void) {
   }
 #endif
 
-#if HW_BRINGUP_TEST_ESP32_AT
-  {
-    static const uint8_t atCommand[] = "AT\r\n";
 
-    HAL_Delay(1000);
-
-    g_esp32AtTxResult = HAL_UART_Transmit(&huart2, (uint8_t *)atCommand,
-                                          sizeof(atCommand) - 1u, 100);
-    g_esp32AtResponseLength = 0u;
-    g_esp32AtRxResult = HAL_TIMEOUT;
-
-    while (g_esp32AtResponseLength < (sizeof(g_esp32AtResponse) - 1u)) {
-      uint8_t rxByte = 0u;
-
-      g_esp32AtRxResult = HAL_UART_Receive(&huart2, &rxByte, 1u, 100u);
-
-      if (g_esp32AtRxResult != HAL_OK) {
-        break;
-      }
-
-      g_esp32AtResponse[g_esp32AtResponseLength] = rxByte;
-      g_esp32AtResponseLength++;
-    }
-
-    g_esp32AtResponse[g_esp32AtResponseLength] = '\0';
-
-    while (1) {
-      /* Halt here — inspect ESP32 AT results in Live Watch. */
-    }
-  }
-#endif
 
   /* USER CODE END 2 */
 
