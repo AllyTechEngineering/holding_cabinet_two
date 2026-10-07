@@ -22,6 +22,8 @@ volatile uint32_t g_connectEchoCount = 0u;
 volatile uint32_t g_connectOkCount = 0u;
 volatile uint32_t g_connectErrorCount = 0u;
 volatile uint32_t g_connectResponseLineCount = 0u;
+volatile EspAtTransactionState g_connectTransactionState =
+    ESP_AT_TRANSACTION_IDLE;
 
 void ConnectTask_Run(void *argument) {
   static const uint8_t at_command[] = "AT+GMR\r\n";
@@ -71,7 +73,8 @@ void ConnectTask_Run(void *argument) {
         }
 
         EspAt_ProcessTransactionLine(line_buffer, line_length);
-        
+        g_connectTransactionState = EspAt_GetTransactionState();
+
         if (EspAt_IsTerminalOk(line_buffer, line_length) != 0u) {
           g_connectOkCount++;
         } else if (EspAt_IsTerminalError(line_buffer, line_length) != 0u) {
