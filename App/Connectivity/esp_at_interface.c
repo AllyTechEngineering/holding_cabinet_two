@@ -10,6 +10,7 @@
 
 #include "esp_at_interface.h"
 #include "stm32l4xx_hal.h"
+#include "uart_transport.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -20,6 +21,8 @@ static EspAtTransactionState s_esp_at_transaction_state =
     ESP_AT_TRANSACTION_IDLE;
 static uint32_t s_esp_at_transaction_start_tick = 0u;
 static uint32_t s_esp_at_transaction_timeout_ms = 0u;
+static uint8_t s_esp_at_active_command[ESP_AT_COMMAND_BUFFER_SIZE] = {0};
+static uint16_t s_esp_at_active_command_length = 0u;
 
 /**
  * @brief Processes one received ESP-AT byte for response-line assembly.
@@ -178,6 +181,57 @@ EspAtUrcType EspAt_ClassifyUrc(const uint8_t *line, uint16_t line_length) {
 }
 
 /**
+ * @brief Starts and transmits an ESP-AT command transaction.
+ *
+ * Stores the active command for command-echo recognition, starts the
+ * response transaction, and transmits the command through the UART transport.
+ *
+ * @param command ESP-AT command including trailing CR-LF.
+ * @param command_length Command length including trailing CR-LF.
+ * @param timeout_ms Maximum time to wait for the terminal response.
+ *
+ * @return 1u when the command was started and transmitted; 0u otherwise.
+ */
+uint8_t EspAt_StartCommand(const uint8_t *command, uint16_t command_length,
+                           uint32_t timeout_ms) {
+  if ((command == NULL) || (command_length < 2u) ||
+      (command_length > ESP_AT_COMMAND_BUFFER_SIZE)) {
+    return 0u;
+  }
+
+  if (EspAt_StartTransaction(timeout_ms) == 0u) {
+    return 0u;
+  }
+
+  memcpy(s_esp_at_active_command, command, command_length);
+  s_esp_at_active_command_length = command_length;
+
+  if (UartTransport_Transmit(command, command_length, 100u) != HAL_OK) {
+    EspAt_ResetTransaction();
+    return 0u;
+  }
+
+  return 1u;
+}
+
+/**
+ * @brief Determines whether a received line is the active command echo.
+ *
+ * @param line Received ESP-AT line.
+ * @param line_length Length of the received line.
+ *
+ * @return 1u when the received line matches the active command; 0u otherwise.
+ */
+uint8_t EspAt_IsActiveCommandEcho(const uint8_t *line, uint16_t line_length) {
+  if (s_esp_at_active_command_length == 0u) {
+    return 0u;
+  }
+
+  return EspAt_IsCommandEcho(line, line_length, s_esp_at_active_command,
+                             s_esp_at_active_command_length);
+}
+
+/**
  * @brief Starts a new response-dependent ESP-AT transaction.
  *
  * @return 1u when the transaction was started; 0u when a transaction is
@@ -242,6 +296,7 @@ void EspAt_ResetTransaction(void) {
   s_esp_at_transaction_state = ESP_AT_TRANSACTION_IDLE;
   s_esp_at_transaction_start_tick = 0u;
   s_esp_at_transaction_timeout_ms = 0u;
+  s_esp_at_active_command_length = 0u;
 }
 /**
  * @brief Returns the current assembled ESP-AT line buffer.

@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 #define ESP_AT_LINE_BUFFER_SIZE 128u
+#define ESP_AT_COMMAND_BUFFER_SIZE 128u
 
 typedef enum {
   ESP_AT_TRANSACTION_IDLE = 0,
@@ -34,6 +35,10 @@ typedef enum {
   ESP_AT_URC_WIFI_GOT_IP,
   ESP_AT_URC_WIFI_DISCONNECT,
 } EspAtUrcType;
+
+uint8_t EspAt_StartCommand(const uint8_t *command, uint16_t command_length,
+                           uint32_t timeout_ms);
+uint8_t EspAt_IsActiveCommandEcho(const uint8_t *line, uint16_t line_length);
 
 uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte);
 uint8_t EspAt_IsCommandEcho(const uint8_t *line, uint16_t line_length,

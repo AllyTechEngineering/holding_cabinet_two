@@ -17,9 +17,8 @@
 extern UART_HandleTypeDef huart1;
 extern osMessageQueueId_t qUartRxToConnectHandle;
 
-void ConnectTask_Run(void *argument) {
-  static const uint8_t at_command[] = "AT+GMR\r\n";
-
+void ConnectTask_Run(void *argument)
+{
   (void)argument;
   uint8_t rx_byte;
 
@@ -37,14 +36,7 @@ void ConnectTask_Run(void *argument) {
 
   osDelay(1000u);
 
-  if (EspAt_StartTransaction(1000u) == 0u) {
-    for (;;) {
-      osDelay(1000u);
-    }
-  }
-
-  if (UartTransport_Transmit(at_command, sizeof(at_command) - 1u, 100u) !=
-      HAL_OK) {
+  if (ConnectivityLogic_Start() == 0u) {
     for (;;) {
       osDelay(1000u);
     }
@@ -57,8 +49,7 @@ void ConnectTask_Run(void *argument) {
         const uint8_t *line_buffer = EspAt_GetLineBuffer();
         uint16_t line_length = EspAt_GetLineLength();
 
-        if (EspAt_IsCommandEcho(line_buffer, line_length, at_command,
-                                sizeof(at_command) - 1u) != 0u) {
+        if (EspAt_IsActiveCommandEcho(line_buffer, line_length) != 0u) {
           EspAt_ResetLineAssembly();
           continue;
         }
@@ -76,6 +67,6 @@ void ConnectTask_Run(void *argument) {
       }
     }
 
-    EspAt_ProcessTransactionTimeout();
+    ConnectivityLogic_Process();
   }
 }
