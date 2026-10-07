@@ -11,6 +11,7 @@
 #include "esp_at_interface.h"
 #include "stm32l4xx_hal.h"
 #include <stddef.h>
+#include <string.h>
 
 static uint8_t s_esp_at_line_buffer[ESP_AT_LINE_BUFFER_SIZE] = {0};
 static uint16_t s_esp_at_line_length = 0u;
@@ -140,6 +141,40 @@ uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length) {
   }
 
   return 0u;
+}
+
+/**
+ * @brief Classifies a received line as a recognized ESP-AT unsolicited result
+ * code.
+ *
+ * @param line Received ESP-AT line.
+ * @param line_length Length of the received line.
+ *
+ * @return Recognized URC type, or ESP_AT_URC_NONE when the line is not a
+ * recognized URC.
+ */
+EspAtUrcType EspAt_ClassifyUrc(const uint8_t *line, uint16_t line_length) {
+  if (line == NULL) {
+    return ESP_AT_URC_NONE;
+  }
+
+  if ((line_length == 5u) && (memcmp(line, "ready", 5u) == 0)) {
+    return ESP_AT_URC_READY;
+  }
+
+  if ((line_length == 14u) && (memcmp(line, "WIFI CONNECTED", 14u) == 0)) {
+    return ESP_AT_URC_WIFI_CONNECTED;
+  }
+
+  if ((line_length == 11u) && (memcmp(line, "WIFI GOT IP", 11u) == 0)) {
+    return ESP_AT_URC_WIFI_GOT_IP;
+  }
+
+  if ((line_length == 15u) && (memcmp(line, "WIFI DISCONNECT", 15u) == 0)) {
+    return ESP_AT_URC_WIFI_DISCONNECT;
+  }
+
+  return ESP_AT_URC_NONE;
 }
 
 /**

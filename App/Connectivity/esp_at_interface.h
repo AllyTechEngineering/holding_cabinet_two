@@ -27,11 +27,20 @@ typedef enum {
   ESP_AT_TRANSACTION_TIMEOUT,
 } EspAtTransactionState;
 
+typedef enum {
+  ESP_AT_URC_NONE = 0,
+  ESP_AT_URC_READY,
+  ESP_AT_URC_WIFI_CONNECTED,
+  ESP_AT_URC_WIFI_GOT_IP,
+  ESP_AT_URC_WIFI_DISCONNECT,
+} EspAtUrcType;
+
 uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte);
 uint8_t EspAt_IsCommandEcho(const uint8_t *line, uint16_t line_length,
                             const uint8_t *command, uint16_t command_length);
 uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length);
 uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length);
+EspAtUrcType EspAt_ClassifyUrc(const uint8_t *line, uint16_t line_length);
 const uint8_t *EspAt_GetLineBuffer(void);
 uint16_t EspAt_GetLineLength(void);
 void EspAt_ResetLineAssembly(void);

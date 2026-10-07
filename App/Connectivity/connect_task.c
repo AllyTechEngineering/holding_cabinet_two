@@ -24,6 +24,8 @@ volatile uint32_t g_connectErrorCount = 0u;
 volatile uint32_t g_connectResponseLineCount = 0u;
 volatile EspAtTransactionState g_connectTransactionState =
     ESP_AT_TRANSACTION_IDLE;
+volatile EspAtUrcType g_connectLastUrc = ESP_AT_URC_NONE;
+volatile uint32_t g_connectUrcCount = 0u;
 
 void ConnectTask_Run(void *argument) {
   static const uint8_t at_command[] = "AT+GMR\r\n";
@@ -67,6 +69,22 @@ void ConnectTask_Run(void *argument) {
         if (EspAt_IsCommandEcho(line_buffer, line_length, at_command,
                                 sizeof(at_command) - 1u) != 0u) {
           g_connectEchoCount++;
+          EspAt_ResetLineAssembly();
+          continue;
+        }
+
+        if (EspAt_IsCommandEcho(line_buffer, line_length, at_command,
+                                sizeof(at_command) - 1u) != 0u) {
+          g_connectEchoCount++;
+          EspAt_ResetLineAssembly();
+          continue;
+        }
+
+        EspAtUrcType urc = EspAt_ClassifyUrc(line_buffer, line_length);
+
+        if (urc != ESP_AT_URC_NONE) {
+          g_connectLastUrc = urc;
+          g_connectUrcCount++;
           EspAt_ResetLineAssembly();
           continue;
         }
