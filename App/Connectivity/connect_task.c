@@ -57,10 +57,9 @@ void ConnectTask_Run(void *argument) {
       osDelay(1000u);
     }
   }
-
   for (;;) {
-    if (osMessageQueueGet(qUartRxToConnectHandle, &rx_byte, NULL,
-                          osWaitForever) == osOK) {
+    if (osMessageQueueGet(qUartRxToConnectHandle, &rx_byte, NULL, 10u) ==
+        osOK) {
       if (EspAt_LineAssemblyProcessByte(rx_byte) != 0u) {
         const uint8_t *line_buffer = EspAt_GetLineBuffer();
         uint16_t line_length = EspAt_GetLineLength();
@@ -73,7 +72,6 @@ void ConnectTask_Run(void *argument) {
         }
 
         EspAt_ProcessTransactionLine(line_buffer, line_length);
-        g_connectTransactionState = EspAt_GetTransactionState();
 
         if (EspAt_IsTerminalOk(line_buffer, line_length) != 0u) {
           g_connectOkCount++;
@@ -82,6 +80,7 @@ void ConnectTask_Run(void *argument) {
         } else {
           g_connectResponseLineCount++;
         }
+
         g_connectRxCount = 0u;
 
         while ((g_connectRxCount < line_length) &&
@@ -94,5 +93,8 @@ void ConnectTask_Run(void *argument) {
         EspAt_ResetLineAssembly();
       }
     }
+
+    EspAt_ProcessTransactionTimeout();
+    g_connectTransactionState = EspAt_GetTransactionState();
   }
 }

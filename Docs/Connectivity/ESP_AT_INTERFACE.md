@@ -228,6 +228,12 @@ data required to detect at minimum:
 - Incoming network data
 - Other asynchronous events required by Firebase communications
 
+Recognized unsolicited result codes shall be classified before command-response
+transaction processing.
+
+A recognized unsolicited result code shall not complete or otherwise change
+the state of an active command transaction.
+
 The exact unsolicited result code set is TBD.
 
 

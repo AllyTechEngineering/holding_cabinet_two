@@ -9,6 +9,7 @@
  ********************************************************************************/
 
 #include "esp_at_interface.h"
+#include "stm32l4xx_hal.h"
 #include <stddef.h>
 
 static uint8_t s_esp_at_line_buffer[ESP_AT_LINE_BUFFER_SIZE] = {0};
@@ -16,6 +17,8 @@ static uint16_t s_esp_at_line_length = 0u;
 static uint8_t s_esp_at_pending_cr = 0u;
 static EspAtTransactionState s_esp_at_transaction_state =
     ESP_AT_TRANSACTION_IDLE;
+static uint32_t s_esp_at_transaction_start_tick = 0u;
+static uint32_t s_esp_at_transaction_timeout_ms = 0u;
 
 /**
  * @brief Processes one received ESP-AT byte for response-line assembly.
@@ -146,12 +149,14 @@ uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length) {
  * already active.
  */
 uint8_t EspAt_StartTransaction(uint32_t timeout_ms) {
-    (void)timeout_ms;
   if (s_esp_at_transaction_state == ESP_AT_TRANSACTION_ACTIVE) {
     return 0u;
   }
 
+  s_esp_at_transaction_start_tick = HAL_GetTick();
+  s_esp_at_transaction_timeout_ms = timeout_ms;
   s_esp_at_transaction_state = ESP_AT_TRANSACTION_ACTIVE;
+
   return 1u;
 }
 
@@ -174,6 +179,20 @@ void EspAt_ProcessTransactionLine(const uint8_t *line, uint16_t line_length) {
 }
 
 /**
+ * @brief Processes timeout state for the active ESP-AT transaction.
+ */
+void EspAt_ProcessTransactionTimeout(void) {
+  if (s_esp_at_transaction_state != ESP_AT_TRANSACTION_ACTIVE) {
+    return;
+  }
+
+  if ((uint32_t)(HAL_GetTick() - s_esp_at_transaction_start_tick) >=
+      s_esp_at_transaction_timeout_ms) {
+    s_esp_at_transaction_state = ESP_AT_TRANSACTION_TIMEOUT;
+  }
+}
+
+/**
  * @brief Returns the current ESP-AT transaction state.
  *
  * @return Current transaction state.
@@ -184,9 +203,10 @@ EspAtTransactionState EspAt_GetTransactionState(void) {
 /**
  * @brief Resets the ESP-AT transaction state to idle.
  */
-void EspAt_ResetTransaction(void)
-{
+void EspAt_ResetTransaction(void) {
   s_esp_at_transaction_state = ESP_AT_TRANSACTION_IDLE;
+  s_esp_at_transaction_start_tick = 0u;
+  s_esp_at_transaction_timeout_ms = 0u;
 }
 /**
  * @brief Returns the current assembled ESP-AT line buffer.
