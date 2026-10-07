@@ -73,13 +73,6 @@ void ConnectTask_Run(void *argument) {
           continue;
         }
 
-        if (EspAt_IsCommandEcho(line_buffer, line_length, at_command,
-                                sizeof(at_command) - 1u) != 0u) {
-          g_connectEchoCount++;
-          EspAt_ResetLineAssembly();
-          continue;
-        }
-
         EspAtUrcType urc = EspAt_ClassifyUrc(line_buffer, line_length);
 
         if (urc != ESP_AT_URC_NONE) {
