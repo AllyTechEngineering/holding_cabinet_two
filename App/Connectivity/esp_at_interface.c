@@ -96,6 +96,27 @@ uint8_t EspAt_IsCommandEcho(const uint8_t *line, uint16_t line_length,
 }
 
 /**
+ * @brief Determines whether a received line is the ESP-AT terminal OK response.
+ *
+ * @param line Received ESP-AT line.
+ * @param line_length Length of the received line.
+ *
+ * @return 1u when the line is exactly "OK"; 0u otherwise.
+ */
+uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length)
+{
+  if ((line == NULL) || (line_length != 2u)) {
+    return 0u;
+  }
+
+  if ((line[0] == 'O') && (line[1] == 'K')) {
+    return 1u;
+  }
+
+  return 0u;
+}
+
+/**
  * @brief Returns the current assembled ESP-AT line buffer.
  *
  * @return Pointer to the line buffer.

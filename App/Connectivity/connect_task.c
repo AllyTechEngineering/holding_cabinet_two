@@ -18,6 +18,7 @@ extern osMessageQueueId_t qUartRxToConnectHandle;
 
 volatile uint8_t g_connectRxBuffer[32] = {0};
 volatile uint16_t g_connectRxCount = 0u;
+volatile uint32_t g_connectEchoCount = 0u;
 
 void ConnectTask_Run(void *argument) {
   static const uint8_t at_command[] = "AT\r\n";
@@ -52,6 +53,13 @@ void ConnectTask_Run(void *argument) {
       if (EspAt_LineAssemblyProcessByte(rx_byte) != 0u) {
         const uint8_t *line_buffer = EspAt_GetLineBuffer();
         uint16_t line_length = EspAt_GetLineLength();
+
+        if (EspAt_IsCommandEcho(line_buffer, line_length, at_command,
+                                sizeof(at_command) - 1u) != 0u) {
+          g_connectEchoCount++;
+          EspAt_ResetLineAssembly();
+          continue;
+        }
 
         g_connectRxCount = 0u;
 
