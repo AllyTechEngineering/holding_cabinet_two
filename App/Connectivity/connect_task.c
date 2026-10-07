@@ -45,7 +45,7 @@ void ConnectTask_Run(void *argument) {
 
   osDelay(1000u);
 
-  if (EspAt_StartTransaction() == 0u) {
+  if (EspAt_StartTransaction(1000u) == 0u) {
     for (;;) {
       osDelay(1000u);
     }

@@ -145,7 +145,8 @@ uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length) {
  * @return 1u when the transaction was started; 0u when a transaction is
  * already active.
  */
-uint8_t EspAt_StartTransaction(void) {
+uint8_t EspAt_StartTransaction(uint32_t timeout_ms) {
+    (void)timeout_ms;
   if (s_esp_at_transaction_state == ESP_AT_TRANSACTION_ACTIVE) {
     return 0u;
   }
