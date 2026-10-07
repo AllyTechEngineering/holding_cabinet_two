@@ -39,7 +39,7 @@ timing, local HMI operation, or other real-time cabinet functions.
     UART Transport
         |
         v
-    USART2
+    USART1
         |
         v
     ESP32-C6
@@ -76,7 +76,7 @@ Project-specific ESP-AT interface behavior is defined in
 
 ## 7. UART Transport
 
-USART2 provides the transport between the STM32 and ESP32-C6.
+USART1 provides the transport between the STM32 and ESP32-C6.
 
 UART configuration:
 

@@ -13,7 +13,7 @@
 #include "uart_transport.h"
 
 
-extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart1;
 extern osMessageQueueId_t qUartRxToConnectHandle;
 
 volatile uint8_t g_connectRxBuffer[32] = {0};
@@ -25,7 +25,7 @@ void ConnectTask_Run(void *argument) {
   (void)argument;
   uint8_t rx_byte;
 
-  if (UartTransport_Init(&huart2, qUartRxToConnectHandle) != HAL_OK) {
+  if (UartTransport_Init(&huart1, qUartRxToConnectHandle) != HAL_OK) {
     for (;;) {
       osDelay(1000u);
     }

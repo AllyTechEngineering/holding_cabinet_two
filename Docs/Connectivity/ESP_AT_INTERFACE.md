@@ -13,7 +13,7 @@ by the applicable Espressif ESP-AT documentation.
 
     STM32L476
         |
-        | USART2
+        | USART1
         |
         v
     ESP32-C6
@@ -38,9 +38,9 @@ UART configuration:
 
 Connections:
 
-    STM32 USART2 TX (PA2) ---> ESP32-C6 GPIO6 / UART1 RX
-    STM32 USART2 RX (PA3) <--- ESP32-C6 GPIO7 / UART1 TX
-    STM32 GND             ----- ESP32-C6 GND
+    STM32 USART1 TX (PA9)  ---> ESP32-C6 GPIO6 / UART1 RX
+    STM32 USART1 RX (PA10) <--- ESP32-C6 GPIO7 / UART1 TX
+    STM32 GND              ----- ESP32-C6 GND
 
 ESP32-C6 ESP-AT UART1 signals:
 
@@ -71,7 +71,10 @@ Detailed response parsing is TBD.
 During connectivity initialization, the STM32 shall verify that valid ESP-AT
 communication can be established with the ESP32-C6.
 
-The initial synchronization command sequence is TBD.
+Basic ESP-AT communication verification shall use the `AT` command and require
+an `OK` response.
+
+The complete initialization and synchronization command sequence is TBD.
 
 
 ## 6. ESP-AT Configuration
@@ -234,5 +237,5 @@ The exact command list is TBD.
 
 ## 15. References
 
-Applicable Espressif ESP-AT documentation is maintained under
+Applicable ESP32-C6 and ESP-AT documentation is maintained under
 `../Reference/`.

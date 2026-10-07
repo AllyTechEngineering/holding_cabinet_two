@@ -385,9 +385,9 @@ int main(void)
     g_uartTxByte = 0x55;
 
     g_uartTxResult =
-        HAL_UART_Transmit(&huart2, (uint8_t *)&g_uartTxByte, 1, 100);
+        HAL_UART_Transmit(&huart1, (uint8_t *)&g_uartTxByte, 1, 100);
     g_uartRxResult =
-        HAL_UART_Receive(&huart2, (uint8_t *)&g_uartRxByte, 1, 100);
+        HAL_UART_Receive(&huart1, (uint8_t *)&g_uartRxByte, 1, 100);
 
     if (g_uartRxResult == HAL_OK) {
       g_uartLoopbackOk = (g_uartRxByte == g_uartTxByte);
