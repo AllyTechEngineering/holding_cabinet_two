@@ -21,9 +21,10 @@ volatile uint16_t g_connectRxCount = 0u;
 volatile uint32_t g_connectEchoCount = 0u;
 volatile uint32_t g_connectOkCount = 0u;
 volatile uint32_t g_connectErrorCount = 0u;
+volatile uint32_t g_connectResponseLineCount = 0u;
 
 void ConnectTask_Run(void *argument) {
-  static const uint8_t at_command[] = "AT+FAKE\r\n";
+  static const uint8_t at_command[] = "AT+GMR\r\n";
 
   (void)argument;
   uint8_t rx_byte;
@@ -65,9 +66,10 @@ void ConnectTask_Run(void *argument) {
 
         if (EspAt_IsTerminalOk(line_buffer, line_length) != 0u) {
           g_connectOkCount++;
-        }
-        if (EspAt_IsTerminalError(line_buffer, line_length) != 0u) {
+        } else if (EspAt_IsTerminalError(line_buffer, line_length) != 0u) {
           g_connectErrorCount++;
+        } else {
+          g_connectResponseLineCount++;
         }
         g_connectRxCount = 0u;
 

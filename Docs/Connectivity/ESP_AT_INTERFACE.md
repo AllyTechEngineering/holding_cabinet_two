@@ -63,6 +63,19 @@ Only one response-dependent ESP-AT command transaction shall be active at a
 time unless a later architecture revision explicitly supports concurrent
 transactions.
 
+A response-dependent command transaction shall remain active until a terminal
+response is received or the transaction ends due to timeout.
+
+A terminal `OK` response shall complete the active transaction successfully.
+
+A terminal `ERROR` response shall complete the active transaction
+unsuccessfully.
+
+Non-terminal response lines shall not complete the active transaction.
+
+A second response-dependent command transaction shall not begin while another
+response-dependent transaction is active.
+
 ESP-AT receive processing shall assemble incoming UART bytes into response
 lines terminated by CR-LF (`\r\n`).
 
