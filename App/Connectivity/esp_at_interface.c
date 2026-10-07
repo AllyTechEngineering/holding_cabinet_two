@@ -9,11 +9,11 @@
  ********************************************************************************/
 
 #include "esp_at_interface.h"
+#include <stddef.h>
 
 static uint8_t s_esp_at_line_buffer[ESP_AT_LINE_BUFFER_SIZE] = {0};
 static uint16_t s_esp_at_line_length = 0u;
 static uint8_t s_esp_at_pending_cr = 0u;
-
 
 /**
  * @brief Processes one received ESP-AT byte for response-line assembly.
@@ -25,8 +25,7 @@ static uint8_t s_esp_at_pending_cr = 0u;
  *
  * @return 1u when a complete non-empty line is available; 0u otherwise.
  */
-uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte)
-{
+uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte) {
   if (rx_byte == '\r') {
     s_esp_at_pending_cr = 1u;
     return 0u;
@@ -59,35 +58,61 @@ uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte)
 
   return 0u;
 }
+/**
+ * @brief Determines whether a received line is the echo of a transmitted
+ * command.
+ *
+ * The command length includes the trailing CR-LF. The received line does not
+ * include CR-LF because line assembly removes the terminator.
+ *
+ * @param line Received ESP-AT line.
+ * @param line_length Length of the received line.
+ * @param command Transmitted ESP-AT command.
+ * @param command_length Length of the transmitted command including CR-LF.
+ *
+ * @return 1u when the line matches the transmitted command; 0u otherwise.
+ */
+uint8_t EspAt_IsCommandEcho(const uint8_t *line, uint16_t line_length,
+                            const uint8_t *command, uint16_t command_length) {
+  uint16_t command_text_length;
 
+  if ((line == NULL) || (command == NULL) || (command_length < 2u)) {
+    return 0u;
+  }
+
+  command_text_length = command_length - 2u;
+
+  if (line_length != command_text_length) {
+    return 0u;
+  }
+
+  for (uint16_t i = 0u; i < line_length; i++) {
+    if (line[i] != command[i]) {
+      return 0u;
+    }
+  }
+
+  return 1u;
+}
 
 /**
  * @brief Returns the current assembled ESP-AT line buffer.
  *
  * @return Pointer to the line buffer.
  */
-const uint8_t *EspAt_GetLineBuffer(void)
-{
-  return s_esp_at_line_buffer;
-}
-
+const uint8_t *EspAt_GetLineBuffer(void) { return s_esp_at_line_buffer; }
 
 /**
  * @brief Returns the current assembled ESP-AT line length.
  *
  * @return Number of bytes in the assembled line.
  */
-uint16_t EspAt_GetLineLength(void)
-{
-  return s_esp_at_line_length;
-}
-
+uint16_t EspAt_GetLineLength(void) { return s_esp_at_line_length; }
 
 /**
  * @brief Resets ESP-AT line assembly state for the next line.
  */
-void EspAt_ResetLineAssembly(void)
-{
+void EspAt_ResetLineAssembly(void) {
   s_esp_at_line_length = 0u;
   s_esp_at_pending_cr = 0u;
 }
