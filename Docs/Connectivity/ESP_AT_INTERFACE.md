@@ -235,7 +235,14 @@ The exact unsolicited result code set is TBD.
 
 Each ESP-AT operation that requires a response shall have a defined timeout.
 
-Timeout values are TBD.
+The timeout duration for a response-dependent command transaction shall be
+provided when the transaction is started.
+
+The ESP-AT interface shall determine whether an active transaction has timed
+out using the STM32 system tick.
+
+A timed-out transaction shall end with a timeout result distinct from terminal
+`OK` and `ERROR` responses.
 
 A single ESP-AT command timeout shall not automatically be classified as an
 ESP32 communication failure.
