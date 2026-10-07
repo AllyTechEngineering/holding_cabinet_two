@@ -63,7 +63,19 @@ Only one response-dependent ESP-AT command transaction shall be active at a
 time unless a later architecture revision explicitly supports concurrent
 transactions.
 
-Detailed response parsing is TBD.
+ESP-AT receive processing shall assemble incoming UART bytes into response
+lines terminated by CR-LF (`\r\n`).
+
+Empty CR-LF sequences between response lines shall be ignored.
+
+Completed non-empty lines shall be passed to the ESP-AT response-processing
+logic for classification.
+
+Line assembly shall not determine command completion. Command completion is
+determined separately from terminal ESP-AT responses such as `OK` and `ERROR`.
+
+Additional response parsing behavior is defined as the corresponding ESP-AT
+interface functions are implemented.
 
 
 ## 5. Startup and Synchronization
