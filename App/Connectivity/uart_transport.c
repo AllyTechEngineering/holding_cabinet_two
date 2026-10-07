@@ -14,12 +14,6 @@ static UART_HandleTypeDef *s_huart = NULL;
 static osMessageQueueId_t s_rx_queue = NULL;
 static uint8_t s_rx_byte = 0u;
 
-static volatile uint32_t s_uart_error_count = 0u;
-static volatile uint32_t s_uart_last_error = HAL_UART_ERROR_NONE;
-static volatile uint32_t s_rx_queue_overflow_count = 0u;
-static volatile uint32_t s_rx_rearm_error_count = 0u;
-
-
 /**
  * @brief Initializes the UART transport layer.
  *
@@ -44,7 +38,6 @@ HAL_StatusTypeDef UartTransport_Init(UART_HandleTypeDef *huart,
   return HAL_OK;
 }
 
-
 /**
  * @brief Starts interrupt-driven UART reception.
  *
@@ -61,7 +54,6 @@ HAL_StatusTypeDef UartTransport_StartRx(void)
 
   return HAL_UART_Receive_IT(s_huart, &s_rx_byte, 1u);
 }
-
 
 /**
  * @brief Transmits data through the UART transport.
@@ -95,37 +87,28 @@ HAL_StatusTypeDef UartTransport_Transmit(const uint8_t *data,
  *
  * @param huart UART handle associated with the completed receive operation.
  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
   if ((huart != s_huart) || (s_rx_queue == NULL)) {
     return;
   }
 
-  if (osMessageQueuePut(s_rx_queue, &s_rx_byte, 0u, 0u) != osOK) {
-    s_rx_queue_overflow_count++;
-  }
-
-  if (HAL_UART_Receive_IT(s_huart, &s_rx_byte, 1u) != HAL_OK) {
-    s_rx_rearm_error_count++;
-  }
+  (void)osMessageQueuePut(s_rx_queue, &s_rx_byte, 0u, 0u);
+  (void)HAL_UART_Receive_IT(s_huart, &s_rx_byte, 1u);
 }
 
 /**
  * @brief Handles UART errors for the connectivity transport.
  *
- * Records the HAL UART error condition and rearms interrupt-driven reception
- * so that communications can continue after a recoverable UART error.
+ * Rearms interrupt-driven reception after a UART error.
  *
  * @param huart UART handle associated with the reported error.
  */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
   if (huart != s_huart) {
     return;
   }
 
-  s_uart_last_error = HAL_UART_GetError(huart);
-  s_uart_error_count++;
-
-  if (HAL_UART_Receive_IT(s_huart, &s_rx_byte, 1u) != HAL_OK) {
-    s_rx_rearm_error_count++;
-  }
+  (void)HAL_UART_Receive_IT(s_huart, &s_rx_byte, 1u);
 }

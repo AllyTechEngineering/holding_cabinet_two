@@ -10,22 +10,12 @@
 
 #include "connect_task.h"
 #include "cmsis_os.h"
+#include "connectivity_logic.h"
 #include "esp_at_interface.h"
 #include "uart_transport.h"
 
 extern UART_HandleTypeDef huart1;
 extern osMessageQueueId_t qUartRxToConnectHandle;
-
-volatile uint8_t g_connectRxBuffer[32] = {0};
-volatile uint16_t g_connectRxCount = 0u;
-volatile uint32_t g_connectEchoCount = 0u;
-volatile uint32_t g_connectOkCount = 0u;
-volatile uint32_t g_connectErrorCount = 0u;
-volatile uint32_t g_connectResponseLineCount = 0u;
-volatile EspAtTransactionState g_connectTransactionState =
-    ESP_AT_TRANSACTION_IDLE;
-volatile EspAtUrcType g_connectLastUrc = ESP_AT_URC_NONE;
-volatile uint32_t g_connectUrcCount = 0u;
 
 void ConnectTask_Run(void *argument) {
   static const uint8_t at_command[] = "AT+GMR\r\n";
@@ -59,6 +49,7 @@ void ConnectTask_Run(void *argument) {
       osDelay(1000u);
     }
   }
+
   for (;;) {
     if (osMessageQueueGet(qUartRxToConnectHandle, &rx_byte, NULL, 10u) ==
         osOK) {
@@ -68,7 +59,6 @@ void ConnectTask_Run(void *argument) {
 
         if (EspAt_IsCommandEcho(line_buffer, line_length, at_command,
                                 sizeof(at_command) - 1u) != 0u) {
-          g_connectEchoCount++;
           EspAt_ResetLineAssembly();
           continue;
         }
@@ -76,36 +66,16 @@ void ConnectTask_Run(void *argument) {
         EspAtUrcType urc = EspAt_ClassifyUrc(line_buffer, line_length);
 
         if (urc != ESP_AT_URC_NONE) {
-          g_connectLastUrc = urc;
-          g_connectUrcCount++;
+          ConnectivityLogic_HandleUrc(urc);
           EspAt_ResetLineAssembly();
           continue;
         }
 
         EspAt_ProcessTransactionLine(line_buffer, line_length);
-
-        if (EspAt_IsTerminalOk(line_buffer, line_length) != 0u) {
-          g_connectOkCount++;
-        } else if (EspAt_IsTerminalError(line_buffer, line_length) != 0u) {
-          g_connectErrorCount++;
-        } else {
-          g_connectResponseLineCount++;
-        }
-
-        g_connectRxCount = 0u;
-
-        while ((g_connectRxCount < line_length) &&
-               (g_connectRxCount < (sizeof(g_connectRxBuffer) - 1u))) {
-          g_connectRxBuffer[g_connectRxCount] = line_buffer[g_connectRxCount];
-          g_connectRxCount++;
-        }
-
-        g_connectRxBuffer[g_connectRxCount] = '\0';
         EspAt_ResetLineAssembly();
       }
     }
 
     EspAt_ProcessTransactionTimeout();
-    g_connectTransactionState = EspAt_GetTransactionState();
   }
 }
