@@ -74,6 +74,15 @@ logic for classification.
 Line assembly shall not determine command completion. Command completion is
 determined separately from terminal ESP-AT responses such as `OK` and `ERROR`.
 
+During ESP-AT initialization, the STM32 shall disable command echo using
+`ATE0`.
+
+Before command echo has been successfully disabled, received command-echo
+lines shall be recognized and ignored by the ESP-AT interface.
+
+After `ATE0` has completed successfully, command echo is not expected during
+normal ESP-AT operation.
+
 Additional response parsing behavior is defined as the corresponding ESP-AT
 interface functions are implemented.
 

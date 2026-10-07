@@ -11,59 +11,11 @@
 #include "connect_task.h"
 #include "cmsis_os.h"
 #include "uart_transport.h"
+#include "esp_at_interface.h"
 
 extern UART_HandleTypeDef huart1;
 extern osMessageQueueId_t qUartRxToConnectHandle;
 
-#define ESP_AT_LINE_BUFFER_SIZE 128u
-
-static uint8_t s_esp_at_line_buffer[ESP_AT_LINE_BUFFER_SIZE] = {0};
-static uint16_t s_esp_at_line_length = 0u;
-static uint8_t s_esp_at_pending_cr = 0u;
-
-/**
- * @brief Processes one received ESP-AT byte for response-line assembly.
- *
- * Builds non-empty response lines terminated by CR-LF. Empty CR-LF
- * sequences are ignored.
- *
- * @param rx_byte Received UART byte.
- *
- * @return 1u when a complete non-empty line is available; 0u otherwise.
- */
-static uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte) {
-  if (rx_byte == '\r') {
-    s_esp_at_pending_cr = 1u;
-    return 0u;
-  }
-
-  if ((rx_byte == '\n') && (s_esp_at_pending_cr != 0u)) {
-    s_esp_at_pending_cr = 0u;
-
-    if (s_esp_at_line_length == 0u) {
-      return 0u;
-    }
-
-    s_esp_at_line_buffer[s_esp_at_line_length] = '\0';
-    return 1u;
-  }
-
-  if (s_esp_at_pending_cr != 0u) {
-    s_esp_at_pending_cr = 0u;
-
-    if (s_esp_at_line_length < (ESP_AT_LINE_BUFFER_SIZE - 1u)) {
-      s_esp_at_line_buffer[s_esp_at_line_length] = '\r';
-      s_esp_at_line_length++;
-    }
-  }
-
-  if (s_esp_at_line_length < (ESP_AT_LINE_BUFFER_SIZE - 1u)) {
-    s_esp_at_line_buffer[s_esp_at_line_length] = rx_byte;
-    s_esp_at_line_length++;
-  }
-
-  return 0u;
-}
 volatile uint8_t g_connectRxBuffer[32] = {0};
 volatile uint16_t g_connectRxCount = 0u;
 
@@ -97,9 +49,21 @@ void ConnectTask_Run(void *argument) {
   for (;;) {
     if (osMessageQueueGet(qUartRxToConnectHandle, &rx_byte, NULL,
                           osWaitForever) == osOK) {
-      if (g_connectRxCount < sizeof(g_connectRxBuffer)) {
-        g_connectRxBuffer[g_connectRxCount] = rx_byte;
-        g_connectRxCount++;
+      if (EspAt_LineAssemblyProcessByte(rx_byte) != 0u) {
+        const uint8_t *line_buffer = EspAt_GetLineBuffer();
+        uint16_t line_length = EspAt_GetLineLength();
+
+        g_connectRxCount = 0u;
+
+        while ((g_connectRxCount < line_length) &&
+               (g_connectRxCount < (sizeof(g_connectRxBuffer) - 1u))) {
+          g_connectRxBuffer[g_connectRxCount] =
+              line_buffer[g_connectRxCount];
+          g_connectRxCount++;
+        }
+
+        g_connectRxBuffer[g_connectRxCount] = '\0';
+        EspAt_ResetLineAssembly();
       }
     }
   }
