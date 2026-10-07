@@ -43,6 +43,12 @@ void ConnectTask_Run(void *argument) {
 
   osDelay(1000u);
 
+  if (EspAt_StartTransaction() == 0u) {
+    for (;;) {
+      osDelay(1000u);
+    }
+  }
+
   if (UartTransport_Transmit(at_command, sizeof(at_command) - 1u, 100u) !=
       HAL_OK) {
     for (;;) {
@@ -64,6 +70,8 @@ void ConnectTask_Run(void *argument) {
           continue;
         }
 
+        EspAt_ProcessTransactionLine(line_buffer, line_length);
+        
         if (EspAt_IsTerminalOk(line_buffer, line_length) != 0u) {
           g_connectOkCount++;
         } else if (EspAt_IsTerminalError(line_buffer, line_length) != 0u) {

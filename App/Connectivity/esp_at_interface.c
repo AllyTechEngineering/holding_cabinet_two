@@ -14,6 +14,8 @@
 static uint8_t s_esp_at_line_buffer[ESP_AT_LINE_BUFFER_SIZE] = {0};
 static uint16_t s_esp_at_line_length = 0u;
 static uint8_t s_esp_at_pending_cr = 0u;
+static EspAtTransactionState s_esp_at_transaction_state =
+    ESP_AT_TRANSACTION_IDLE;
 
 /**
  * @brief Processes one received ESP-AT byte for response-line assembly.
@@ -103,8 +105,7 @@ uint8_t EspAt_IsCommandEcho(const uint8_t *line, uint16_t line_length,
  *
  * @return 1u when the line is exactly "OK"; 0u otherwise.
  */
-uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length)
-{
+uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length) {
   if ((line == NULL) || (line_length != 2u)) {
     return 0u;
   }
@@ -117,30 +118,75 @@ uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length)
 }
 
 /**
- * @brief Determines whether a received line is the ESP-AT terminal ERROR response.
+ * @brief Determines whether a received line is the ESP-AT terminal ERROR
+ * response.
  *
  * @param line Received ESP-AT line.
  * @param line_length Length of the received line.
  *
  * @return 1u when the line is exactly "ERROR"; 0u otherwise.
  */
-uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length)
-{
+uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length) {
   if ((line == NULL) || (line_length != 5u)) {
     return 0u;
   }
 
-  if ((line[0] == 'E') &&
-      (line[1] == 'R') &&
-      (line[2] == 'R') &&
-      (line[3] == 'O') &&
-      (line[4] == 'R')) {
+  if ((line[0] == 'E') && (line[1] == 'R') && (line[2] == 'R') &&
+      (line[3] == 'O') && (line[4] == 'R')) {
     return 1u;
   }
 
   return 0u;
 }
 
+/**
+ * @brief Starts a new response-dependent ESP-AT transaction.
+ *
+ * @return 1u when the transaction was started; 0u when a transaction is
+ * already active.
+ */
+uint8_t EspAt_StartTransaction(void) {
+  if (s_esp_at_transaction_state == ESP_AT_TRANSACTION_ACTIVE) {
+    return 0u;
+  }
+
+  s_esp_at_transaction_state = ESP_AT_TRANSACTION_ACTIVE;
+  return 1u;
+}
+
+/**
+ * @brief Processes a received line for the active ESP-AT transaction.
+ *
+ * @param line Received ESP-AT line.
+ * @param line_length Length of the received line.
+ */
+void EspAt_ProcessTransactionLine(const uint8_t *line, uint16_t line_length) {
+  if (s_esp_at_transaction_state != ESP_AT_TRANSACTION_ACTIVE) {
+    return;
+  }
+
+  if (EspAt_IsTerminalOk(line, line_length) != 0u) {
+    s_esp_at_transaction_state = ESP_AT_TRANSACTION_OK;
+  } else if (EspAt_IsTerminalError(line, line_length) != 0u) {
+    s_esp_at_transaction_state = ESP_AT_TRANSACTION_ERROR;
+  }
+}
+
+/**
+ * @brief Returns the current ESP-AT transaction state.
+ *
+ * @return Current transaction state.
+ */
+EspAtTransactionState EspAt_GetTransactionState(void) {
+  return s_esp_at_transaction_state;
+}
+/**
+ * @brief Resets the ESP-AT transaction state to idle.
+ */
+void EspAt_ResetTransaction(void)
+{
+  s_esp_at_transaction_state = ESP_AT_TRANSACTION_IDLE;
+}
 /**
  * @brief Returns the current assembled ESP-AT line buffer.
  *
