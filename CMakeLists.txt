@@ -56,6 +56,7 @@ App/Control/control_task.c
 App/Connectivity/connect_task.c
 App/Connectivity/esp_at_interface.c
 App/Connectivity/uart_transport.c
+App/Connectivity/connectivity_logic.c
 )
 
 # Add include paths

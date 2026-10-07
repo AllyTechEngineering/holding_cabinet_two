@@ -52,6 +52,11 @@ timing, local HMI operation, or other real-time cabinet functions.
 
 ## 5. Connectivity Logic
 
+Connectivity logic is implemented by:
+
+- `App/Connectivity/connectivity_logic.c`
+- `App/Connectivity/connectivity_logic.h`
+
 Connectivity logic coordinates:
 
 - ESP32 communication
@@ -61,6 +66,9 @@ Connectivity logic coordinates:
 - Firebase communications
 - Remote communications
 - Connectivity fault handling and recovery
+
+`ConnectTask` provides task orchestration and delivers classified ESP-AT
+events to connectivity logic.
 
 The connectivity state model is TBD.
 
