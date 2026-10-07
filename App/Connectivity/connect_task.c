@@ -10,8 +10,8 @@
 
 #include "connect_task.h"
 #include "cmsis_os.h"
-#include "uart_transport.h"
 #include "esp_at_interface.h"
+#include "uart_transport.h"
 
 extern UART_HandleTypeDef huart1;
 extern osMessageQueueId_t qUartRxToConnectHandle;
@@ -19,9 +19,11 @@ extern osMessageQueueId_t qUartRxToConnectHandle;
 volatile uint8_t g_connectRxBuffer[32] = {0};
 volatile uint16_t g_connectRxCount = 0u;
 volatile uint32_t g_connectEchoCount = 0u;
+volatile uint32_t g_connectOkCount = 0u;
+volatile uint32_t g_connectErrorCount = 0u;
 
 void ConnectTask_Run(void *argument) {
-  static const uint8_t at_command[] = "AT\r\n";
+  static const uint8_t at_command[] = "AT+FAKE\r\n";
 
   (void)argument;
   uint8_t rx_byte;
@@ -61,12 +63,17 @@ void ConnectTask_Run(void *argument) {
           continue;
         }
 
+        if (EspAt_IsTerminalOk(line_buffer, line_length) != 0u) {
+          g_connectOkCount++;
+        }
+        if (EspAt_IsTerminalError(line_buffer, line_length) != 0u) {
+          g_connectErrorCount++;
+        }
         g_connectRxCount = 0u;
 
         while ((g_connectRxCount < line_length) &&
                (g_connectRxCount < (sizeof(g_connectRxBuffer) - 1u))) {
-          g_connectRxBuffer[g_connectRxCount] =
-              line_buffer[g_connectRxCount];
+          g_connectRxBuffer[g_connectRxCount] = line_buffer[g_connectRxCount];
           g_connectRxCount++;
         }
 

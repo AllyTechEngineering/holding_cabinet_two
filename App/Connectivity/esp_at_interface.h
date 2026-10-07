@@ -23,6 +23,7 @@ uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte);
 uint8_t EspAt_IsCommandEcho(const uint8_t *line, uint16_t line_length,
                             const uint8_t *command, uint16_t command_length);
 uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length);
+uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length);
 const uint8_t *EspAt_GetLineBuffer(void);
 uint16_t EspAt_GetLineLength(void);
 void EspAt_ResetLineAssembly(void);

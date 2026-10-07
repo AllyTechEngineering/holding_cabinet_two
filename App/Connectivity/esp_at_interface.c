@@ -117,6 +117,31 @@ uint8_t EspAt_IsTerminalOk(const uint8_t *line, uint16_t line_length)
 }
 
 /**
+ * @brief Determines whether a received line is the ESP-AT terminal ERROR response.
+ *
+ * @param line Received ESP-AT line.
+ * @param line_length Length of the received line.
+ *
+ * @return 1u when the line is exactly "ERROR"; 0u otherwise.
+ */
+uint8_t EspAt_IsTerminalError(const uint8_t *line, uint16_t line_length)
+{
+  if ((line == NULL) || (line_length != 5u)) {
+    return 0u;
+  }
+
+  if ((line[0] == 'E') &&
+      (line[1] == 'R') &&
+      (line[2] == 'R') &&
+      (line[3] == 'O') &&
+      (line[4] == 'R')) {
+    return 1u;
+  }
+
+  return 0u;
+}
+
+/**
  * @brief Returns the current assembled ESP-AT line buffer.
  *
  * @return Pointer to the line buffer.

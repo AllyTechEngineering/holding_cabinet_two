@@ -74,6 +74,12 @@ logic for classification.
 Line assembly shall not determine command completion. Command completion is
 determined separately from terminal ESP-AT responses such as `OK` and `ERROR`.
 
+An ESP-AT command response may contain zero or more non-terminal response
+lines before the terminal response.
+
+Each completed response line shall be processed independently. Receipt of a
+non-terminal response line shall not by itself complete the active command.
+
 During ESP-AT initialization, the STM32 shall disable command echo using
 `ATE0`.
 
