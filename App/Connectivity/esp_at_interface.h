@@ -23,7 +23,7 @@ typedef enum {
   ESP_AT_TRANSACTION_IDLE = 0,
   ESP_AT_TRANSACTION_ACTIVE,
   ESP_AT_TRANSACTION_OK,
-  ESP_AT_TRANSACTION_ERROR
+  ESP_AT_TRANSACTION_ERROR ESP_AT_TRANSACTION_TIMEOUT
 } EspAtTransactionState;
 
 uint8_t EspAt_LineAssemblyProcessByte(uint8_t rx_byte);
@@ -35,8 +35,9 @@ const uint8_t *EspAt_GetLineBuffer(void);
 uint16_t EspAt_GetLineLength(void);
 void EspAt_ResetLineAssembly(void);
 
-uint8_t EspAt_StartTransaction(void);
+uint8_t EspAt_StartTransaction(uint32_t timeout_ms);
 void EspAt_ProcessTransactionLine(const uint8_t *line, uint16_t line_length);
+void EspAt_ProcessTransactionTimeout(void);
 EspAtTransactionState EspAt_GetTransactionState(void);
 void EspAt_ResetTransaction(void);
 
