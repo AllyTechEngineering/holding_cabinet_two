@@ -123,8 +123,7 @@ Parent: `SETTINGS-003`, `PERSIST-001`, `PERSIST-002`
 After successful Wi-Fi provisioning:
 
 - The new Wi-Fi configuration shall become the active configuration.
-- The STM32 shall retain the accepted Wi-Fi credentials as persistent
-  configuration.
+- The ESP32-C6 shall retain the accepted Wi-Fi credentials.
 - BLE provisioning shall end.
 - Normal connectivity operation shall resume.
 - A reboot shall not be required.
