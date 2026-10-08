@@ -13,13 +13,11 @@
 typedef enum {
   CONNECTIVITY_STARTUP_IDLE = 0,
   CONNECTIVITY_STARTUP_WAIT_READY,
-  CONNECTIVITY_STARTUP_WAIT_AT,
   CONNECTIVITY_STARTUP_WAIT_ATE0,
   CONNECTIVITY_STARTUP_INITIALIZED,
   CONNECTIVITY_STARTUP_FAILED,
 } ConnectivityStartupState;
 
-static const uint8_t s_at_command[] = "AT\r\n";
 static const uint8_t s_ate0_command[] = "ATE0\r\n";
 
 static ConnectivityStartupState s_startup_state = CONNECTIVITY_STARTUP_IDLE;
@@ -51,23 +49,6 @@ void ConnectivityLogic_Process(void)
 
   EspAt_ProcessTransactionTimeout();
   transaction_state = EspAt_GetTransactionState();
-
-  if (s_startup_state == CONNECTIVITY_STARTUP_WAIT_AT) {
-    if (transaction_state == ESP_AT_TRANSACTION_OK) {
-      EspAt_ResetTransaction();
-
-      if (EspAt_StartCommand(s_ate0_command,
-                             sizeof(s_ate0_command) - 1u,
-                             1000u) == 0u) {
-        s_startup_state = CONNECTIVITY_STARTUP_FAILED;
-        return;
-      }
-
-      s_startup_state = CONNECTIVITY_STARTUP_WAIT_ATE0;
-    }
-
-    return;
-  }
 
   if (s_startup_state == CONNECTIVITY_STARTUP_WAIT_ATE0) {
     if (transaction_state == ESP_AT_TRANSACTION_OK) {

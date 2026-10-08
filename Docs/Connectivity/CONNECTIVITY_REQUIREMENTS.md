@@ -29,7 +29,7 @@ The following terms are used for unresolved items:
 
 ### ESP-001 — ESP32 Communication Establishment
 
-Parent: `FAULT-007`, `FAULT-008`
+Parent: `CONN-001`
 
 The connectivity subsystem shall establish valid ESP-AT communication with
 the ESP32-C6 during initialization.
@@ -37,7 +37,7 @@ the ESP32-C6 during initialization.
 
 ### ESP-002 — ESP32 Communication Monitoring
 
-Parent: `FAULT-007`, `FAULT-008`
+Parent: `CONN-001`, `CONN-002`
 
 The connectivity subsystem shall detect loss of established ESP-AT
 communication with the ESP32-C6.
@@ -45,7 +45,7 @@ communication with the ESP32-C6.
 
 ### ESP-003 — ESP32 Communication Failure
 
-Parent: `FAULT-007`, `FAULT-008`
+Parent: `CONN-001`, `CONN-002`
 
 Failure to establish or maintain valid ESP-AT communication with the
 ESP32-C6 shall be reported as an ESP32 communication failure.
@@ -61,7 +61,7 @@ ESP-AT communication with the ESP32-C6 has been established.
 
 ### ESP-005 — Communication Health Verification
 
-Parent: `FAULT-007`, `FAULT-008`
+Parent: `CONN-001`, `CONN-002`
 
 During normal operation, ESP32 communication health shall be determined from
 ESP-AT operations that require a response.
@@ -73,7 +73,7 @@ Periodic ESP32 heartbeat commands are not required.
 
 ### PROV-001 — Provisioning Initiation
 
-Parent: `SETTINGS-003`, `CONN-001`
+Parent: `SETTINGS-003`, `CONN-003`
 
 Wi-Fi provisioning shall begin only after the user selects and confirms the
 Wi-Fi configuration option from Settings.
@@ -81,32 +81,32 @@ Wi-Fi configuration option from Settings.
 
 ### PROV-002 — Provisioning Interface
 
-Parent: `SETTINGS-003`, `CONN-001`
+Parent: `CONN-003`
 
-Wi-Fi provisioning data shall be received from an external provisioning
-application through a BLE provisioning connection.
+Wi-Fi provisioning data shall be received from the mobile application through
+a BLE provisioning connection.
 
 
 ### PROV-003 — Provisioning Data Entry
 
-Parent: `SETTINGS-003`
+Parent: `CONN-003`
 
-Wi-Fi network selection and password entry shall be performed by the external
-provisioning application.
+Wi-Fi network selection and password entry shall be performed by the mobile
+application.
 
 The cabinet HMI shall not provide SSID or Wi-Fi password entry.
 
 
 ### PROV-004 — Provisioning Duration
 
-Parent: `SETTINGS-003`
+Parent: `SETTINGS-003`, `CONN-003`
 
 An active provisioning session shall remain available for up to 5 minutes.
 
 
 ### PROV-005 — Provisioning Success
 
-Parent: `SETTINGS-003`, `CONN-001`
+Parent: `CONN-003`, `CONN-007`
 
 Wi-Fi provisioning shall be considered successful when the ESP32-C6
 successfully connects to the selected Wi-Fi network and obtains network
@@ -118,7 +118,7 @@ provisioning successful.
 
 ### PROV-006 — Successful Provisioning Completion
 
-Parent: `SETTINGS-003`, `PERSIST-001`, `PERSIST-002`
+Parent: `CONN-003`, `CONN-005`, `PERSIST-005`
 
 After successful Wi-Fi provisioning:
 
@@ -131,7 +131,7 @@ After successful Wi-Fi provisioning:
 
 ### PROV-007 — Failed Credential Validation
 
-Parent: `SETTINGS-003`
+Parent: `CONN-003`, `CONN-006`, `PERSIST-005`
 
 If the cabinet cannot connect to the selected Wi-Fi network using candidate
 credentials:
@@ -145,7 +145,7 @@ credentials:
 
 ### PROV-008 — Existing Credential Retention
 
-Parent: `PERSIST-001`, `PERSIST-003`
+Parent: `CONN-006`, `PERSIST-005`
 
 Starting Wi-Fi provisioning shall not erase the currently stored Wi-Fi
 credentials.
@@ -156,7 +156,7 @@ configuration has been successfully provisioned.
 
 ### PROV-009 — Provisioning Cancellation
 
-Parent: `SETTINGS-003`, `PERSIST-003`
+Parent: `SETTINGS-003`, `CONN-006`, `PERSIST-005`
 
 The user shall be able to cancel an active Wi-Fi provisioning session from
 the cabinet HMI.
@@ -171,7 +171,7 @@ When provisioning is cancelled:
 
 ### PROV-010 — Provisioning Timeout
 
-Parent: `SETTINGS-003`, `PERSIST-003`
+Parent: `SETTINGS-003`, `CONN-003`, `PERSIST-005`
 
 If the 5-minute provisioning window expires before successful completion:
 
@@ -185,7 +185,7 @@ Provisioning timeout shall not be treated as a cabinet fault.
 
 ### PROV-011 — Initial and Replacement Configuration
 
-Parent: `SETTINGS-003`
+Parent: `CONN-003`, `CONN-006`
 
 The same provisioning process shall support both initial Wi-Fi configuration
 and later replacement of an existing Wi-Fi configuration.
@@ -195,7 +195,7 @@ and later replacement of an existing Wi-Fi configuration.
 
 ### WIFI-001 — Stored Credential Use
 
-Parent: `CONN-001`, `PERSIST-001`
+Parent: `CONN-005`, `PERSIST-005`
 
 The ESP32-C6 shall retain accepted Wi-Fi credentials and use them when
 establishing normal Wi-Fi connectivity.
@@ -251,7 +251,7 @@ TBD.
 
 ### STATUS-001 — Provisioning Result
 
-Parent: `SETTINGS-003`
+Parent: `CONN-007`
 
 The connectivity subsystem shall provide the cabinet HMI with the result of
 Wi-Fi provisioning.
@@ -273,14 +273,14 @@ into the Error state.
 
 ### CRED-001 — Wi-Fi Credential Storage
 
-Parent: `PERSIST-001`
+Parent: `PERSIST-005`, `CONN-005`
 
 Accepted Wi-Fi credentials shall be stored persistently by the ESP32-C6.
 
 
 ### CRED-002 — Wi-Fi Credential Provisioning
 
-Parent: `CONN-001`, `PERSIST-001`
+Parent: `CONN-003`, `CONN-006`
 
 Wi-Fi credentials shall be provided to the ESP32-C6 through the cabinet
 provisioning process.
@@ -290,15 +290,17 @@ provisioning process.
 
 ### RECOVERY-001 — ESP32 Communication Fault
 
-Parent: `FAULT-007`, `FAULT-008`
+Parent: `CONN-001`, `CONN-002`, `FAULT-007`
 
 Loss of valid ESP-AT communication with the ESP32-C6 shall be handled as an
 ESP32 communication failure.
 
+Loss of ESP32 communication shall not prevent normal local cabinet operation.
+
 
 ### RECOVERY-002 — Non-Fault Connectivity Failures
 
-Parent: `CONN-002`
+Parent: `CONN-002`, `FAULT-007`
 
 Wi-Fi connection failure, Internet unavailability, and Firebase
 unavailability shall not by themselves be treated as cabinet faults.

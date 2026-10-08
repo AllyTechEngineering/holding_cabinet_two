@@ -148,8 +148,35 @@ TBD.
 
 ## 14. Connectivity State Architecture
 
-TBD.
+The MVP connectivity logic uses three top-level states:
 
+- `STARTUP` — ESP-AT startup synchronization is in progress.
+- `READY` — ESP-AT communication is established and normal connectivity
+  operations may be performed.
+- `PROVISIONING` — Wi-Fi provisioning is active.
+
+Wi-Fi, Internet, and Firebase availability are represented as status
+conditions rather than separate top-level connectivity states.
+
+State transitions are:
+
+- `STARTUP` → `READY` after successful ESP-AT startup synchronization.
+- `READY` → `PROVISIONING` when Wi-Fi provisioning is initiated.
+- `PROVISIONING` → `READY` after successful provisioning, cancellation, or
+  provisioning timeout.
+
+Connectivity state changes are driven by:
+
+- ESP-AT `ready` URC.
+- Wi-Fi provisioning start request.
+- Wi-Fi provisioning success.
+- Wi-Fi provisioning cancellation.
+- Wi-Fi provisioning timeout.
+
+ESP-AT command results remain ESP-AT interface results and are processed by
+connectivity logic as needed.
+
+No separate generic connectivity event framework is required for the MVP.
 
 ## 15. Fault and Recovery Architecture
 
