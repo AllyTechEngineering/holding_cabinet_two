@@ -47,7 +47,16 @@ timing, local HMI operation, or other real-time cabinet functions.
 
 ## 4. ConnectTask
 
-`ConnectTask` owns connectivity operation on the STM32.
+`ConnectTask` owns STM32-side connectivity operation.
+
+`ConnectTask`:
+
+- Initializes the UART transport.
+- Starts interrupt-driven UART reception.
+- Processes received ESP-AT data.
+- Delivers classified ESP-AT unsolicited events to connectivity logic.
+- Processes ESP-AT command transactions.
+- Calls connectivity logic processing.
 
 
 ## 5. Connectivity Logic
@@ -59,18 +68,16 @@ Connectivity logic is implemented by:
 
 Connectivity logic coordinates:
 
-- ESP32 communication
-- Provisioning
-- Wi-Fi connectivity
-- Network connectivity
-- Firebase communications
-- Remote communications
-- Connectivity fault handling and recovery
+- ESP32 communication.
+- Provisioning.
+- Wi-Fi connectivity.
+- Network connectivity.
+- Firebase communications.
+- Remote communications.
+- Connectivity fault handling and recovery.
 
 `ConnectTask` provides task orchestration and delivers classified ESP-AT
 events to connectivity logic.
-
-The connectivity state model is TBD.
 
 
 ## 6. ESP-AT Interface
@@ -123,27 +130,71 @@ operation.
 
 ## 9. Provisioning Architecture
 
-TBD.
+Wi-Fi provisioning is initiated through the cabinet Settings workflow.
+
+The mobile application performs:
+
+- Cabinet association.
+- Wi-Fi network selection.
+- Wi-Fi credential entry.
+- Provisioning data transfer.
+
+BLE/GATT provided by ESP-AT is the local provisioning transport.
+
+The STM32 controls BLE provisioning through ESP-AT.
+
+Accepted Wi-Fi credentials are retained persistently by the ESP32-C6.
+
+The detailed BLE/GATT command sequence and provisioning data format are TBD.
 
 
 ## 10. Wi-Fi Architecture
 
-TBD.
+The ESP32-C6 provides Wi-Fi station connectivity.
+
+Accepted Wi-Fi credentials are stored persistently by the ESP32-C6 using
+ESP-AT persistent storage.
+
+The STM32 controls Wi-Fi operation through ESP-AT commands.
+
+Existing accepted Wi-Fi credentials remain valid until replacement
+credentials have been successfully provisioned.
+
+The detailed Wi-Fi command sequence and replacement-credential transaction
+are TBD.
 
 
 ## 11. Network Architecture
 
-TBD.
+The ESP32-C6 provides network and SSL/TLS transport for remote cabinet
+communications.
+
+The STM32 owns cabinet application data and application-layer processing.
+
+Detailed network connection behavior is TBD.
 
 
 ## 12. Firebase Communications Architecture
 
-TBD.
+Firebase Realtime Database is the MVP cloud backend.
+
+The STM32 owns Firebase-facing cabinet communication logic.
+
+The ESP32-C6 provides the required SSL/TLS network transport.
+
+Detailed Firebase authentication, data synchronization, and remote
+communication behavior are TBD.
 
 
 ## 13. Remote Command Architecture
 
-TBD.
+The mobile application may issue supported remote cabinet commands through
+Firebase.
+
+The STM32 remains authoritative for cabinet operation and determines whether
+a received remote command is valid and may be applied.
+
+The detailed remote-command interface and arbitration behavior are TBD.
 
 
 ## 14. Connectivity State Architecture
@@ -178,21 +229,29 @@ connectivity logic as needed.
 
 No separate generic connectivity event framework is required for the MVP.
 
+
 ## 15. Fault and Recovery Architecture
 
 UART transport errors are handled by the UART transport layer.
 
 ESP-AT command and protocol errors are handled by the ESP-AT interface.
 
-ESP32 availability, network connectivity, and remote-service failures are
-handled by the connectivity logic.
+ESP32 availability, Wi-Fi connectivity, network connectivity, and
+remote-service failures are handled by connectivity logic.
 
-Detailed recovery behavior is TBD.
+Wi-Fi, Internet, or Firebase unavailability does not disable local cabinet
+operation.
+
+Detailed recovery behavior shall be defined as the corresponding connectivity
+functions are implemented and verified.
 
 
 ## 16. Security Architecture
 
-TBD.
+Wi-Fi credentials are transferred during the provisioning process and stored
+persistently by the ESP32-C6.
+
+Firebase authentication and production device-credential handling remain TBD.
 
 
 ## 17. References
