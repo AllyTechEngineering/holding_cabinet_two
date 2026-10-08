@@ -198,8 +198,8 @@ and later replacement of an existing Wi-Fi configuration.
 
 Parent: `CONN-001`, `PERSIST-001`
 
-The connectivity subsystem shall use the Wi-Fi credentials stored by the
-STM32 when establishing normal Wi-Fi connectivity.
+The ESP32-C6 shall retain accepted Wi-Fi credentials and use them when
+establishing normal Wi-Fi connectivity.
 
 
 ### WIFI-002 — Wi-Fi Connection Failure
@@ -272,23 +272,19 @@ into the Error state.
 
 ## 11. Credentials and Security Requirements
 
-### CRED-001 — STM32 Credential Authority
+### CRED-001 — Wi-Fi Credential Storage
 
 Parent: `PERSIST-001`
 
-The STM32 shall be the authoritative persistent store for accepted Wi-Fi
-credentials.
+Accepted Wi-Fi credentials shall be stored persistently by the ESP32-C6.
 
 
-### CRED-002 — ESP32 Credential Use
+### CRED-002 — Wi-Fi Credential Provisioning
 
 Parent: `CONN-001`, `PERSIST-001`
 
-The ESP32-C6 shall use Wi-Fi credentials provided under STM32 control for
-normal Wi-Fi connection operation.
-
-The ESP32-C6 shall not be treated as the authoritative persistent store for
-Wi-Fi credentials.
+Wi-Fi credentials shall be provided to the ESP32-C6 through the cabinet
+provisioning process.
 
 
 ## 12. Fault Handling and Recovery Requirements

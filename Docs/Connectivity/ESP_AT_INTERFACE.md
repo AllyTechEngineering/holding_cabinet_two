@@ -135,8 +135,7 @@ ESP-AT build.
 The STM32 shall configure only ESP-AT functions required by the Holding
 Cabinet MVP.
 
-ESP-AT persistent configuration shall not be treated as the authoritative
-source of cabinet Wi-Fi configuration.
+ESP-AT persistent storage shall be used for accepted Wi-Fi configuration.
 
 Detailed initialization commands are TBD.
 
@@ -178,13 +177,11 @@ shall be defined from the applicable Espressif ESP-AT documentation.
 The ESP-AT interface shall support the commands required to:
 
 - Configure the ESP32-C6 for station Wi-Fi operation.
-- Apply Wi-Fi credentials under STM32 control.
+- Store accepted Wi-Fi credentials.
 - Initiate Wi-Fi connection.
 - Detect successful Wi-Fi connection.
 - Detect network acquisition.
 - Detect Wi-Fi disconnection.
-
-The STM32-stored Wi-Fi credentials are authoritative.
 
 The exact command set is TBD.
 
