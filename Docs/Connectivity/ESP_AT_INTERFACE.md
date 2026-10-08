@@ -137,7 +137,9 @@ Cabinet MVP.
 
 ESP-AT persistent storage shall be used for accepted Wi-Fi configuration.
 
-Detailed initialization commands are TBD.
+No additional global ESP-AT initialization commands are required for the MVP.
+Feature-specific ESP-AT configuration shall be performed when the corresponding
+connectivity function is used.
 
 
 ## 7. Provisioning Commands
