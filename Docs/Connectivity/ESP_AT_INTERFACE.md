@@ -111,32 +111,46 @@ interface functions are implemented.
 During connectivity initialization, the STM32 shall establish valid ESP-AT
 communication with the ESP32-C6 before connectivity is considered operational.
 
-The initialization command sequence shall be:
+UART reception shall be active before ESP-AT startup synchronization begins.
 
-1. Initialize and start the UART transport.
-2. Send `AT`.
-3. If terminal `OK` is received, ESP-AT communication is established.
-4. If `AT` does not complete successfully, retry `AT` while the startup
-   synchronization window remains active.
-5. Send `ATE0`.
-6. Require terminal `OK`.
-7. Declare the ESP-AT interface initialized.
+The normal startup synchronization sequence shall be:
 
-Receipt of the ESP32-C6 `ready` unsolicited result code shall not be required
-to complete initialization because the STM32 may begin communication after
-that startup indication has already been transmitted.
+1. Wait for the ESP32-C6 `ready` unsolicited result code.
+2. When `ready` is received, send `ATE0`.
+3. Require terminal `OK`.
+4. Declare the ESP-AT interface initialized.
 
-The startup synchronization window shall be 5 seconds.
+If the `ready` unsolicited result code is not received within the startup
+ready-wait period, the STM32 shall perform active ESP-AT synchronization.
 
-`AT` retries shall occur no faster than once every 250 ms.
+The active synchronization sequence shall be:
 
-`AT` verifies command/response communication.
+1. Send `AT`.
+2. If terminal `OK` is received, ESP-AT communication is established.
+3. If `AT` does not complete successfully, repeat active synchronization
+   while the startup synchronization period remains valid.
+4. After ESP-AT communication is established, send `ATE0`.
+5. Require terminal `OK`.
+6. Declare the ESP-AT interface initialized.
 
-`ATE0` disables command echo for subsequent normal operation.
+The startup ready-wait duration is TBD.
 
-Wi-Fi, BLE, network, Firebase, and recovery configuration are performed by
-their respective connectivity operations and are not part of this base
-ESP-AT initialization sequence.
+The active synchronization retry interval and maximum synchronization
+duration are TBD.
+
+Receipt of `ready` after active synchronization has begun shall be processed
+as an unsolicited result code and shall not alter an active command
+transaction.
+
+`ATE0` disables command echo for subsequent normal operation and provides
+command/response confirmation before the ESP-AT interface is considered
+initialized.
+
+Failure to establish ESP-AT communication within the defined startup
+synchronization limits shall produce a startup communication error condition.
+
+Wi-Fi, BLE, network, Firebase, and normal-operation recovery configuration
+are outside this base ESP-AT startup sequence.
 
 
 ## 6. ESP-AT Configuration
