@@ -108,8 +108,6 @@ interface functions are implemented.
 
 ## 5. Startup and Synchronization
 
-## 5. Startup and Synchronization
-
 During connectivity initialization, the STM32 shall establish valid ESP-AT
 communication with the ESP32-C6 before connectivity is considered operational.
 
@@ -117,14 +115,20 @@ The initialization command sequence shall be:
 
 1. Initialize and start the UART transport.
 2. Send `AT`.
-3. Require terminal `OK`.
-4. Send `ATE0`.
-5. Require terminal `OK`.
-6. Declare the ESP-AT interface initialized.
+3. If terminal `OK` is received, ESP-AT communication is established.
+4. If `AT` does not complete successfully, retry `AT` while the startup
+   synchronization window remains active.
+5. Send `ATE0`.
+6. Require terminal `OK`.
+7. Declare the ESP-AT interface initialized.
 
 Receipt of the ESP32-C6 `ready` unsolicited result code shall not be required
 to complete initialization because the STM32 may begin communication after
 that startup indication has already been transmitted.
+
+The startup synchronization window shall be 5 seconds.
+
+`AT` retries shall occur no faster than once every 250 ms.
 
 `AT` verifies command/response communication.
 
