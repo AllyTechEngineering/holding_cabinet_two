@@ -12,6 +12,7 @@
 
 typedef enum {
   CONNECTIVITY_STARTUP_IDLE = 0,
+  CONNECTIVITY_STARTUP_WAIT_READY,
   CONNECTIVITY_STARTUP_WAIT_AT,
   CONNECTIVITY_STARTUP_WAIT_ATE0,
   CONNECTIVITY_STARTUP_INITIALIZED,
@@ -26,6 +27,8 @@ static ConnectivityStartupState s_startup_state = CONNECTIVITY_STARTUP_IDLE;
 /**
  * @brief Starts ESP-AT startup synchronization.
  *
+ * UART reception must already be active before this function is called.
+ *
  * @return 1u when startup synchronization begins; 0u otherwise.
  */
 uint8_t ConnectivityLogic_Start(void)
@@ -34,14 +37,7 @@ uint8_t ConnectivityLogic_Start(void)
     return 0u;
   }
 
-  if (EspAt_StartCommand(s_at_command,
-                         sizeof(s_at_command) - 1u,
-                         1000u) == 0u) {
-    s_startup_state = CONNECTIVITY_STARTUP_FAILED;
-    return 0u;
-  }
-
-  s_startup_state = CONNECTIVITY_STARTUP_WAIT_AT;
+  s_startup_state = CONNECTIVITY_STARTUP_WAIT_READY;
 
   return 1u;
 }
@@ -68,9 +64,6 @@ void ConnectivityLogic_Process(void)
       }
 
       s_startup_state = CONNECTIVITY_STARTUP_WAIT_ATE0;
-    } else if ((transaction_state == ESP_AT_TRANSACTION_ERROR) ||
-               (transaction_state == ESP_AT_TRANSACTION_TIMEOUT)) {
-      s_startup_state = CONNECTIVITY_STARTUP_FAILED;
     }
 
     return;
@@ -104,5 +97,15 @@ uint8_t ConnectivityLogic_IsEspAtInitialized(void)
  */
 void ConnectivityLogic_HandleUrc(EspAtUrcType urc)
 {
-  (void)urc;
+  if ((s_startup_state == CONNECTIVITY_STARTUP_WAIT_READY) &&
+      (urc == ESP_AT_URC_READY)) {
+    if (EspAt_StartCommand(s_ate0_command,
+                           sizeof(s_ate0_command) - 1u,
+                           1000u) == 0u) {
+      s_startup_state = CONNECTIVITY_STARTUP_FAILED;
+      return;
+    }
+
+    s_startup_state = CONNECTIVITY_STARTUP_WAIT_ATE0;
+  }
 }

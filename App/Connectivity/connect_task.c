@@ -34,8 +34,6 @@ void ConnectTask_Run(void *argument)
     }
   }
 
-  osDelay(1000u);
-
   if (ConnectivityLogic_Start() == 0u) {
     for (;;) {
       osDelay(1000u);
