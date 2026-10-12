@@ -198,20 +198,25 @@ The detailed remote-command interface and arbitration behavior are TBD.
 
 ## 14. Application-to-Connectivity Interface
 
-`DisplayTask` shall request connectivity operations through a FreeRTOS
-message queue consumed by `ConnectTask`.
+`DisplayTask` shall request connectivity operations through the
+`qDisplayToConnect` FreeRTOS message queue consumed by `ConnectTask`.
 
-The MVP application-to-connectivity interface shall support:
+The queue payload type is `ConnectCommand_t`, implemented as a `uint8_t`.
 
-- Start Wi-Fi provisioning.
-- Cancel Wi-Fi provisioning.
+The MVP interface supports:
 
-`ConnectTask` shall deliver these requests to connectivity logic.
+- `CONNECT_CMD_START_PROVISIONING`
+- `CONNECT_CMD_CANCEL_PROVISIONING`
+
+Commands are delivered FIFO to `ConnectTask`.
+
+`ConnectTask` owns consumption of the queue and delivery of the request to
+connectivity logic.
 
 `DisplayTask` shall not issue ESP-AT commands directly.
 
-The interface shall not define additional request types until required by
-implemented MVP behavior.
+No additional application-to-connectivity request types shall be added until
+required by implemented MVP behavior.
 
 ## 15. Connectivity State Architecture
 
