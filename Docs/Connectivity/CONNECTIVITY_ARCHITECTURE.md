@@ -196,8 +196,24 @@ a received remote command is valid and may be applied.
 
 The detailed remote-command interface and arbitration behavior are TBD.
 
+## 14. Application-to-Connectivity Interface
 
-## 14. Connectivity State Architecture
+`DisplayTask` shall request connectivity operations through a FreeRTOS
+message queue consumed by `ConnectTask`.
+
+The MVP application-to-connectivity interface shall support:
+
+- Start Wi-Fi provisioning.
+- Cancel Wi-Fi provisioning.
+
+`ConnectTask` shall deliver these requests to connectivity logic.
+
+`DisplayTask` shall not issue ESP-AT commands directly.
+
+The interface shall not define additional request types until required by
+implemented MVP behavior.
+
+## 15. Connectivity State Architecture
 
 The MVP connectivity logic uses three top-level states:
 
@@ -230,7 +246,7 @@ connectivity logic as needed.
 No separate generic connectivity event framework is required for the MVP.
 
 
-## 15. Fault and Recovery Architecture
+## 16. Fault and Recovery Architecture
 
 UART transport errors are handled by the UART transport layer.
 
@@ -246,7 +262,7 @@ Detailed recovery behavior shall be defined as the corresponding connectivity
 functions are implemented and verified.
 
 
-## 16. Security Architecture
+## 17. Security Architecture
 
 Wi-Fi credentials are transferred during the provisioning process and stored
 persistently by the ESP32-C6.
@@ -254,7 +270,7 @@ persistently by the ESP32-C6.
 Firebase authentication and production device-credential handling remain TBD.
 
 
-## 17. References
+## 18. References
 
 Applicable ESP32-C6 and ESP-AT documentation is maintained under
 `../Reference/`.
