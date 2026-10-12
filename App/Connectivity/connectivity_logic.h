@@ -11,6 +11,7 @@
 #ifndef __CONNECTIVITY_LOGIC_H
 #define __CONNECTIVITY_LOGIC_H
 
+#include "app_types.h"
 #include "esp_at_interface.h"
 #include <stdint.h>
 
@@ -22,6 +23,7 @@ uint8_t ConnectivityLogic_Start(void);
 void ConnectivityLogic_Process(void);
 uint8_t ConnectivityLogic_IsEspAtInitialized(void);
 void ConnectivityLogic_HandleUrc(EspAtUrcType urc);
+void ConnectivityLogic_HandleCommand(ConnectCommand_t command);
 
 #ifdef __cplusplus
 }
