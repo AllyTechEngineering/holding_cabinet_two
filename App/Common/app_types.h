@@ -72,6 +72,14 @@ typedef struct {
                           * (10/11 = NTC Open/Short, 20/21 = Heater Open/Short) */
 } HeatStatus_t;
 
+/* ============================================================
+ * qDisplayToConnect payload: DisplayTask -> ConnectTask
+ * ============================================================ */
+typedef uint8_t ConnectCommand_t;
+
+#define CONNECT_CMD_START_PROVISIONING  0u
+#define CONNECT_CMD_CANCEL_PROVISIONING 1u
+
 #ifdef __cplusplus
 }
 #endif

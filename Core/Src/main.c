@@ -143,6 +143,11 @@ osMessageQueueId_t qUartRxToConnectHandle;
 const osMessageQueueAttr_t qUartRxToConnect_attributes = {
   .name = "qUartRxToConnect"
 };
+/* Definitions for qDisplayToConnect */
+osMessageQueueId_t qDisplayToConnectHandle;
+const osMessageQueueAttr_t qDisplayToConnect_attributes = {
+  .name = "qDisplayToConnect"
+};
 /* USER CODE BEGIN PV */
 volatile uint8_t g_lastInputEvent = 0u;
 volatile uint32_t g_inputEventCount = 0u;
@@ -432,6 +437,9 @@ int main(void)
 
   /* creation of qUartRxToConnect */
   qUartRxToConnectHandle = osMessageQueueNew (128, sizeof(uint8_t), &qUartRxToConnect_attributes);
+
+  /* creation of qDisplayToConnect */
+  qDisplayToConnectHandle = osMessageQueueNew (4, sizeof(uint8_t), &qDisplayToConnect_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
