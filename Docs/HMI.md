@@ -489,7 +489,7 @@ to `Idle-Splash`.
 
 ## 10. Settings Screens
 
-Settings is entered by holding Up and Down simultaneously for 5 seconds while
+Settings is entered by holding Up and Down simultaneously for 10 seconds while
 the HMI is in either Idle screen.
 
 The current Settings function selects Fahrenheit or Celsius.
