@@ -489,17 +489,17 @@ to `Idle-Splash`.
 
 ## 10. Settings Screens
 
-Settings is entered by holding Up and Down simultaneously for 10 seconds while
-the HMI is in either Idle screen.
+Settings is entered by holding Up and Down simultaneously for 10 seconds
+while the HMI is in either Idle screen.
 
 The current Settings function selects Fahrenheit or Celsius.
-
 
 ### 10.1 Settings-Splash
 
 `Settings-Splash` is displayed for 4 seconds and then automatically advances
 to `Settings-Adjust`.
-NOTE: need to test if 4 seconds is enough.
+
+**Note:** Need to test if 4 seconds is enough.
 
 Row 2 shows the current temperature-unit selection.
 
@@ -513,19 +513,22 @@ Example:
     "  Settings Menu "
     "     Temp:F     "
 
-
 ### 10.2 Temperature Settings-Adjust
 
 Up selects Fahrenheit.
 
 Down selects Celsius.
-Row 1 toggles, every 4 seconds, between 
-Screen A
+
+Row 1 alternates between Screen A and Screen B every 4 seconds.
+
+**Screen A**
+
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | U | p | | F | | o | r | | D | o | w | n | | C | |
 
-Screen B
+**Screen B**
+
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
@@ -537,84 +540,86 @@ Row 2 displays the currently selected value.
 | Row 1 | | U | p | | F | | o | r | | D | o | w | n | | C | |
 | Row 2 | | | | | | T | e | m | p | : | F | | | | | |
 
-Examples:
+Examples with Fahrenheit selected:
 
     " Up F or Down C "
     "     Temp:F     "
-    
+
     " Enter Y Mode N "
     "     Temp:F     "
-or:
+
+Examples with Celsius selected:
 
     " Up F or Down C "
     "     Temp:C     "
 
-     " Enter Y Mode N "
+    " Enter Y Mode N "
     "     Temp:C     "
-
 
 ### 10.3 Temperature Settings-Confirm
 
 Enter saves the selected temperature unit and moves to the next setting.
-Mode exits to ### 5.1 Idle-Splash
 
-
+Mode exits to `Idle-Splash` (§5.1).
 
 ### 10.4 Wi-Fi Settings-Adjust
-Row 1 toggles, every 4 seconds, between 
-Screen A
+
+Row 1 alternates between Screen A and Screen B every 4 seconds.
+
+**Screen A**
 
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | | S | e | t | t | i | n | g | s | | M | e | n | u | |
 
-Screen B
+**Screen B**
+
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
 
+Row 2 displays the currently selected value.
 
-Row 2 displays the current selected value.
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | | S | e | t | t | i | n | g | s | | M | e | n | u | |
-| Row 2 | | | | | | W | i | - | F | i | : | N |o | | | |
+| Row 2 | | | | | | W | i | - | F | i | : | N | o | | | |
 
 Up selects No.
 
 Down selects Yes.
 
-Example:
+Examples with No selected:
 
     "  Settings Menu "
-    "     Wi-Fi:No     "
+    "     Wi-Fi:No   "
 
     " Enter Y Mode N "
-    "     Wi-Fi:No     "
+    "     Wi-Fi:No   "
 
-Or:
+Examples with Yes selected:
 
     "  Settings Menu "
-    "     Wi-Fi:Yes     "
+    "     Wi-Fi:Yes  "
 
     " Enter Y Mode N "
-    "     Wi-Fi:Yes     "
+    "     Wi-Fi:Yes  "
 
 ### 10.5 Wi-Fi Settings-Confirm
 
-Enter saves the selected temperature unit and moves to the next setting.
-Mode exits to ### 5.1 Idle-Splash
+Enter saves the selected Wi-Fi setting and moves to the next setting.
 
+Mode exits to `Idle-Splash` (§5.1).
 
+### 10.6 TBD Setting Adjust
 
-## 10.6 TBD Setting Adjust
-- place holder
-- At this time the code shall return to the ### 10.1 Settings-Splash
+- Placeholder.
+- At this time, the code shall exit to `Idle-Splash` (§5.1).
 
-## 10.7 TBD Setting Confirm
-- place holder
-- The code will not get to this line
+### 10.7 TBD Setting Confirm
 
+- Placeholder.
+- The code will not reach this screen.
 ## 11. Error HMI
 
 While the system is in the Error state:
