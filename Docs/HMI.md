@@ -497,8 +497,9 @@ The current Settings function selects Fahrenheit or Celsius.
 
 ### 10.1 Settings-Splash
 
-`Settings-Splash` is displayed for 2 seconds and then automatically advances
+`Settings-Splash` is displayed for 4 seconds and then automatically advances
 to `Settings-Adjust`.
+NOTE: need to test if 4 seconds is enough.
 
 Row 2 shows the current temperature-unit selection.
 
@@ -513,11 +514,21 @@ Example:
     "     Temp:F     "
 
 
-### 10.2 Settings-Adjust
+### 10.2 Temperature Settings-Adjust
 
 Up selects Fahrenheit.
 
 Down selects Celsius.
+Row 1 toggles, every 4 seconds, between 
+Screen A
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row 1 | | U | p | | F | | o | r | | D | o | w | n | | C | |
+
+Screen B
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
 
 Row 2 displays the currently selected value.
 
@@ -530,36 +541,40 @@ Examples:
 
     " Up F or Down C "
     "     Temp:F     "
-
+    
+    " Enter Y Mode N "
+    "     Temp:F     "
 or:
 
     " Up F or Down C "
     "     Temp:C     "
 
-
-### 10.3 Settings-Confirm
-
-Enter saves the selected temperature unit and moves to the next setting.
-
-| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
-| Row 2 | | | | | |T |e |m |p |: |F | || | | |
-
-
-Examples:
-
-    " Enter Y Mode N "
-    "     Temp:F     "
-
-or:
-
-    " Enter Y Mode N "
+     " Enter Y Mode N "
     "     Temp:C     "
 
 
-### 10.4 Wi-Fi Settings-Adjust
+### 10.3 Temperature Settings-Confirm
 
+Enter saves the selected temperature unit and moves to the next setting.
+Mode exits to ### 5.1 Idle-Splash
+
+
+
+### 10.4 Wi-Fi Settings-Adjust
+Row 1 toggles, every 4 seconds, between 
+Screen A
+
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row 1 | | | S | e | t | t | i | n | g | s | | M | e | n | u | |
+
+Screen B
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
+
+
+Row 2 displays the current selected value.
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | | S | e | t | t | i | n | g | s | | M | e | n | u | |
@@ -574,30 +589,23 @@ Example:
     "  Settings Menu "
     "     Wi-Fi:No     "
 
-Or:
-
-    "  Settings Menu "
-    "     Wi-Fi:Yes     "
-
-### 10.5 Wi-Fi Settings-Confirm
-
-Enter saves the selected Wi-Fi N or Y and moves to the next setting.
-
-| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
-| Row 2 | | | | | | W | i | - | F | i | : | N |o | | | |
-
-
-Example:
-
-    "  Settings Menu "
+    " Enter Y Mode N "
     "     Wi-Fi:No     "
 
 Or:
 
     "  Settings Menu "
     "     Wi-Fi:Yes     "
+
+    " Enter Y Mode N "
+    "     Wi-Fi:Yes     "
+
+### 10.5 Wi-Fi Settings-Confirm
+
+Enter saves the selected temperature unit and moves to the next setting.
+Mode exits to ### 5.1 Idle-Splash
+
+
 
 ## 10.6 TBD Setting Adjust
 - place holder
