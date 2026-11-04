@@ -505,7 +505,7 @@ Row 2 shows the current temperature-unit selection.
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | | S | e | t | t | i | n | g | s | | M | e | n | u | |
-| Row 2 | | | | | | T | e | m | p | : | F/C | | | | | |
+| Row 2 | | | | | | T | e | m | p | : | F | | | | | |
 
 Example:
 
@@ -524,7 +524,7 @@ Row 2 displays the currently selected value.
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | U | p | | F | | o | r | | D | o | w | n | | C | |
-| Row 2 | | | | | | T | e | m | p | : | F/C | | | | | |
+| Row 2 | | | | | | T | e | m | p | : | F | | | | | |
 
 Examples:
 
@@ -539,12 +539,13 @@ or:
 
 ### 10.3 Settings-Confirm
 
-Enter saves the selected temperature unit and returns to `Idle-Splash`.
+Enter saves the selected temperature unit and moves to the next setting.
 
 | Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
-| Row 2 | | | | | | T | e | m | p | : | F/C | | | | | |
+| Row 2 | | | | | |T |e |m |p |: |F | || | | |
+
 
 Examples:
 
@@ -557,13 +558,54 @@ or:
     "     Temp:C     "
 
 
-### 10.4 Wi-Fi Settings
+### 10.4 Wi-Fi Settings-Adjust
 
-Wi-Fi configuration is accessible through Settings.
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row 1 | | | S | e | t | t | i | n | g | s | | M | e | n | u | |
+| Row 2 | | | | | | W | i | - | F | i | : | N |o | | | |
 
-The Wi-Fi Settings screens, navigation, button behavior, status displays,
-success indication, and failure indication are TBD.
+Up selects No.
 
+Down selects Yes.
+
+Example:
+
+    "  Settings Menu "
+    "     Wi-Fi:No     "
+
+Or:
+
+    "  Settings Menu "
+    "     Wi-Fi:Yes     "
+
+### 10.5 Wi-Fi Settings-Confirm
+
+Enter saves the selected Wi-Fi N or Y and moves to the next setting.
+
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row 1 | | E | n | t | e | r | | Y | | M | o | d | e | | N | |
+| Row 2 | | | | | | W | i | - | F | i | : | N |o | | | |
+
+
+Example:
+
+    "  Settings Menu "
+    "     Wi-Fi:No     "
+
+Or:
+
+    "  Settings Menu "
+    "     Wi-Fi:Yes     "
+
+## 10.6 TBD Setting Adjust
+- place holder
+- At this time the code shall return to the ### 10.1 Settings-Splash
+
+## 10.7 TBD Setting Confirm
+- place holder
+- The code will not get to this line
 
 ## 11. Error HMI
 
