@@ -42,7 +42,7 @@ intentional hold function.
 
 Up and Down are also used together to enter Settings.
 
-Holding Up and Down simultaneously for 5 seconds while in either Idle screen
+Holding Up and Down simultaneously for 10 seconds while in either Idle screen
 opens `Settings-Splash`.
 
 
@@ -56,10 +56,10 @@ The following screen pairs automatically alternate:
 |---|---:|
 | `Idle-Splash` / `Idle-Prompt` | 4 seconds |
 | `SetTemp-Adjust` / `SetTemp-Confirm` | 4 seconds |
-| `SetTime-Adjust` / `SetTime-Confirm` | 2 seconds |
+| `SetTime-Adjust` / `SetTime-Confirm` | 4 seconds |
 | `Complete-DisplayA` / `Complete-DisplayB` | 4 seconds |
-| `Settings-Adjust` / `Settings-Confirm` | 2 seconds |
-| `Error-DisplayA` / `Error-DisplayB` | 2 seconds |
+| `Settings-Adjust` / `Settings-Confirm` | 4 seconds |
+| `Error-DisplayA` / `Error-DisplayB` | 4 seconds |
 
 Screen alternation does not prevent user input.
 
@@ -68,7 +68,7 @@ Up and Down operate identically on either member of an Adjust/Confirm pair.
 Pressing Up or Down does not restart the screen-alternation timer.
 
 `Settings-Splash` is not part of a toggle pair. It automatically advances to
-`Settings-Adjust` after 2 seconds.
+`Settings-Adjust` after 4 seconds.
 
 
 ### 3.2 Inactivity Timeout
@@ -140,8 +140,8 @@ If the active countdown reaches 0:00 during an edit:
 | `Complete-DisplayA` | — | — | `SetTemp-Decision` | `Idle-Splash` |
 | `Complete-DisplayB` | — | — | `SetTemp-Decision` | `Idle-Splash` |
 | `Settings-Splash` | — | — | — | — |
-| `Settings-Adjust` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Confirm` | `Idle-Splash` |
-| `Settings-Confirm` | Change proposed setting | Save setting, `Idle-Splash` | `Settings-Adjust` | `Idle-Splash` |
+| Temperature Settings | Up selects Fahrenheit, Down selects Celsius | Save temperature unit and advance to Wi-Fi Settings | `Idle-Splash` | `Idle-Splash` |
+| Wi-Fi Settings | Up selects No, Down selects Yes | Save Wi-Fi setting and advance to the next setting (§10.6) | `Idle-Splash` | `Idle-Splash` |
 | `Error` | — | — | — | — |
 
 
