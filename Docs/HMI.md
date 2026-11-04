@@ -520,6 +520,8 @@ Up selects Fahrenheit.
 Down selects Celsius.
 
 Row 1 alternates between Screen A and Screen B every 4 seconds.
+Screen A and Screen B are two views of the same setting. Up, Down, Enter,
+and Mode work the same way on both views.
 
 **Screen A**
 
@@ -565,6 +567,8 @@ Mode exits to `Idle-Splash` (§5.1).
 ### 10.4 Wi-Fi Settings-Adjust
 
 Row 1 alternates between Screen A and Screen B every 4 seconds.
+Screen A and Screen B are two views of the same setting. Up, Down, Enter,
+and Mode work the same way on both views.
 
 **Screen A**
 
