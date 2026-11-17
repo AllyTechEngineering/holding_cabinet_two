@@ -631,7 +631,7 @@ While the system is in the Error state:
 - Normal user controls do not resume operation.
 - The Error state has no inactivity timeout.
 
-The Error display alternates its second row every 2 seconds.
+The Error display alternates its second row every 4 seconds.
 
 
 ### 11.1 Error-DisplayA

@@ -204,7 +204,7 @@ button supports an intentional hold function.
 
 ### UI-003 — Settings Entry
 
-Holding Up and Down simultaneously for 5 seconds while the system is Idle
+Holding Up and Down simultaneously for 10 seconds while the system is Idle
 shall enter the Settings mode.
 
 The Settings-entry button combination shall not enter Settings while a
